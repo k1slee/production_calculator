@@ -1,0 +1,83 @@
+body {
+    background-color: #f8f9fa;
+}
+
+.navbar {
+    box-shadow: 0 2px 4px rgba(0,0,0,.1);
+}
+
+.card {
+    box-shadow: 0 1px 3px rgba(0,0,0,.1);
+    border: none;
+    margin-bottom: 20px;
+}
+
+.card-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid rgba(0,0,0,.125);
+}
+
+.table th {
+    border-top: none;
+    background-color: #f8f9fa;
+}
+
+.btn-group-sm > .btn, .btn-sm {
+    padding: .25rem .5rem;
+    font-size: .875rem;
+    line-height: 1.5;
+    border-radius: .2rem;
+}
+
+.alert {
+    border: none;
+    border-radius: 0;
+    margin-bottom: 20px;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+}
+
+/* Стили для страницы входа */
+.login-container {
+    max-width: 400px;
+    margin: 100px auto;
+}
+
+/* Анимации */
+.card {
+    transition: transform 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,.15);
+}
+
+/* Стили для таблиц */
+.table-responsive {
+    overflow-x: auto;
+}
+
+/* Стили для кнопок действий */
+.action-buttons {
+    white-space: nowrap;
+}
+
+/* Стили для форм */
+.asteriskField {
+    color: red;
+    margin-left: 4px;
+}
+
+/* Стили для ошибок валидации */
+.has-error .form-control {
+    border-color: #dc3545;
+}
+
+.has-error .help-block {
+    color: #dc3545;
+    font-size: 0.875rem;
+}

@@ -1,0 +1,54 @@
+{% extends 'calculator/base.html' %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card bg-light">
+            <div class="card-body">
+                <h1 class="card-title">Добро пожаловать в калькулятор расходов материалов</h1>
+                <p class="card-text">Выберите раздел для работы:</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">Справочники</h5>
+                <p class="card-text">Управление справочниками материалов, деталей и сортамента</p>
+                <div class="d-grid gap-2">
+                    <a href="{% url 'material_list' %}" class="btn btn-outline-primary">Материалы</a>
+                    <a href="{% url 'part_list' %}" class="btn btn-outline-primary">Наименования деталей</a>
+                    <a href="{% url 'stock_list' %}" class="btn btn-outline-primary">Сортамент на складе</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">Заказы</h5>
+                <p class="card-text">Создание и управление заказами, расчёт материалов</p>
+                <div class="d-grid gap-2">
+                    <a href="{% url 'order_list' %}" class="btn btn-outline-success">Список заказов</a>
+                    <a href="{% url 'order_create' %}" class="btn btn-success">Создать новый заказ</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">Информация</h5>
+                <p class="card-text">Пользователь: {{ user.last_name }} {{ user.first_name }}</p>
+                <p class="card-text">Всего заказов: {{ user.order_set.count }}</p>
+                <p class="card-text">Материалов в справочнике: {{ material_count }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,395 @@
+{% extends 'calculator/base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Добавление детали в заказ №{{ order.order_number }}</h3>
+            </div>
+            <div class="card-body">
+                <form method="post" id="orderItemForm">
+                    {% csrf_token %}
+                    
+                    <!-- Порядковый номер -->
+                    <div class="mb-3">
+                        <label for="id_sequence_number" class="form-label fw-bold">
+                            Порядковый номер<span class="text-danger">*</span>
+                        </label>
+                        <input type="number" 
+                               name="sequence_number" 
+                               value="{{ form.sequence_number.value|default:order.items.count|add:1 }}"
+                               class="form-control" 
+                               id="id_sequence_number"
+                               required>
+                        {% if form.sequence_number.errors %}
+                            <div class="text-danger">{{ form.sequence_number.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Наименование детали -->
+                    <div class="mb-3">
+                        <label for="id_part_name" class="form-label fw-bold">
+                            Наименование детали<span class="text-danger">*</span>
+                        </label>
+                        <select name="part_name" 
+                                class="form-select" 
+                                id="id_part_name"
+                                required>
+                            <option value="">---------</option>
+                            {% for part in form.fields.part_name.queryset %}
+                                <option value="{{ part.id }}" {% if form.part_name.value|stringformat:"s" == part.id|stringformat:"s" %}selected{% endif %}>
+                                    {{ part.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        {% if form.part_name.errors %}
+                            <div class="text-danger">{{ form.part_name.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Марка материала -->
+                    <div class="mb-3">
+                        <label for="id_material" class="form-label fw-bold">
+                            Марка материала<span class="text-danger">*</span>
+                        </label>
+                        <select name="material" 
+                                class="form-select" 
+                                id="id_material"
+                                required>
+                            <option value="">---------</option>
+                            {% for material in form.fields.material.queryset %}
+                                <option value="{{ material.id }}" {% if form.material.value|stringformat:"s" == material.id|stringformat:"s" %}selected{% endif %}>
+                                    {{ material.name }} ({{ material.density }} г/см³)
+                                </option>
+                            {% endfor %}
+                        </select>
+                        {% if form.material.errors %}
+                            <div class="text-danger">{{ form.material.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Количество -->
+                    <div class="mb-3">
+                        <label for="id_quantity" class="form-label fw-bold">
+                            Количество деталей<span class="text-danger">*</span>
+                        </label>
+                        <input type="number" 
+                               name="quantity" 
+                               value="{{ form.quantity.value|default:1 }}"
+                               class="form-control" 
+                               id="id_quantity"
+                               min="1"
+                               required>
+                        {% if form.quantity.errors %}
+                            <div class="text-danger">{{ form.quantity.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Сортамент со склада -->
+                    <div class="mb-3">
+                        <label for="id_stock_item" class="form-label fw-bold">
+                            Сортамент со склада<span class="text-danger">*</span>
+                        </label>
+                        <select name="stock_item" 
+                                class="form-select" 
+                                id="id_stock_item" 
+                                required>
+                            <option value="">---------</option>
+                            {% for item in form.fields.stock_item.queryset %}
+                            <option value="{{ item.id }}" 
+                                    data-section-type="{{ item.section_type }}"
+                                    {% if form.stock_item.value|stringformat:"s" == item.id|stringformat:"s" %}selected{% endif %}>
+                                {{ item.material.name }} - 
+                                {% if item.section_type == 'sheet' %}
+                                    Лист {{ item.length }}x{{ item.width }}x{{ item.height }} мм
+                                {% elif item.section_type == 'round' %}
+                                    Кругляк Ø{{ item.diameter }} L={{ item.round_length }} мм
+                                {% else %}
+                                    Шестигранник S{{ item.key_size }} L={{ item.hex_length }} мм
+                                {% endif %}
+                                (в наличии: {{ item.quantity }})
+                            </option>
+                            {% endfor %}
+                        </select>
+                        {% if form.stock_item.errors %}
+                            <div class="text-danger">{{ form.stock_item.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div id="measurements">
+                        <h5 class="mt-4 mb-3">Замеры детали</h5>
+                        
+                        <!-- Поля для листа -->
+                        <div id="sheet-measurements" style="display: none;">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="id_sheet_length" class="form-label fw-bold">
+                                            Длина (мм)<span class="text-danger">*</span>
+                                        </label>
+                                        <input type="number" 
+                                               name="length" 
+                                               step="0.01" 
+                                               class="form-control" 
+                                               id="id_sheet_length"
+                                               value="{{ form.length.value|default:'' }}">
+                                        {% if form.length.errors %}
+                                            <div class="text-danger">{{ form.length.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="id_width" class="form-label fw-bold">
+                                            Ширина (мм)<span class="text-danger">*</span>
+                                        </label>
+                                        <input type="number" 
+                                               name="width" 
+                                               step="0.01" 
+                                               class="form-control" 
+                                               id="id_width"
+                                               value="{{ form.width.value|default:'' }}">
+                                        {% if form.width.errors %}
+                                            <div class="text-danger">{{ form.width.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="id_height" class="form-label fw-bold">
+                                            Высота (мм)<span class="text-danger">*</span>
+                                        </label>
+                                        <input type="number" 
+                                               name="height" 
+                                               step="0.01" 
+                                               class="form-control" 
+                                               id="id_height"
+                                               value="{{ form.height.value|default:'' }}">
+                                        {% if form.height.errors %}
+                                            <div class="text-danger">{{ form.height.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Поля для кругляка -->
+                        <div id="round-measurements" style="display: none;">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="id_diameter" class="form-label fw-bold">
+                                            Диаметр (мм)<span class="text-danger">*</span>
+                                        </label>
+                                        <input type="number" 
+                                               name="diameter" 
+                                               step="0.01" 
+                                               class="form-control" 
+                                               id="id_diameter"
+                                               value="{{ form.diameter.value|default:'' }}">
+                                        {% if form.diameter.errors %}
+                                            <div class="text-danger">{{ form.diameter.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="id_round_length" class="form-label fw-bold">
+                                            Длина (мм)<span class="text-danger">*</span>
+                                        </label>
+                                        <input type="number" 
+                                               name="length" 
+                                               step="0.01" 
+                                               class="form-control" 
+                                               id="id_round_length"
+                                               value="{{ form.length.value|default:'' }}">
+                                        {% if form.length.errors %}
+                                            <div class="text-danger">{{ form.length.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Поля для шестигранника -->
+                        <div id="hexagon-measurements" style="display: none;">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="id_key_size" class="form-label fw-bold">
+                                            Размер под ключ (мм)<span class="text-danger">*</span>
+                                        </label>
+                                        <input type="number" 
+                                               name="key_size" 
+                                               step="0.01" 
+                                               class="form-control" 
+                                               id="id_key_size"
+                                               value="{{ form.key_size.value|default:'' }}">
+                                        {% if form.key_size.errors %}
+                                            <div class="text-danger">{{ form.key_size.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="id_hex_length" class="form-label fw-bold">
+                                            Длина (мм)<span class="text-danger">*</span>
+                                        </label>
+                                        <input type="number" 
+                                               name="length" 
+                                               step="0.01" 
+                                               class="form-control" 
+                                               id="id_hex_length"
+                                               value="{{ form.length.value|default:'' }}">
+                                        {% if form.length.errors %}
+                                            <div class="text-danger">{{ form.length.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between mt-4">
+                        <button type="submit" class="btn btn-primary">Добавить деталь</button>
+                        <a href="{% url 'order_detail' order.id %}" class="btn btn-secondary">Отмена</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+(function() {
+    'use strict';
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        const stockItemSelect = document.getElementById('id_stock_item');
+        if (!stockItemSelect) return;
+        
+        const sheetMeasurements = document.getElementById('sheet-measurements');
+        const roundMeasurements = document.getElementById('round-measurements');
+        const hexagonMeasurements = document.getElementById('hexagon-measurements');
+        
+        // Очищаем все поля
+        function clearAllFields() {
+            // Очищаем поля листа
+            const sheetLength = document.getElementById('id_sheet_length');
+            const width = document.getElementById('id_width');
+            const height = document.getElementById('id_height');
+            if (sheetLength) sheetLength.value = '';
+            if (width) width.value = '';
+            if (height) height.value = '';
+            
+            // Очищаем поля кругляка
+            const diameter = document.getElementById('id_diameter');
+            const roundLength = document.getElementById('id_round_length');
+            if (diameter) diameter.value = '';
+            if (roundLength) roundLength.value = '';
+            
+            // Очищаем поля шестигранника
+            const keySize = document.getElementById('id_key_size');
+            const hexLength = document.getElementById('id_hex_length');
+            if (keySize) keySize.value = '';
+            if (hexLength) hexLength.value = '';
+        }
+        
+        // Переключение полей в зависимости от выбранного сортамента
+        function toggleMeasurements() {
+            const selectedOption = stockItemSelect.options[stockItemSelect.selectedIndex];
+            
+            // Скрываем все блоки
+            sheetMeasurements.style.display = 'none';
+            roundMeasurements.style.display = 'none';
+            hexagonMeasurements.style.display = 'none';
+            
+            // Очищаем все поля
+            clearAllFields();
+            
+            if (selectedOption && selectedOption.value) {
+                const sectionType = selectedOption.getAttribute('data-section-type');
+                
+                if (sectionType === 'sheet') {
+                    sheetMeasurements.style.display = 'block';
+                    // Делаем поля листа обязательными
+                    if (document.getElementById('id_sheet_length')) document.getElementById('id_sheet_length').required = true;
+                    if (document.getElementById('id_width')) document.getElementById('id_width').required = true;
+                    if (document.getElementById('id_height')) document.getElementById('id_height').required = true;
+                } else if (sectionType === 'round') {
+                    roundMeasurements.style.display = 'block';
+                    // Делаем поля кругляка обязательными
+                    if (document.getElementById('id_diameter')) document.getElementById('id_diameter').required = true;
+                    if (document.getElementById('id_round_length')) document.getElementById('id_round_length').required = true;
+                } else if (sectionType === 'hexagon') {
+                    hexagonMeasurements.style.display = 'block';
+                    // Делаем поля шестигранника обязательными
+                    if (document.getElementById('id_key_size')) document.getElementById('id_key_size').required = true;
+                    if (document.getElementById('id_hex_length')) document.getElementById('id_hex_length').required = true;
+                }
+            }
+        }
+        
+        // Добавляем обработчик события
+        stockItemSelect.addEventListener('change', toggleMeasurements);
+        
+        // Вызываем при загрузке страницы
+        toggleMeasurements();
+        
+        // Добавляем обработчик отправки формы
+        document.getElementById('orderItemForm').addEventListener('submit', function(e) {
+            const selectedOption = stockItemSelect.options[stockItemSelect.selectedIndex];
+            
+            if (selectedOption && selectedOption.value) {
+                const sectionType = selectedOption.getAttribute('data-section-type');
+                
+                // Убеждаемся, что отправляется правильное поле length
+                if (sectionType === 'sheet') {
+                    const sheetLength = document.getElementById('id_sheet_length');
+                    if (sheetLength) {
+                        // Удаляем другие поля length если они есть
+                        const otherLengths = document.querySelectorAll('input[name="length"]:not(#id_sheet_length)');
+                        otherLengths.forEach(function(input) {
+                            input.disabled = true;
+                        });
+                    }
+                } else if (sectionType === 'round') {
+                    const roundLength = document.getElementById('id_round_length');
+                    if (roundLength) {
+                        const otherLengths = document.querySelectorAll('input[name="length"]:not(#id_round_length)');
+                        otherLengths.forEach(function(input) {
+                            input.disabled = true;
+                        });
+                    }
+                } else if (sectionType === 'hexagon') {
+                    const hexLength = document.getElementById('id_hex_length');
+                    if (hexLength) {
+                        const otherLengths = document.querySelectorAll('input[name="length"]:not(#id_hex_length)');
+                        otherLengths.forEach(function(input) {
+                            input.disabled = true;
+                        });
+                    }
+                }
+            }
+        });
+    });
+})();
+</script>
+
+<style>
+.fw-bold {
+    font-weight: 600;
+}
+.text-danger {
+    color: #dc3545;
+}
+.form-label {
+    margin-bottom: 0.5rem;
+}
+.asteriskField {
+    color: red;
+    margin-left: 4px;
+}
+</style>
+{% endblock %}

@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Печать заказа №{{ order.order_number }}</title>
+    <style>
+        /* ПОЛНОСТЬЮ СКРЫВАЕМ ВСЕ ЛИШНИЕ НАДПИСИ И ЭЛЕМЕНТЫ */
+        body *:not(.print-container):not(.print-header):not(.print-title):not(.print-subtitle):not(.order-number):not(.report-table):not(.report-table *):not(.footer):not(.technologist):not(.technologist *):not(.no-print):not(.no-print *) {
+            all: unset !important;
+            display: none !important;
+        }
+        
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            body {
+                background-color: white;
+                margin: 0;
+                padding: 0;
+            }
+        }
+        
+        @page {
+            size: A4 landscape;
+            margin: 1cm;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background-color: white;
+            margin: 0;
+            padding: 10px;
+        }
+        
+        .print-container {
+            width: 100%;
+        }
+        
+        .no-print {
+            margin-bottom: 20px;
+        }
+        
+        .print-header {
+            text-align: center;
+            margin-bottom: 20px;
+            position: relative;
+        }
+        
+        .print-title {
+            font-size: 16pt;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        
+        .print-subtitle {
+            font-size: 14pt;
+            font-weight: 500;
+            margin-top: 5px;
+        }
+        
+        .order-number {
+            position: absolute;
+            top: 0;
+            right: 0;
+            font-size: 11pt;
+            font-weight: bold;
+        }
+        
+        .report-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+            font-size: 9pt;
+            table-layout: fixed;
+        }
+        
+        .report-table th {
+            background-color: #e0e0e0;
+            border: 1px solid #000;
+            padding: 4px;
+            text-align: center;
+            font-weight: bold;
+            word-wrap: break-word;
+        }
+        
+        .report-table td {
+            border: 1px solid #000;
+            padding: 4px;
+            vertical-align: middle;
+            word-wrap: break-word;
+        }
+        
+        .text-right {
+            text-align: right;
+        }
+        
+        .text-center {
+            text-align: center;
+        }
+        
+        .total-row {
+            font-weight: bold;
+            background-color: #f0f0f0;
+        }
+        
+        .footer {
+            margin-top: 20px;
+            display: flex;
+            justify-content: flex-end;
+        }
+        
+        .technologist {
+            font-size: 11pt;
+        }
+        
+        .technologist span {
+            font-weight: bold;
+        }
+
+        /* Фиксированная ширина колонок */
+        .report-table th:nth-child(1) { width: 4%; }
+        .report-table th:nth-child(2) { width: 14%; }
+        .report-table th:nth-child(3) { width: 10%; }
+        .report-table th:nth-child(4) { width: 6%; }
+        .report-table th:nth-child(5) { width: 12%; }
+        .report-table th:nth-child(6) { width: 30%; }
+        .report-table th:nth-child(7) { width: 7%; }
+        .report-table th:nth-child(8) { width: 7%; }
+    </style>
+</head>
+<body>
+    <!-- Кнопки управления - только для экрана -->
+    <div class="no-print" style="margin-bottom: 20px;">
+        <button onclick="window.print()" style="padding: 6px 12px; background: #0d6efd; color: white; border: none; border-radius: 4px; cursor: pointer;">
+            Печать
+        </button>
+        <a href="{% url 'generate_order_pdf' order.id %}" style="padding: 6px 12px; background: #198754; color: white; text-decoration: none; border-radius: 4px; margin-left: 8px;">
+            Скачать PDF
+        </a>
+        <a href="{% url 'order_detail' order.id %}" style="padding: 6px 12px; background: #6c757d; color: white; text-decoration: none; border-radius: 4px; margin-left: 8px;">
+            Назад
+        </a>
+    </div>
+
+    <!-- Шапка документа -->
+    <div class="print-header">
+        <div class="print-title">РАСХОД МАТЕРИАЛА НА ИЗГОТОВЛЕНИЕ:</div>
+        <div class="print-subtitle">{{ order.order_name }}</div>
+        <div class="order-number">Заказ №{{ order.order_number }}</div>
+    </div>
+    
+    <!-- Таблица с деталями -->
+    <table class="report-table">
+        <thead>
+            <tr>
+                <th>№</th>
+                <th>Наименование детали</th>
+                <th>Марка материала</th>
+                <th>Кол-во, шт</th>
+                <th>Размеры, мм</th>
+                <th>Сортамент на складе</th>
+                <th>Вес 1 шт, кг</th>
+                <th>Общий вес, кг</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in items %}
+            <tr>
+                <td class="text-center">{{ item.sequence_number }}</td>
+                <td>{{ item.part_name }}</td>
+                <td>{{ item.material }}</td>
+                <td class="text-center">{{ item.quantity }}</td>
+                <td>
+                    {% if item.stock_item.section_type == 'sheet' %}
+                        {{ item.length }}/{{ item.width }}/{{ item.height }}
+                    {% elif item.stock_item.section_type == 'round' %}
+                        Ø{{ item.diameter }}/L{{ item.length }}
+                    {% elif item.stock_item.section_type == 'hexagon' %}
+                        S{{ item.key_size }}/L{{ item.length }}
+                    {% endif %}
+                </td>
+                <td>
+                    {% if item.stock_item.section_type == 'sheet' %}
+                        Лист {{ item.stock_item.length }}x{{ item.stock_item.width }}x{{ item.stock_item.height }}
+                    {% elif item.stock_item.section_type == 'round' %}
+                        Круг Ø{{ item.stock_item.diameter }}/L{{ item.stock_item.round_length }}
+                    {% elif item.stock_item.section_type == 'hexagon' %}
+                        Шестигр. S{{ item.stock_item.key_size }}/L{{ item.stock_item.hex_length }}
+                    {% endif %}
+                </td>
+                <td class="text-right">{{ item.weight|floatformat:3 }}</td>
+                <td class="text-right">{{ item.total_weight|floatformat:3 }}</td>
+            </tr>
+            {% endfor %}
+            <tr class="total-row">
+                <td colspan="7" class="text-right"><strong>ИТОГО:</strong></td>
+                <td class="text-right"><strong>{{ order.total_weight|floatformat:3 }}</strong></td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <!-- Подпись технолога -->
+    <div class="footer">
+        <div class="technologist">
+            Технолог: <span>{{ user.last_name }} {{ user.first_name|first }}. {{ user.patronymic|default:''|slice:":1" }}.</span>
+        </div>
+    </div>
+</body>
+</html>
