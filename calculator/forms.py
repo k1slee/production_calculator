@@ -60,10 +60,11 @@ class StockItemForm(forms.ModelForm):
 class OrderForm(forms.ModelForm):
     class Meta:
         model = Order
-        fields = ['order_number', 'order_name', 'coefficient']
+        fields = ['order_number', 'order_name', 'drawing_number', 'coefficient']
         widgets = {
             'order_number': forms.TextInput(attrs={'class': 'form-control'}),
             'order_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'drawing_number': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Например: ДМ-123-2024'}),
             'coefficient': forms.Select(attrs={'class': 'form-select'}, 
                                        choices=[(x/10, x/10) for x in range(10, 21)]),
         }

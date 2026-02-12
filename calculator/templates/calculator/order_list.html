@@ -15,6 +15,7 @@
             </div>
             <div class="card-body">
                 <p><strong>Наименование:</strong> {{ order.order_name }}</p>
+                <p><strong>Номер чертежа:</strong> {{ order.drawing_number|default:"—" }}</p>
                 <p><strong>Дата создания:</strong> {{ order.created_at|date:"d.m.Y H:i" }}</p>
                 <p><strong>Коэффициент:</strong> {{ order.coefficient }}</p>
                 <p><strong>Количество деталей:</strong> {{ order.items.count }}</p>

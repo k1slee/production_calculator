@@ -86,9 +86,9 @@ class StockItemAdmin(admin.ModelAdmin):
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ['id', 'order_number', 'order_name', 'user', 'created_at', 'coefficient']
+    list_display = ['id', 'order_number', 'order_name', 'drawing_number', 'user', 'created_at', 'coefficient']
     list_filter = ['created_at', 'user', 'coefficient']
-    search_fields = ['order_number', 'order_name', 'user__username', 'user__last_name']
+    search_fields = ['order_number', 'order_name', 'drawing_number', 'user__username', 'user__last_name']
     date_hierarchy = 'created_at'
 
 @admin.register(OrderItem)

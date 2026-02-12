@@ -69,6 +69,7 @@ class Order(models.Model):
     """Модель заказа"""
     order_number = models.CharField('Номер заказа', max_length=50)
     order_name = models.CharField('Наименование заказа', max_length=200)
+    drawing_number = models.CharField('Номер чертежа', max_length=100, blank=True, null=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Пользователь')
     coefficient = models.DecimalField(
         'Коэффициент массы', 

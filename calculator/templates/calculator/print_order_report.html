@@ -149,6 +149,7 @@
         <div class="print-title">РАСХОД МАТЕРИАЛА НА ИЗГОТОВЛЕНИЕ:</div>
         <div class="print-subtitle">{{ order.order_name }}</div>
         <div class="order-number">Заказ №{{ order.order_number }}</div>
+        {% if order.drawing_number %}Чертеж №{{ order.drawing_number }}{% endif %}
     </div>
     
     <!-- Таблица с деталями -->

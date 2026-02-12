@@ -27,10 +27,11 @@
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-6">
-                        <p><strong>Создатель:</strong> {{ order.user.last_name }} {{ order.user.first_name|first }}. {{ order.user.last_name|first }}.</p>
+                        <p><strong>Создатель:</strong> {{ order.user.last_name }} {{ order.user.first_name|first }}. {{ order.user.profile.patronymic|first|default:'' }}.</p>
                         <p><strong>Дата создания:</strong> {{ order.created_at|date:"d.m.Y H:i" }}</p>
                     </div>
                     <div class="col-md-6">
+                        <p><strong>Номер чертежа:</strong> {{ order.drawing_number|default:"—" }}</p>  <!-- Новое поле -->
                         <div class="d-flex align-items-center">
                             <strong class="me-2">Коэффициент массы:</strong>
                             <span id="current-coefficient" class="badge bg-primary fs-6 me-2">{{ order.coefficient }}</span>
@@ -49,18 +50,13 @@
         <div class="card mb-4 bg-light">
             <div class="card-body">
                 <h5 class="card-title">Быстрая информация</h5>
-                <p class="mb-1"><strong>Всего деталей:</strong> {{ items|length }} шт.</p>
-                <p class="mb-1"><strong>Общее количество:</strong> 
-                    {% with total=0 %}
-                        {% for item in items %}
-                            {{ total|add:item.quantity }}
-                        {% endfor %}
-                    {% endwith %}
-                </p>
+                <p class="mb-1"><strong>Всего позиций:</strong> {{ items|length }}</p>
+                <p class="mb-1"><strong>Общее количество деталей:</strong> {{ order.total_items_count }} шт.</p>
                 <p class="mb-0"><strong>Общий вес:</strong> {{ order.total_weight|floatformat:3 }} кг</p>
             </div>
         </div>
     </div>
+</div>
 
 <!-- Модальное окно для изменения коэффициента -->
 <div class="modal fade" id="coefficientModal" tabindex="-1" aria-labelledby="coefficientModalLabel" aria-hidden="true">
