@@ -66,7 +66,6 @@
                     </a>
                 </h5>
                 <div>
-                    <span class="badge bg-primary">Вес: {{ order.total_weight|floatformat:2 }} кг</span>
                     {% if order.drawing_number %}
                     <span class="badge bg-secondary">Чертеж: {{ order.drawing_number }}</span>
                     {% endif %}
