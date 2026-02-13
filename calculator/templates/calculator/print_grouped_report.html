@@ -59,12 +59,11 @@
         }
         
         .order-number {
-            position: absolute;
-            top: 0;
-            right: 0;
-            font-size: 12pt;
-            font-weight: bold;
-            text-align: right;
+            position: static; /* убираем абсолютное позиционирование */ 
+            font-size: 12pt; 
+            font-weight: bold; 
+            text-align: center; /* выравниваем по центру */ 
+            margin-top: 5px;
         }
         
         .report-table {

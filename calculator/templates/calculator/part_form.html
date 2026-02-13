@@ -12,9 +12,13 @@
                 <form method="post">
                     {% csrf_token %}
                     {{ form|crispy }}
-                    <div class="d-flex justify-content-between">
-                        <button type="submit" class="btn btn-primary">Сохранить</button>
-                        <a href="{% url 'part_list' %}" class="btn btn-secondary">Отмена</a>
+                    <div class="d-flex justify-content-between mt-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Сохранить
+                        </button>
+                        <a href="{% url 'part_list' %}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Отмена
+                        </a>
                     </div>
                 </form>
             </div>

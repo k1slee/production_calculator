@@ -41,11 +41,13 @@ def index(request):
 # Справочник материалов
 @login_required
 def material_list(request):
+    """Список материалов"""
     materials = Material.objects.all().order_by('name')
     return render(request, 'calculator/material_list.html', {'materials': materials})
 
 @login_required
 def material_create(request):
+    """Создание материала"""
     if request.method == 'POST':
         form = MaterialForm(request.POST)
         if form.is_valid():
@@ -58,6 +60,7 @@ def material_create(request):
 
 @login_required
 def material_edit(request, pk):
+    """Редактирование материала"""
     material = get_object_or_404(Material, pk=pk)
     if request.method == 'POST':
         form = MaterialForm(request.POST, instance=material)
@@ -71,21 +74,35 @@ def material_edit(request, pk):
 
 @login_required
 def material_delete(request, pk):
+    """Удаление материала"""
     material = get_object_or_404(Material, pk=pk)
+    
+    # Проверяем, используется ли материал в заказах или на складе
+    if StockItem.objects.filter(material=material).exists():
+        messages.error(request, 'Невозможно удалить материал, так как он используется в сортаменте на складе')
+        return redirect('material_list')
+    
+    if OrderItem.objects.filter(material=material).exists():
+        messages.error(request, 'Невозможно удалить материал, так как он используется в заказах')
+        return redirect('material_list')
+    
     if request.method == 'POST':
         material.delete()
         messages.success(request, 'Материал успешно удален')
         return redirect('material_list')
+    
     return render(request, 'calculator/material_confirm_delete.html', {'object': material})
 
 # Справочник наименований деталей
 @login_required
 def part_list(request):
+    """Список наименований деталей"""
     parts = PartName.objects.all().order_by('name')
     return render(request, 'calculator/part_list.html', {'parts': parts})
 
 @login_required
 def part_create(request):
+    """Создание наименования детали"""
     if request.method == 'POST':
         form = PartNameForm(request.POST)
         if form.is_valid():
@@ -98,6 +115,7 @@ def part_create(request):
 
 @login_required
 def part_edit(request, pk):
+    """Редактирование наименования детали"""
     part = get_object_or_404(PartName, pk=pk)
     if request.method == 'POST':
         form = PartNameForm(request.POST, instance=part)
@@ -111,11 +129,19 @@ def part_edit(request, pk):
 
 @login_required
 def part_delete(request, pk):
+    """Удаление наименования детали"""
     part = get_object_or_404(PartName, pk=pk)
+    
+    # Проверяем, используется ли наименование детали в заказах
+    if OrderItem.objects.filter(part_name=part).exists():
+        messages.error(request, 'Невозможно удалить наименование детали, так как оно используется в заказах')
+        return redirect('part_list')
+    
     if request.method == 'POST':
         part.delete()
         messages.success(request, 'Наименование детали успешно удалено')
         return redirect('part_list')
+    
     return render(request, 'calculator/part_confirm_delete.html', {'object': part})
 
 # Справочник сортамента на складе

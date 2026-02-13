@@ -1,40 +1,57 @@
 {% extends 'calculator/base.html' %}
+{% load static %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1>Справочник материалов</h1>
-    <a href="{% url 'material_create' %}" class="btn btn-primary">Добавить материал</a>
+    <a href="{% url 'material_create' %}" class="btn btn-primary">
+        <i class="fas fa-plus"></i> Добавить материал
+    </a>
 </div>
 
 <div class="card">
     <div class="card-body">
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Название материала</th>
-                    <th>Плотность (г/см³)</th>
-                    <th>Действия</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for material in materials %}
-                <tr>
-                    <td>{{ material.id }}</td>
-                    <td>{{ material.name }}</td>
-                    <td>{{ material.density }}</td>
-                    <td>
-                        <a href="#" class="btn btn-sm btn-warning">Редактировать</a>
-                        <a href="#" class="btn btn-sm btn-danger">Удалить</a>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="4" class="text-center">Нет добавленных материалов</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Название материала</th>
+                        <th>Плотность (г/см³)</th>
+                        <th>Действия</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for material in materials %}
+                    <tr>
+                        <td>{{ material.id }}</td>
+                        <td>{{ material.name }}</td>
+                        <td>{{ material.density }}</td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{% url 'material_edit' material.id %}" class="btn btn-warning" title="Редактировать">
+                                    <i class="fas fa-edit"></i> Редактировать
+                                </a>
+                                <a href="{% url 'material_delete' material.id %}" class="btn btn-danger" title="Удалить">
+                                    <i class="fas fa-trash"></i> Удалить
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="text-center py-4">
+                            <i class="fas fa-database fa-3x mb-3 text-muted"></i>
+                            <p class="mb-2">Нет добавленных материалов</p>
+                            <a href="{% url 'material_create' %}" class="btn btn-primary mt-2">
+                                <i class="fas fa-plus"></i> Добавить первый материал
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 {% endblock %}
