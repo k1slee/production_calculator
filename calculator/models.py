@@ -216,3 +216,17 @@ class OrderItem(models.Model):
     def total_weight(self):
         """Общий вес с учётом количества и коэффициента в килограммах"""
         return self.total_weight_g / 1000
+
+    @property
+    def sort_key(self):
+        """Возвращает ключ для сортировки (числовое значение)"""
+        # Пробуем преобразовать в число
+        try:
+            # Если номер содержит дефис (например "15-02"), берем первую часть
+            if '-' in self.sequence_number:
+                return float(self.sequence_number.split('-')[0])
+            # Если просто число
+            return float(self.sequence_number)
+        except (ValueError, TypeError):
+            # Если не удалось преобразовать, возвращаем исходную строку
+            return self.sequence_number

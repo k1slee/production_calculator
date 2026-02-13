@@ -157,7 +157,7 @@
                                class="form-control" 
                                id="new_order_name{{ order.id }}" 
                                name="new_order_name" 
-                               value="{{ order.order_name }}">  <!-- Убрано "Копия" -->
+                               value="{{ order.order_name }}">
                         <div class="form-text">Оставьте поле пустым, чтобы скопировать наименование исходного заказа</div>
                     </div>
                     
@@ -181,16 +181,80 @@
 </div>
 
 <div class="card">
-    <div class="card-header d-flex justify-content-between align-items-center">
-        <h5 class="card-title mb-0">Детали заказа</h5>
-        <div>
-            <span class="badge bg-info me-2">Вес в килограммах</span>
-            <span class="badge bg-warning me-2">Особая запись</span>
-            <a href="{% url 'add_order_item' order.id %}" class="btn btn-sm btn-success">
-                <i class="fas fa-plus-circle"></i> Добавить деталь
+    <div class="card-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <h5 class="card-title mb-0">Детали заказа</h5>
+            <div>
+                <span class="badge bg-info me-2">Вес в килограммах</span>
+                <span class="badge bg-warning me-2">Особая запись</span>
+                <a href="{% url 'add_order_item' order.id %}" class="btn btn-sm btn-success">
+                    <i class="fas fa-plus-circle"></i> Добавить деталь
+                </a>
+            </div>
+        </div>
+        
+        <!-- Панель поиска -->
+        <div class="mt-3">
+            <form method="get" class="row g-2">
+                <div class="col-md-8">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white">
+                            <i class="fas fa-search"></i>
+                        </span>
+                        <input type="text" 
+                               class="form-control" 
+                               name="search" 
+                               value="{{ search_query }}"
+                               placeholder="Поиск по наименованию детали..."
+                               autocomplete="off">
+                        {% if search_query %}
+                        <a href="{% url 'order_detail' order.id %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-times"></i> Сбросить
+                        </a>
+                        {% endif %}
+                        <button type="submit" class="btn btn-primary">
+                            Найти
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white">
+                            <i class="fas fa-sort"></i>
+                        </span>
+                        <select name="sort" class="form-select" onchange="this.form.submit()">
+                            <option value="sequence_number" {% if sort_by == 'sequence_number' %}selected{% endif %}>
+                                По номеру
+                            </option>
+                            <option value="part_name__name" {% if sort_by == 'part_name__name' %}selected{% endif %}>
+                                По наименованию
+                            </option>
+                            <option value="material__name" {% if sort_by == 'material__name' %}selected{% endif %}>
+                                По материалу
+                            </option>
+                            <option value="quantity" {% if sort_by == 'quantity' %}selected{% endif %}>
+                                По количеству
+                            </option>
+                        </select>
+                    </div>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Результаты поиска -->
+        {% if search_query %}
+        <div class="alert alert-info d-flex justify-content-between align-items-center mt-3">
+            <div>
+                <i class="fas fa-search"></i> 
+                Найдено деталей по запросу "{{ search_query }}": {{ items|length }}
+            </div>
+            <a href="{% url 'order_detail' order.id %}" class="btn btn-sm btn-outline-secondary">
+                <i class="fas fa-times"></i> Сбросить поиск
             </a>
         </div>
+        {% endif %}
     </div>
+    
     <div class="card-body">
         <div class="table-responsive">
             <table class="table table-striped table-hover">
@@ -285,15 +349,27 @@
                     <tr>
                         <td colspan="9" class="text-center py-5">
                             <i class="fas fa-box-open fa-3x mb-3 text-muted"></i>
-                            <p class="mb-2">В заказе нет деталей</p>
-                            <a href="{% url 'add_order_item' order.id %}" class="btn btn-primary mt-2">
-                                <i class="fas fa-plus-circle"></i> Добавить первую деталь
-                            </a>
+                            {% if search_query %}
+                                <p class="mb-2">Детали по запросу "{{ search_query }}" не найдены</p>
+                                <a href="{% url 'order_detail' order.id %}" class="btn btn-primary mt-2">
+                                    <i class="fas fa-times"></i> Сбросить поиск
+                                </a>
+                            {% else %}
+                                <p class="mb-2">В заказе нет деталей</p>
+                                <a href="{% url 'add_order_item' order.id %}" class="btn btn-primary mt-2">
+                                    <i class="fas fa-plus-circle"></i> Добавить первую деталь
+                                </a>
+                            {% endif %}
                         </td>
                     </tr>
                     {% endfor %}
                 </tbody>
                 <tfoot class="table-light">
+                    <tr>
+                        <th colspan="7" class="text-end">Итого:</th>
+                        <th class="text-end">{{ order.total_weight|floatformat:3 }} кг</th>
+                        <th></th>
+                    </tr>
                 </tfoot>
             </table>
         </div>

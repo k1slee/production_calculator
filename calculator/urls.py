@@ -47,4 +47,6 @@ urlpatterns = [
     # API
     path('api/stock-items/', views.get_stock_items_by_material, name='api_stock_items'),
     path('api/stock-items-by-material/', views.get_stock_items_by_material_and_type, name='api_stock_items_by_material'),
+    path('api/search-part-names/', views.search_part_names, name='search_part_names'),
+    path('api/search-materials/', views.search_materials, name='search_materials'),
 ]

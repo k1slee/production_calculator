@@ -207,13 +207,35 @@ def order_create(request):
 
 @login_required
 def order_detail(request, order_id):
+    """Детали заказа с поиском по наименованию детали"""
     order = get_object_or_404(Order, id=order_id)
     items = order.items.all().select_related('part_name', 'material', 'stock_item')
-    total_weight = sum(item.total_weight for item in items)
+    
+    # Поиск по наименованию детали
+    search_query = request.GET.get('search', '')
+    if search_query:
+        items = items.filter(part_name__name__icontains=search_query)
+    
+    # Преобразуем в список для кастомной сортировки
+    items_list = list(items)
+    
+    # Сортировка с учетом числовых значений
+    sort_by = request.GET.get('sort', 'sequence_number')
+    if sort_by == 'sequence_number':
+        # Кастомная сортировка по числовому значению
+        items_list.sort(key=lambda x: x.sort_key)
+    elif sort_by == 'part_name__name':
+        items_list.sort(key=lambda x: x.part_name.name)
+    elif sort_by == 'material__name':
+        items_list.sort(key=lambda x: x.material.name if x.material else '')
+    elif sort_by == 'quantity':
+        items_list.sort(key=lambda x: x.quantity)
+    
     return render(request, 'calculator/order_detail.html', {
         'order': order, 
-        'items': items,
-        'total_weight': total_weight
+        'items': items_list,
+        'search_query': search_query,
+        'sort_by': sort_by
     })
 
 @login_required
@@ -544,4 +566,29 @@ def get_stock_items_by_material_and_type(request):
             'key_size': str(item.key_size) if item.key_size else None,
         })
     
+    return JsonResponse({'results': data})
+
+
+@login_required
+def search_part_names(request):
+    """API для поиска наименований деталей"""
+    query = request.GET.get('q', '')
+    if query:
+        parts = PartName.objects.filter(name__icontains=query)[:10]
+    else:
+        parts = PartName.objects.all()[:10]
+    
+    data = [{'id': part.id, 'text': part.name} for part in parts]
+    return JsonResponse({'results': data})
+
+@login_required
+def search_materials(request):
+    """API для поиска материалов"""
+    query = request.GET.get('q', '')
+    if query:
+        materials = Material.objects.filter(name__icontains=query)[:10]
+    else:
+        materials = Material.objects.all()[:10]
+    
+    data = [{'id': m.id, 'text': f"{m.name} ({m.density} г/см³)"} for m in materials]
     return JsonResponse({'results': data})

@@ -43,23 +43,34 @@
                         {% endif %}
                     </div>
                     
-                    <!-- Наименование детали -->
+                    <!-- Наименование детали с поиском -->
                     <div class="mb-3">
                         <label for="id_part_name" class="form-label fw-bold">
                             Наименование детали <span class="text-danger">*</span>
                         </label>
+                        <div class="input-group mb-2">
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="part_name_search"
+                                   placeholder="Поиск наименования...">
+                            <button class="btn btn-outline-secondary" type="button" id="clear_part_search">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
                         <select name="part_name" 
                                 class="form-select" 
                                 id="id_part_name"
+                                size="5"
                                 required>
                             <option value="">---------</option>
-                            {% for part in form.fields.part_name.queryset %}
+                            {% for part in form.fields.part_name.queryset|slice:":10" %}
                                 <option value="{{ part.id }}" 
                                     {% if form.part_name.value|stringformat:"s" == part.id|stringformat:"s" %}selected{% endif %}>
                                     {{ part.name }}
                                 </option>
                             {% endfor %}
                         </select>
+                        <div class="form-text">Можно выбрать из списка или найти через поиск</div>
                         {% if form.part_name.errors %}
                             <div class="text-danger">{{ form.part_name.errors }}</div>
                         {% endif %}
@@ -87,23 +98,34 @@
                         <hr>
                         <h5 class="mt-4 mb-3">Параметры для расчета веса</h5>
                         
-                        <!-- Марка материала -->
+                        <!-- Марка материала с поиском -->
                         <div class="mb-3">
                             <label for="id_material" class="form-label fw-bold">
                                 Марка материала <span class="text-danger">*</span>
                             </label>
+                            <div class="input-group mb-2">
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="material_search"
+                                       placeholder="Поиск материала...">
+                                <button class="btn btn-outline-secondary" type="button" id="clear_material_search">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
                             <select name="material" 
                                     class="form-select" 
                                     id="id_material" 
+                                    size="5"
                                     required>
                                 <option value="">---------</option>
-                                {% for material in form.fields.material.queryset %}
+                                {% for material in form.fields.material.queryset|slice:":10" %}
                                     <option value="{{ material.id }}" 
                                         {% if form.material.value|stringformat:"s" == material.id|stringformat:"s" %}selected{% endif %}>
                                         {{ material.name }} ({{ material.density }} г/см³)
                                     </option>
                                 {% endfor %}
                             </select>
+                            <div class="form-text">Можно выбрать из списка или найти через поиск</div>
                             {% if form.material.errors %}
                                 <div class="text-danger">{{ form.material.errors }}</div>
                             {% endif %}
@@ -122,7 +144,7 @@
                             </select>
                         </div>
                         
-                        <!-- Сортамент со склада (динамически загружается) -->
+                        <!-- Сортамент со склада -->
                         <div class="mb-3">
                             <label for="id_stock_item" class="form-label fw-bold">
                                 Сортамент со склада <span class="text-danger">*</span>
@@ -130,6 +152,7 @@
                             <select name="stock_item" 
                                     class="form-select" 
                                     id="id_stock_item" 
+                                    size="5"
                                     required>
                                 <option value="">---------</option>
                             </select>
@@ -299,11 +322,97 @@
         const form = document.getElementById('orderItemForm');
         const finalLength = document.getElementById('final_length');
         
+        // Элементы поиска
+        const partSearch = document.getElementById('part_name_search');
+        const partSelect = document.getElementById('id_part_name');
+        const clearPartSearch = document.getElementById('clear_part_search');
+        
+        const materialSearch = document.getElementById('material_search');
+        const materialSelect2 = document.getElementById('id_material');
+        const clearMaterialSearch = document.getElementById('clear_material_search');
+        
+        let partSearchTimeout;
+        let materialSearchTimeout;
+        
+        // Функция поиска наименований деталей
+        function searchPartNames(query) {
+            fetch(`/api/search-part-names/?q=${encodeURIComponent(query)}`)
+                .then(response => response.json())
+                .then(data => {
+                    partSelect.innerHTML = '<option value="">---------</option>';
+                    data.results.forEach(item => {
+                        const option = document.createElement('option');
+                        option.value = item.id;
+                        option.textContent = item.text;
+                        partSelect.appendChild(option);
+                    });
+                });
+        }
+        
+        // Функция поиска материалов
+        function searchMaterials(query) {
+            fetch(`/api/search-materials/?q=${encodeURIComponent(query)}`)
+                .then(response => response.json())
+                .then(data => {
+                    materialSelect.innerHTML = '<option value="">---------</option>';
+                    data.results.forEach(item => {
+                        const option = document.createElement('option');
+                        option.value = item.id;
+                        option.textContent = item.text;
+                        materialSelect.appendChild(option);
+                    });
+                });
+        }
+        
+        // Обработчики поиска для наименований деталей
+        if (partSearch) {
+            partSearch.addEventListener('input', function() {
+                clearTimeout(partSearchTimeout);
+                const query = this.value.trim();
+                if (query.length > 0) {
+                    partSearchTimeout = setTimeout(() => searchPartNames(query), 300);
+                } else {
+                    // Загружаем первые 10 записей
+                    searchPartNames('');
+                }
+            });
+        }
+        
+        if (clearPartSearch) {
+            clearPartSearch.addEventListener('click', function() {
+                partSearch.value = '';
+                searchPartNames('');
+            });
+        }
+        
+        // Обработчики поиска для материалов
+        if (materialSearch) {
+            materialSearch.addEventListener('input', function() {
+                clearTimeout(materialSearchTimeout);
+                const query = this.value.trim();
+                if (query.length > 0) {
+                    materialSearchTimeout = setTimeout(() => searchMaterials(query), 300);
+                } else {
+                    searchMaterials('');
+                }
+            });
+        }
+        
+        if (clearMaterialSearch) {
+            clearMaterialSearch.addEventListener('click', function() {
+                materialSearch.value = '';
+                searchMaterials('');
+            });
+        }
+        
+        // Загружаем начальные списки
+        searchPartNames('');
+        searchMaterials('');
+        
         // Функция переключения полей для обычной/особой записи
         function toggleNormalFields() {
             if (specialCheckbox.checked) {
                 normalFields.style.display = 'none';
-                // Убираем required для полей в обычной записи
                 document.getElementById('id_material').required = false;
                 sectionTypeSelect.required = false;
                 stockItemSelect.required = false;
@@ -321,16 +430,13 @@
             const sectionType = sectionTypeSelect.value;
             
             if (!materialId || !sectionType) {
-                // Очищаем select сортамента
                 stockItemSelect.innerHTML = '<option value="">---------</option>';
                 return;
             }
             
-            // Показываем индикатор загрузки
             stockItemSelect.innerHTML = '<option value="">Загрузка...</option>';
             stockItemSelect.disabled = true;
             
-            // Загружаем данные через API
             fetch(`/api/stock-items-by-material/?material_id=${materialId}&section_type=${sectionType}`)
                 .then(response => response.json())
                 .then(data => {
@@ -353,8 +459,6 @@
                         stockItemSelect.appendChild(option);
                     });
                     stockItemSelect.disabled = false;
-                    
-                    // После загрузки переключаем поля замеров
                     toggleMeasurements();
                 })
                 .catch(error => {
@@ -372,12 +476,10 @@
             
             const selectedOption = stockItemSelect.options[stockItemSelect.selectedIndex];
             
-            // Скрываем все блоки
             sheetMeasurements.style.display = 'none';
             roundMeasurements.style.display = 'none';
             hexagonMeasurements.style.display = 'none';
             
-            // Отключаем все поля длины
             document.querySelectorAll('.length-field').forEach(field => {
                 field.disabled = true;
                 field.required = false;
@@ -421,7 +523,6 @@
             
             const sectionType = selectedOption.getAttribute('data-section-type');
             
-            // Копируем значение из правильного поля длины в скрытое поле
             if (sectionType === 'sheet') {
                 const sheetLength = document.getElementById('id_sheet_length');
                 finalLength.value = sheetLength.value;
@@ -445,7 +546,6 @@
         if (materialSelect) {
             materialSelect.addEventListener('change', function() {
                 loadStockItems();
-                // Сбрасываем выбор типа сортамента при смене материала
                 sectionTypeSelect.value = '';
             });
         }
