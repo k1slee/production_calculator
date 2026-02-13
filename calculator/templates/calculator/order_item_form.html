@@ -90,11 +90,12 @@
                         <!-- Марка материала -->
                         <div class="mb-3">
                             <label for="id_material" class="form-label fw-bold">
-                                Марка материала
+                                Марка материала <span class="text-danger">*</span>
                             </label>
                             <select name="material" 
                                     class="form-select" 
-                                    id="id_material">
+                                    id="id_material" 
+                                    required>
                                 <option value="">---------</option>
                                 {% for material in form.fields.material.queryset %}
                                     <option value="{{ material.id }}" 
@@ -108,29 +109,29 @@
                             {% endif %}
                         </div>
                         
-                        <!-- Сортамент со склада -->
+                        <!-- Тип сортамента -->
+                        <div class="mb-3">
+                            <label for="section_type" class="form-label fw-bold">
+                                Тип сортамента <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select" id="section_type" required>
+                                <option value="">---------</option>
+                                <option value="sheet">Лист</option>
+                                <option value="round">Кругляк</option>
+                                <option value="hexagon">Шестигранник</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Сортамент со склада (динамически загружается) -->
                         <div class="mb-3">
                             <label for="id_stock_item" class="form-label fw-bold">
-                                Сортамент со склада
+                                Сортамент со склада <span class="text-danger">*</span>
                             </label>
                             <select name="stock_item" 
                                     class="form-select" 
-                                    id="id_stock_item">
+                                    id="id_stock_item" 
+                                    required>
                                 <option value="">---------</option>
-                                {% for stock in form.fields.stock_item.queryset %}
-                                <option value="{{ stock.id }}" 
-                                        data-section-type="{{ stock.section_type }}"
-                                        {% if form.stock_item.value|stringformat:"s" == stock.id|stringformat:"s" %}selected{% endif %}>
-                                    {{ stock.material.name }} - 
-                                    {% if stock.section_type == 'sheet' %}
-                                        Лист {{ stock.width }} мм
-                                    {% elif stock.section_type == 'round' %}
-                                        Кругляк Ø{{ stock.diameter }} мм
-                                    {% else %}
-                                        Шестигранник S{{ stock.key_size }} мм
-                                    {% endif %}
-                                </option>
-                                {% endfor %}
                             </select>
                             {% if form.stock_item.errors %}
                                 <div class="text-danger">{{ form.stock_item.errors }}</div>
@@ -146,14 +147,14 @@
                                     <div class="col-md-4">
                                         <div class="mb-3">
                                             <label for="id_sheet_length" class="form-label fw-bold">
-                                                Длина (мм)
+                                                Длина (мм) <span class="text-danger">*</span>
                                             </label>
                                             <input type="number" 
-                                                   name="length" 
+                                                   name="sheet_length" 
                                                    step="0.01" 
-                                                   class="form-control" 
+                                                   class="form-control length-field" 
                                                    id="id_sheet_length"
-                                                   value="{{ form.length.value|default:'' }}">
+                                                   data-type="sheet">
                                             {% if form.length.errors %}
                                                 <div class="text-danger">{{ form.length.errors }}</div>
                                             {% endif %}
@@ -162,14 +163,13 @@
                                     <div class="col-md-4">
                                         <div class="mb-3">
                                             <label for="id_width" class="form-label fw-bold">
-                                                Ширина (мм)
+                                                Ширина (мм) <span class="text-danger">*</span>
                                             </label>
                                             <input type="number" 
                                                    name="width" 
                                                    step="0.01" 
                                                    class="form-control" 
-                                                   id="id_width"
-                                                   value="{{ form.width.value|default:'' }}">
+                                                   id="id_width">
                                             {% if form.width.errors %}
                                                 <div class="text-danger">{{ form.width.errors }}</div>
                                             {% endif %}
@@ -178,14 +178,13 @@
                                     <div class="col-md-4">
                                         <div class="mb-3">
                                             <label for="id_height" class="form-label fw-bold">
-                                                Высота (мм)
+                                                Высота (мм) <span class="text-danger">*</span>
                                             </label>
                                             <input type="number" 
                                                    name="height" 
                                                    step="0.01" 
                                                    class="form-control" 
-                                                   id="id_height"
-                                                   value="{{ form.height.value|default:'' }}">
+                                                   id="id_height">
                                             {% if form.height.errors %}
                                                 <div class="text-danger">{{ form.height.errors }}</div>
                                             {% endif %}
@@ -200,14 +199,13 @@
                                     <div class="col-md-6">
                                         <div class="mb-3">
                                             <label for="id_diameter" class="form-label fw-bold">
-                                                Диаметр (мм)
+                                                Диаметр (мм) <span class="text-danger">*</span>
                                             </label>
                                             <input type="number" 
                                                    name="diameter" 
                                                    step="0.01" 
                                                    class="form-control" 
-                                                   id="id_diameter"
-                                                   value="{{ form.diameter.value|default:'' }}">
+                                                   id="id_diameter">
                                             {% if form.diameter.errors %}
                                                 <div class="text-danger">{{ form.diameter.errors }}</div>
                                             {% endif %}
@@ -216,14 +214,14 @@
                                     <div class="col-md-6">
                                         <div class="mb-3">
                                             <label for="id_round_length" class="form-label fw-bold">
-                                                Длина (мм)
+                                                Длина (мм) <span class="text-danger">*</span>
                                             </label>
                                             <input type="number" 
-                                                   name="length" 
+                                                   name="round_length" 
                                                    step="0.01" 
-                                                   class="form-control" 
+                                                   class="form-control length-field" 
                                                    id="id_round_length"
-                                                   value="{{ form.length.value|default:'' }}">
+                                                   data-type="round">
                                             {% if form.length.errors %}
                                                 <div class="text-danger">{{ form.length.errors }}</div>
                                             {% endif %}
@@ -238,14 +236,13 @@
                                     <div class="col-md-6">
                                         <div class="mb-3">
                                             <label for="id_key_size" class="form-label fw-bold">
-                                                Размер под ключ (мм)
+                                                Размер под ключ (мм) <span class="text-danger">*</span>
                                             </label>
                                             <input type="number" 
                                                    name="key_size" 
                                                    step="0.01" 
                                                    class="form-control" 
-                                                   id="id_key_size"
-                                                   value="{{ form.key_size.value|default:'' }}">
+                                                   id="id_key_size">
                                             {% if form.key_size.errors %}
                                                 <div class="text-danger">{{ form.key_size.errors }}</div>
                                             {% endif %}
@@ -254,14 +251,14 @@
                                     <div class="col-md-6">
                                         <div class="mb-3">
                                             <label for="id_hex_length" class="form-label fw-bold">
-                                                Длина (мм)
+                                                Длина (мм) <span class="text-danger">*</span>
                                             </label>
                                             <input type="number" 
-                                                   name="length" 
+                                                   name="hex_length" 
                                                    step="0.01" 
-                                                   class="form-control" 
+                                                   class="form-control length-field" 
                                                    id="id_hex_length"
-                                                   value="{{ form.length.value|default:'' }}">
+                                                   data-type="hexagon">
                                             {% if form.length.errors %}
                                                 <div class="text-danger">{{ form.length.errors }}</div>
                                             {% endif %}
@@ -271,6 +268,9 @@
                             </div>
                         </div>
                     </div>
+                    
+                    <!-- Скрытое поле для передачи правильного значения length -->
+                    <input type="hidden" name="length" id="final_length" value="">
                     
                     <div class="d-flex justify-content-between mt-4">
                         <button type="submit" class="btn btn-primary">
@@ -293,52 +293,177 @@
     document.addEventListener('DOMContentLoaded', function() {
         const specialCheckbox = document.getElementById('{{ form.is_special.id_for_label }}');
         const normalFields = document.getElementById('normal-item-fields');
-        const stockItemSelect = document.getElementById('id_stock_item');
         const materialSelect = document.getElementById('id_material');
+        const sectionTypeSelect = document.getElementById('section_type');
+        const stockItemSelect = document.getElementById('id_stock_item');
+        const form = document.getElementById('orderItemForm');
+        const finalLength = document.getElementById('final_length');
         
+        // Функция переключения полей для обычной/особой записи
         function toggleNormalFields() {
             if (specialCheckbox.checked) {
                 normalFields.style.display = 'none';
+                // Убираем required для полей в обычной записи
+                document.getElementById('id_material').required = false;
+                sectionTypeSelect.required = false;
+                stockItemSelect.required = false;
             } else {
                 normalFields.style.display = 'block';
-                toggleMeasurements();
+                document.getElementById('id_material').required = true;
+                sectionTypeSelect.required = true;
+                stockItemSelect.required = true;
             }
         }
         
-        function toggleMeasurements() {
-            if (!stockItemSelect) return;
+        // Функция загрузки сортамента по материалу и типу
+        function loadStockItems() {
+            const materialId = materialSelect.value;
+            const sectionType = sectionTypeSelect.value;
             
+            if (!materialId || !sectionType) {
+                // Очищаем select сортамента
+                stockItemSelect.innerHTML = '<option value="">---------</option>';
+                return;
+            }
+            
+            // Показываем индикатор загрузки
+            stockItemSelect.innerHTML = '<option value="">Загрузка...</option>';
+            stockItemSelect.disabled = true;
+            
+            // Загружаем данные через API
+            fetch(`/api/stock-items-by-material/?material_id=${materialId}&section_type=${sectionType}`)
+                .then(response => response.json())
+                .then(data => {
+                    stockItemSelect.innerHTML = '<option value="">---------</option>';
+                    data.results.forEach(item => {
+                        const option = document.createElement('option');
+                        option.value = item.id;
+                        option.setAttribute('data-section-type', item.section_type);
+                        
+                        let text = '';
+                        if (item.section_type === 'sheet') {
+                            text = `Лист ${item.width} мм`;
+                        } else if (item.section_type === 'round') {
+                            text = `Кругляк Ø${item.diameter} мм`;
+                        } else {
+                            text = `Шестигранник S${item.key_size} мм`;
+                        }
+                        option.textContent = text;
+                        
+                        stockItemSelect.appendChild(option);
+                    });
+                    stockItemSelect.disabled = false;
+                    
+                    // После загрузки переключаем поля замеров
+                    toggleMeasurements();
+                })
+                .catch(error => {
+                    console.error('Ошибка загрузки сортамента:', error);
+                    stockItemSelect.innerHTML = '<option value="">Ошибка загрузки</option>';
+                    stockItemSelect.disabled = false;
+                });
+        }
+        
+        // Функция переключения полей в зависимости от выбранного сортамента
+        function toggleMeasurements() {
             const sheetMeasurements = document.getElementById('sheet-measurements');
             const roundMeasurements = document.getElementById('round-measurements');
             const hexagonMeasurements = document.getElementById('hexagon-measurements');
             
             const selectedOption = stockItemSelect.options[stockItemSelect.selectedIndex];
             
+            // Скрываем все блоки
             sheetMeasurements.style.display = 'none';
             roundMeasurements.style.display = 'none';
             hexagonMeasurements.style.display = 'none';
+            
+            // Отключаем все поля длины
+            document.querySelectorAll('.length-field').forEach(field => {
+                field.disabled = true;
+                field.required = false;
+            });
             
             if (selectedOption && selectedOption.value) {
                 const sectionType = selectedOption.getAttribute('data-section-type');
                 
                 if (sectionType === 'sheet') {
                     sheetMeasurements.style.display = 'block';
+                    document.getElementById('id_sheet_length').disabled = false;
+                    document.getElementById('id_sheet_length').required = true;
+                    document.getElementById('id_width').required = true;
+                    document.getElementById('id_height').required = true;
                 } else if (sectionType === 'round') {
                     roundMeasurements.style.display = 'block';
+                    document.getElementById('id_round_length').disabled = false;
+                    document.getElementById('id_round_length').required = true;
+                    document.getElementById('id_diameter').required = true;
                 } else if (sectionType === 'hexagon') {
                     hexagonMeasurements.style.display = 'block';
+                    document.getElementById('id_hex_length').disabled = false;
+                    document.getElementById('id_hex_length').required = true;
+                    document.getElementById('id_key_size').required = true;
                 }
             }
         }
         
+        // Функция подготовки данных перед отправкой формы
+        function prepareFormData() {
+            if (specialCheckbox.checked) {
+                finalLength.value = '';
+                return true;
+            }
+            
+            const selectedOption = stockItemSelect.options[stockItemSelect.selectedIndex];
+            if (!selectedOption || !selectedOption.value) {
+                alert('Выберите сортамент со склада');
+                return false;
+            }
+            
+            const sectionType = selectedOption.getAttribute('data-section-type');
+            
+            // Копируем значение из правильного поля длины в скрытое поле
+            if (sectionType === 'sheet') {
+                const sheetLength = document.getElementById('id_sheet_length');
+                finalLength.value = sheetLength.value;
+            } else if (sectionType === 'round') {
+                const roundLength = document.getElementById('id_round_length');
+                finalLength.value = roundLength.value;
+            } else if (sectionType === 'hexagon') {
+                const hexLength = document.getElementById('id_hex_length');
+                finalLength.value = hexLength.value;
+            }
+            
+            return true;
+        }
+        
+        // Назначаем обработчики
         if (specialCheckbox) {
             specialCheckbox.addEventListener('change', toggleNormalFields);
             toggleNormalFields();
         }
         
+        if (materialSelect) {
+            materialSelect.addEventListener('change', function() {
+                loadStockItems();
+                // Сбрасываем выбор типа сортамента при смене материала
+                sectionTypeSelect.value = '';
+            });
+        }
+        
+        if (sectionTypeSelect) {
+            sectionTypeSelect.addEventListener('change', loadStockItems);
+        }
+        
         if (stockItemSelect) {
             stockItemSelect.addEventListener('change', toggleMeasurements);
-            toggleMeasurements();
+        }
+        
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                if (!prepareFormData()) {
+                    e.preventDefault();
+                }
+            });
         }
     });
 })();

@@ -144,16 +144,29 @@ class OrderItemForm(forms.ModelForm):
                         self.add_error('width', 'Обязательное поле для листа')
                     if not cleaned_data.get('height'):
                         self.add_error('height', 'Обязательное поле для листа')
+                    # Очищаем ненужные поля
+                    cleaned_data['diameter'] = None
+                    cleaned_data['key_size'] = None
+                    
                 elif section_type == 'round':
                     if not cleaned_data.get('diameter'):
                         self.add_error('diameter', 'Обязательное поле для кругляка')
                     if not cleaned_data.get('length'):
                         self.add_error('length', 'Обязательное поле для кругляка')
+                    # Очищаем ненужные поля
+                    cleaned_data['width'] = None
+                    cleaned_data['height'] = None
+                    cleaned_data['key_size'] = None
+                    
                 elif section_type == 'hexagon':
                     if not cleaned_data.get('key_size'):
                         self.add_error('key_size', 'Обязательное поле для шестигранника')
                     if not cleaned_data.get('length'):
                         self.add_error('length', 'Обязательное поле для шестигранника')
+                    # Очищаем ненужные поля
+                    cleaned_data['width'] = None
+                    cleaned_data['height'] = None
+                    cleaned_data['diameter'] = None
         else:
             # Для особой записи очищаем ненужные поля
             cleaned_data['material'] = None

@@ -43,6 +43,8 @@ urlpatterns = [
 
     path('orders/<int:order_id>/copy/', views.copy_order, name='copy_order'),
     path('orders/<int:order_id>/item/<int:item_id>/edit/', views.edit_order_item, name='edit_order_item'),
+    path('api/stock-items-by-material/', views.get_stock_items_by_material_and_type, name='api_stock_items_by_material'),
     # API
     path('api/stock-items/', views.get_stock_items_by_material, name='api_stock_items'),
+    path('api/stock-items-by-material/', views.get_stock_items_by_material_and_type, name='api_stock_items_by_material'),
 ]

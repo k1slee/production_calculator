@@ -519,3 +519,29 @@ def edit_order_item(request, order_id, item_id):
         'order': order,
         'item': item
     })
+
+@login_required
+def get_stock_items_by_material_and_type(request):
+    """API для получения сортамента по материалу и типу"""
+    material_id = request.GET.get('material_id')
+    section_type = request.GET.get('section_type')
+    
+    stock_items = StockItem.objects.all()
+    
+    if material_id:
+        stock_items = stock_items.filter(material_id=material_id)
+    if section_type:
+        stock_items = stock_items.filter(section_type=section_type)
+    
+    data = []
+    for item in stock_items:
+        data.append({
+            'id': item.id,
+            'text': str(item),
+            'section_type': item.section_type,
+            'width': str(item.width) if item.width else None,
+            'diameter': str(item.diameter) if item.diameter else None,
+            'key_size': str(item.key_size) if item.key_size else None,
+        })
+    
+    return JsonResponse({'results': data})
