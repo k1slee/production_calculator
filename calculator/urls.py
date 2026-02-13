@@ -31,11 +31,16 @@ urlpatterns = [
     path('orders/<int:order_id>/add-item/', views.add_order_item, name='add_order_item'),
     path('orders/<int:order_id>/delete/', views.delete_order, name='delete_order'),
     path('orders/<int:order_id>/item/<int:item_id>/delete/', views.delete_order_item, name='delete_order_item'),
+    path('orders/<int:order_id>/update-coefficient/', views.update_order_coefficient, name='update_order_coefficient'),
+    
+    # Печатные формы - детальный отчет
+    path('orders/<int:order_id>/print/', views.print_order_report, name='print_order_report'),
+    
+    # Печатные формы - группированный отчет
+    path('orders/<int:order_id>/print-grouped/', views.print_grouped_report, name='print_grouped_report'),
+    #Печатные форма - задание на заготовку
+    path('orders/<int:order_id>/print-cutting/', views.print_cutting_task, name='print_cutting_task'),
     
     # API
     path('api/stock-items/', views.get_stock_items_by_material, name='api_stock_items'),
-
-    path('orders/<int:order_id>/print/', views.print_order_report, name='print_order_report'),
-    path('orders/<int:order_id>/pdf/', views.generate_order_pdf, name='generate_order_pdf'),
-    path('orders/<int:order_id>/update-coefficient/', views.update_order_coefficient, name='update_order_coefficient'),
 ]

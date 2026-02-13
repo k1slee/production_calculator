@@ -387,3 +387,80 @@ def update_order_coefficient(request, order_id):
                 return JsonResponse({'success': False, 'errors': form.errors})
     
     return redirect('order_detail', order_id=order.id)
+
+
+@login_required
+def print_grouped_report(request, order_id):
+    """Печатная форма группированного отчета по материалам и сортаменту"""
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+    items = order.items.all().select_related('part_name', 'material', 'stock_item')
+    
+    # Группируем детали по материалу и сортаменту
+    grouped_data = {}
+    for item in items:
+        key = (item.material.id, item.stock_item.id)
+        if key not in grouped_data:
+            grouped_data[key] = {
+                'material': item.material,
+                'stock_item': item.stock_item,
+                'total_weight': 0,
+                'quantity': 0,
+                'weight_per_item': item.weight,  # Вес одной детали
+                'items': []
+            }
+        grouped_data[key]['total_weight'] += item.total_weight
+        grouped_data[key]['quantity'] += item.quantity
+        grouped_data[key]['items'].append(item)
+    
+    # Сортируем по материалу
+    grouped_list = sorted(grouped_data.values(), key=lambda x: x['material'].name)
+    
+    # Общий вес заказа
+    total_weight_kg = order.total_weight
+    
+    context = {
+        'order': order,
+        'grouped_items': grouped_list,
+        'total_weight_kg': total_weight_kg,
+        'date': timezone.now().strftime('%d.%m.%Y'),
+        'user': request.user
+    }
+    
+    return render(request, 'calculator/print_grouped_report.html', context)
+
+
+@login_required
+def print_cutting_task(request, order_id):
+    """Печатная форма - Задание на заготовку"""
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+    items = order.items.all().select_related('part_name', 'material', 'stock_item')
+    
+    # Группируем детали по типу сортамента
+    grouped_by_section = {
+        'sheet': [],  # Лист
+        'round': [],  # Кругляк
+        'hexagon': [] # Шестигранник
+    }
+    
+    for item in items:
+        section_type = item.stock_item.section_type
+        if section_type in grouped_by_section:
+            grouped_by_section[section_type].append(item)
+    
+    # Сортируем внутри каждой группы по порядковому номеру
+    for section_type in grouped_by_section:
+        grouped_by_section[section_type] = sorted(
+            grouped_by_section[section_type], 
+            key=lambda x: x.sequence_number
+        )
+    
+    context = {
+        'order': order,
+        'sheet_items': grouped_by_section['sheet'],
+        'round_items': grouped_by_section['round'],
+        'hexagon_items': grouped_by_section['hexagon'],
+        'date': timezone.now().strftime('%d.%m.%Y'),
+        'user': request.user
+    }
+    
+    return render(request, 'calculator/print_cutting_task.html', context)

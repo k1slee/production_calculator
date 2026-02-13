@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Группированный отчет - Заказ №{{ order.order_number }}</title>
+    <style>
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            body {
+                background-color: white;
+                margin: 0;
+                padding: 0;
+            }
+        }
+        
+        @page {
+            size: A4 portrait;
+            margin: 1.5cm;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background-color: white;
+            margin: 0;
+            padding: 10px;
+        }
+        
+        .no-print {
+            margin-bottom: 20px;
+        }
+        
+        .print-header {
+            text-align: center;
+            margin-bottom: 30px;
+            position: relative;
+        }
+        
+        .print-title {
+            font-size: 18pt;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+        
+        .print-subtitle {
+            font-size: 16pt;
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+        
+        .drawing-number {
+            font-size: 14pt;
+            font-weight: normal;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        
+        .order-number {
+            position: absolute;
+            top: 0;
+            right: 0;
+            font-size: 12pt;
+            font-weight: bold;
+            text-align: right;
+        }
+        
+        .report-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 40px;
+            font-size: 11pt;
+        }
+        
+        .report-table th {
+            background-color: #f0f0f0;
+            border: 1px solid #000;
+            padding: 10px;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .report-table td {
+            border: 1px solid #000;
+            padding: 8px;
+            vertical-align: middle;
+        }
+        
+        .text-right {
+            text-align: right;
+        }
+        
+        .text-center {
+            text-align: center;
+        }
+        
+        .total-row {
+            font-weight: bold;
+            background-color: #f8f9fa;
+        }
+        
+        .footer {
+            margin-top: 50px;
+            display: flex;
+            justify-content: flex-end;
+        }
+        
+        .technologist {
+            font-size: 12pt;
+            font-weight: normal;
+        }
+        
+        .technologist span {
+            font-weight: bold;
+        }
+
+        .report-table th:nth-child(1) { width: 30%; }
+        .report-table th:nth-child(2) { width: 50%; }
+        .report-table th:nth-child(3) { width: 20%; }
+    </style>
+</head>
+<body>
+    <!-- Кнопки управления -->
+    <div class="no-print" style="margin-bottom: 20px;">
+        <button onclick="window.print()" style="padding: 6px 12px; background: #0d6efd; color: white; border: none; border-radius: 4px; cursor: pointer;">
+            Печать
+        </button>
+        <a href="{% url 'order_detail' order.id %}" style="padding: 6px 12px; background: #6c757d; color: white; text-decoration: none; border-radius: 4px; margin-left: 8px;">
+            Назад к заказу
+        </a>
+    </div>
+
+    <!-- Шапка документа -->
+    <div class="print-header">
+        <div class="print-title">РАСХОД МАТЕРИАЛА НА ИЗГОТОВЛЕНИЕ:</div>
+        <div class="print-subtitle">{{ order.order_name }}</div>
+        
+        <!-- Номер чертежа по центру -->
+        {% if order.drawing_number %}
+        <div class="drawing-number">Чертеж №{{ order.drawing_number }}</div>
+        {% endif %}
+        
+        <div class="order-number">
+            Заказ №{{ order.order_number }}
+        </div>
+    </div>
+    
+    <!-- Таблица с группированными данными -->
+    <table class="report-table">
+        <thead>
+            <tr>
+                <th>Марка материала</th>
+                <th>Сортамент на складе</th>
+                <th>Вес на 1 изделие, кг</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for group in grouped_items %}
+            <tr>
+                <td><strong>{{ group.material.name }}</strong><br>
+                </td>
+                <td>
+                    {% if group.stock_item.section_type == 'sheet' %}
+                        Лист {{ group.stock_item.length }}x{{ group.stock_item.width }}x{{ group.stock_item.height }} мм
+                    {% elif group.stock_item.section_type == 'round' %}
+                        Кругляк Ø{{ group.stock_item.diameter }} L={{ group.stock_item.round_length }} мм
+                    {% elif group.stock_item.section_type == 'hexagon' %}
+                        Шестигранник S{{ group.stock_item.key_size }} L={{ group.stock_item.hex_length }} мм
+                    {% endif %}
+                </td>
+                <td class="text-right"><strong>{{ group.weight_per_item|floatformat:3 }}</strong></td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="3" class="text-center">В заказе нет деталей</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    <!-- Подпись технолога -->
+    <div class="footer">
+        <div class="technologist">
+            Технолог: <span>{{ user.last_name }} {{ user.first_name|first }}. {{ user.profile.patronymic|first|default:'' }}.</span>
+        </div>
+    </div>
+</body>
+</html>

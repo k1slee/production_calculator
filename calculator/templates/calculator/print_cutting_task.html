@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Задание на заготовку - Заказ №{{ order.order_number }}</title>
+    <style>
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            body {
+                background-color: white;
+                margin: 0;
+                padding: 0;
+            }
+            .section-block {
+                page-break-inside: avoid;
+            }
+        }
+        
+        @page {
+            size: A4 portrait;
+            margin: 1.5cm;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background-color: white;
+            margin: 0;
+            padding: 10px;
+        }
+        
+        .no-print {
+            margin-bottom: 20px;
+        }
+        
+        .print-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .print-title {
+            font-size: 20pt;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-bottom: 15px;
+            letter-spacing: 2px;
+        }
+        
+        .drawing-number {
+            font-size: 16pt;
+            font-weight: 500;
+            margin-bottom: 10px;
+            color: #000;
+        }
+        
+        .order-number {
+            font-size: 14pt;
+            font-weight: normal;
+            margin-bottom: 5px;
+            color: #333;
+        }
+        
+        .section-block {
+            margin-bottom: 30px;
+            border: 1px solid #000;
+            border-radius: 5px;
+            padding: 15px;
+        }
+        
+        .section-title {
+            font-size: 16pt;
+            font-weight: bold;
+            margin-bottom: 15px;
+            padding-bottom: 5px;
+            border-bottom: 2px solid #000;
+        }
+        
+        .task-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 10px;
+            font-size: 11pt;
+        }
+        
+        .task-table th {
+            background-color: #f0f0f0;
+            border: 1px solid #000;
+            padding: 8px;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .task-table td {
+            border: 1px solid #000;
+            padding: 6px;
+            vertical-align: middle;
+        }
+        
+        .text-right {
+            text-align: right;
+        }
+        
+        .text-center {
+            text-align: center;
+        }
+        
+        .footer {
+            margin-top: 50px;
+            display: flex;
+            justify-content: flex-end;
+        }
+        
+        .technologist {
+            font-size: 12pt;
+            font-weight: normal;
+        }
+        
+        .technologist span {
+            font-weight: bold;
+        }
+        
+        .empty-section {
+            padding: 20px;
+            text-align: center;
+            color: #666;
+            font-style: italic;
+        }
+        
+        .material-info {
+            font-size: 10pt;
+            color: #555;
+        }
+
+        /* Фиксированная ширина колонок - 4 колонки */
+        .task-table th:nth-child(1) { width: 10%; }
+        .task-table th:nth-child(2) { width: 25%; }
+        .task-table th:nth-child(3) { width: 45%; }
+        .task-table th:nth-child(4) { width: 20%; }
+    </style>
+</head>
+<body>
+    <!-- Кнопки управления -->
+    <div class="no-print" style="margin-bottom: 20px;">
+        <button onclick="window.print()" style="padding: 6px 12px; background: #0d6efd; color: white; border: none; border-radius: 4px; cursor: pointer;">
+            Печать
+        </button>
+        <a href="{% url 'order_detail' order.id %}" style="padding: 6px 12px; background: #6c757d; color: white; text-decoration: none; border-radius: 4px; margin-left: 8px;">
+            Назад к заказу
+        </a>
+    </div>
+
+    <!-- Шапка документа -->
+    <div class="print-header">
+        <div class="print-title">ЗАДАНИЕ НА ЗАГОТОВКУ</div>
+        
+        <!-- Номер чертежа сразу под заголовком -->
+        {% if order.drawing_number %}
+        <div class="drawing-number">Чертеж №{{ order.drawing_number }}</div>
+        {% else %}
+        <div class="drawing-number">Чертеж №_____________</div>
+        {% endif %}
+        
+        <!-- Номер заказа еще ниже -->
+        <div class="order-number">Заказ №{{ order.order_number }}</div>
+    </div>
+    
+    <!-- Блок: ЛИСТ -->
+    {% if sheet_items %}
+    <div class="section-block">
+        <div class="section-title">ЛИСТОВОЙ МАТЕРИАЛ</div>
+        <table class="task-table">
+            <thead>
+                <tr>
+                    <th>№ п/п</th>
+                    <th>Материал</th>
+                    <th>Чистовые размеры, мм</th>
+                    <th>Кол-во, шт</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in sheet_items %}
+                <tr>
+                    <td class="text-center">{{ item.sequence_number }}</td>
+                    <td>
+                        {{ item.material.name }}<br>
+                        <span style="font-size: 9pt; color: #666;">пл. {{ item.material.density }} г/см³</span>
+                    </td>
+                    <td class="text-center">
+                        {{ item.length }} x {{ item.width }} x {{ item.height }}
+                    </td>
+                    <td class="text-center">{{ item.quantity }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+    
+    <!-- Блок: КРУГЛЯК -->
+    {% if round_items %}
+    <div class="section-block">
+        <div class="section-title">КРУГЛЯК</div>
+        <table class="task-table">
+            <thead>
+                <tr>
+                    <th>№ п/п</th>
+                    <th>Материал</th>
+                    <th>Чистовые размеры, мм</th>
+                    <th>Кол-во, шт</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in round_items %}
+                <tr>
+                    <td class="text-center">{{ item.sequence_number }}</td>
+                    <td>
+                        {{ item.material.name }}<br>
+                        <span style="font-size: 9pt; color: #666;">пл. {{ item.material.density }} г/см³</span>
+                    </td>
+                    <td class="text-center">
+                        Ø{{ item.diameter }} x L{{ item.length }}
+                    </td>
+                    <td class="text-center">{{ item.quantity }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+    
+    <!-- Блок: ШЕСТИГРАННИК -->
+    {% if hexagon_items %}
+    <div class="section-block">
+        <div class="section-title">ШЕСТИГРАННИК</div>
+        <table class="task-table">
+            <thead>
+                <tr>
+                    <th>№ п/п</th>
+                    <th>Материал</th>
+                    <th>Чистовые размеры, мм</th>
+                    <th>Кол-во, шт</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in hexagon_items %}
+                <tr>
+                    <td class="text-center">{{ item.sequence_number }}</td>
+                    <td>
+                        {{ item.material.name }}<br>
+                        <span style="font-size: 9pt; color: #666;">пл. {{ item.material.density }} г/см³</span>
+                    </td>
+                    <td class="text-center">
+                        S{{ item.key_size }} x L{{ item.length }}
+                    </td>
+                    <td class="text-center">{{ item.quantity }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+    
+    <!-- Если нет ни одной детали -->
+    {% if not sheet_items and not round_items and not hexagon_items %}
+    <div class="empty-section">
+        В заказе нет деталей
+    </div>
+    {% endif %}
+    
+    <!-- Подпись технолога -->
+    <div class="footer">
+        <div class="technologist">
+            Технолог: <span>{{ user.last_name }} {{ user.first_name|first }}. {{ user.profile.patronymic|first|default:'' }}.</span>
+        </div>
+    </div>
+</body>
+</html>

@@ -5,16 +5,23 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1>Заказ №{{ order.order_number }} - {{ order.order_name }}</h1>
     <div>
-        <div class="btn-group me-2">
-            <a href="{% url 'print_order_report' order.id %}" class="btn btn-info">
-                <i class="fas fa-print"></i> Печать
-            </a>
-            <a href="{% url 'generate_order_pdf' order.id %}" class="btn btn-danger">
-                <i class="fas fa-file-pdf"></i> PDF
-            </a>
-        </div>
-        <a href="{% url 'add_order_item' order.id %}" class="btn btn-success">Добавить деталь</a>
-        <a href="{% url 'order_list' %}" class="btn btn-secondary">К списку заказов</a>
+        <div class="btn-group">
+                <button type="button" class="btn btn-info dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fas fa-print"></i> Печать
+                </button>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="{% url 'print_order_report' order.id %}" target="_blank">
+                        <i class="fas fa-table"></i> Детальный отчет
+                    </a></li>
+                    <li><a class="dropdown-item" href="{% url 'print_grouped_report' order.id %}" target="_blank">
+                        <i class="fas fa-layer-group"></i> Группированный отчет
+                    </a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="{% url 'print_cutting_task' order.id %}" target="_blank">
+                        <i class="fas fa-cut"></i> Задание на заготовку
+                    </a></li>
+                </ul>
+            </div>
     </div>
 </div>
 

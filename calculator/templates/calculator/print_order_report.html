@@ -136,9 +136,6 @@
         <button onclick="window.print()" style="padding: 6px 12px; background: #0d6efd; color: white; border: none; border-radius: 4px; cursor: pointer;">
             Печать
         </button>
-        <a href="{% url 'generate_order_pdf' order.id %}" style="padding: 6px 12px; background: #198754; color: white; text-decoration: none; border-radius: 4px; margin-left: 8px;">
-            Скачать PDF
-        </a>
         <a href="{% url 'order_detail' order.id %}" style="padding: 6px 12px; background: #6c757d; color: white; text-decoration: none; border-radius: 4px; margin-left: 8px;">
             Назад
         </a>
@@ -160,10 +157,9 @@
                 <th>Наименование детали</th>
                 <th>Марка материала</th>
                 <th>Кол-во, шт</th>
-                <th>Размеры, мм</th>
+                <th>Чистовые размеры, мм</th>
                 <th>Сортамент на складе</th>
                 <th>Вес 1 шт, кг</th>
-                <th>Общий вес, кг</th>
             </tr>
         </thead>
         <tbody>
@@ -192,13 +188,8 @@
                     {% endif %}
                 </td>
                 <td class="text-right">{{ item.weight|floatformat:3 }}</td>
-                <td class="text-right">{{ item.total_weight|floatformat:3 }}</td>
             </tr>
             {% endfor %}
-            <tr class="total-row">
-                <td colspan="7" class="text-right"><strong>ИТОГО:</strong></td>
-                <td class="text-right"><strong>{{ order.total_weight|floatformat:3 }}</strong></td>
-            </tr>
         </tbody>
     </table>
     
