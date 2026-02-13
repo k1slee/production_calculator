@@ -40,6 +40,8 @@ urlpatterns = [
     path('orders/<int:order_id>/print-grouped/', views.print_grouped_report, name='print_grouped_report'),
     #Печатные форма - задание на заготовку
     path('orders/<int:order_id>/print-cutting/', views.print_cutting_task, name='print_cutting_task'),
+
+    path('orders/<int:order_id>/copy/', views.copy_order, name='copy_order'),
     
     # API
     path('api/stock-items/', views.get_stock_items_by_material, name='api_stock_items'),

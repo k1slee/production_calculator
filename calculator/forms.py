@@ -26,19 +26,13 @@ class PartNameForm(forms.ModelForm):
 class StockItemForm(forms.ModelForm):
     class Meta:
         model = StockItem
-        fields = ['material', 'section_type', 'length', 'width', 'height', 
-                 'diameter', 'round_length', 'key_size', 'hex_length', 'quantity']
+        fields = ['material', 'section_type', 'width', 'diameter', 'key_size']
         widgets = {
             'material': forms.Select(attrs={'class': 'form-select'}),
-            'section_type': forms.Select(attrs={'class': 'form-select'}),
-            'length': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
-            'width': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
-            'height': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
-            'diameter': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
-            'round_length': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
-            'key_size': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
-            'hex_length': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
-            'quantity': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'section_type': forms.Select(attrs={'class': 'form-select', 'id': 'id_section_type'}),
+            'width': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'placeholder': 'Ширина листа'}),
+            'diameter': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'placeholder': 'Диаметр круга'}),
+            'key_size': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'placeholder': 'Размер под ключ'}),
         }
     
     def clean(self):
@@ -46,17 +40,27 @@ class StockItemForm(forms.ModelForm):
         section_type = cleaned_data.get('section_type')
         
         if section_type == 'sheet':
-            if not cleaned_data.get('length') or not cleaned_data.get('width') or not cleaned_data.get('height'):
-                raise forms.ValidationError('Для листа необходимо указать длину, ширину и высоту')
+            if not cleaned_data.get('width'):
+                self.add_error('width', 'Обязательное поле для листа')
+            # Очищаем ненужные поля
+            cleaned_data['diameter'] = None
+            cleaned_data['key_size'] = None
+            
         elif section_type == 'round':
-            if not cleaned_data.get('diameter') or not cleaned_data.get('round_length'):
-                raise forms.ValidationError('Для кругляка необходимо указать диаметр и длину')
+            if not cleaned_data.get('diameter'):
+                self.add_error('diameter', 'Обязательное поле для кругляка')
+            # Очищаем ненужные поля
+            cleaned_data['width'] = None
+            cleaned_data['key_size'] = None
+            
         elif section_type == 'hexagon':
-            if not cleaned_data.get('key_size') or not cleaned_data.get('hex_length'):
-                raise forms.ValidationError('Для шестигранника необходимо указать размер под ключ и длину')
+            if not cleaned_data.get('key_size'):
+                self.add_error('key_size', 'Обязательное поле для шестигранника')
+            # Очищаем ненужные поля
+            cleaned_data['width'] = None
+            cleaned_data['diameter'] = None
         
         return cleaned_data
-
 class OrderForm(forms.ModelForm):
     class Meta:
         model = Order

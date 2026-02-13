@@ -9,6 +9,7 @@ from django.http import JsonResponse
 from .models import Material, PartName, StockItem, Order, OrderItem
 from .forms import (LoginForm, MaterialForm, PartNameForm, StockItemForm, 
                    OrderForm, OrderItemForm, OrderCoefficientForm)
+from django.db import models
 
 def login_view(request):
     if request.method == 'POST':
@@ -157,11 +158,40 @@ def stock_delete(request, pk):
         return redirect('stock_list')
     return render(request, 'calculator/stock_confirm_delete.html', {'object': stock_item})
 
-# Заказы
 @login_required
 def order_list(request):
-    orders = Order.objects.filter(user=request.user).order_by('-created_at')
-    return render(request, 'calculator/order_list.html', {'orders': orders})
+    """Список заказов с поиском"""
+    # Базовый запрос
+    if request.user.is_superuser or request.user.is_staff:
+        orders = Order.objects.all()
+    else:
+        orders = Order.objects.filter(user=request.user)
+    
+    # Поиск
+    search_query = request.GET.get('search', '')
+    if search_query:
+        orders = orders.filter(
+            models.Q(order_number__icontains=search_query) |
+            models.Q(order_name__icontains=search_query) |
+            models.Q(drawing_number__icontains=search_query)
+        )
+    
+    # Сортировка
+    orders = orders.order_by('-created_at')
+    
+    # Подсчет статистики
+    total_orders = orders.count()
+    total_weight = sum(order.total_weight for order in orders)
+    total_items = sum(order.total_items_count for order in orders)
+    
+    context = {
+        'orders': orders,
+        'search_query': search_query,
+        'total_orders': total_orders,
+        'total_weight': total_weight,
+        'total_items': total_items,
+    }
+    return render(request, 'calculator/order_list.html', context)
 
 @login_required
 @transaction.atomic
@@ -464,3 +494,48 @@ def print_cutting_task(request, order_id):
     }
     
     return render(request, 'calculator/print_cutting_task.html', context)
+
+
+@login_required
+@transaction.atomic
+def copy_order(request, order_id):
+    """Копирование заказа с новым номером"""
+    original_order = get_object_or_404(Order, id=order_id, user=request.user)
+    
+    if request.method == 'POST':
+        new_order_number = request.POST.get('new_order_number')
+        new_order_name = request.POST.get('new_order_name')
+        
+        if not new_order_number:
+            messages.error(request, 'Необходимо указать номер нового заказа')
+            return redirect('order_list')
+        
+        # Создаем новый заказ
+        new_order = Order.objects.create(
+            order_number=new_order_number,
+            order_name=new_order_name or f"Копия {original_order.order_name}",
+            drawing_number=original_order.drawing_number,
+            user=request.user,
+            coefficient=original_order.coefficient
+        )
+        
+        # Копируем все детали
+        for item in original_order.items.all():
+            OrderItem.objects.create(
+                order=new_order,
+                sequence_number=item.sequence_number,
+                part_name=item.part_name,
+                material=item.material,
+                quantity=item.quantity,
+                stock_item=item.stock_item,
+                length=item.length,
+                width=item.width,
+                height=item.height,
+                diameter=item.diameter,
+                key_size=item.key_size
+            )
+        
+        messages.success(request, f'Заказ успешно скопирован. Новый номер: {new_order_number}')
+        return redirect('order_detail', order_id=new_order.id)
+    
+    return render(request, 'calculator/copy_order_modal.html', {'order': original_order})

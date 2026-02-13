@@ -8,45 +8,45 @@
 
 <div class="card">
     <div class="card-body">
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Материал</th>
-                    <th>Тип сортамента</th>
-                    <th>Размеры (мм)</th>
-                    <th>Количество</th>
-                    <th>Действия</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for item in stock_items %}
-                <tr>
-                    <td>{{ item.id }}</td>
-                    <td>{{ item.material }}</td>
-                    <td>{{ item.get_section_type_display }}</td>
-                    <td>
-                        {% if item.section_type == 'sheet' %}
-                            {{ item.length }} x {{ item.width }} x {{ item.height }}
-                        {% elif item.section_type == 'round' %}
-                            Ø{{ item.diameter }} x L{{ item.round_length }}
-                        {% else %}
-                            S{{ item.key_size }} x L{{ item.hex_length }}
-                        {% endif %}
-                    </td>
-                    <td>{{ item.quantity }}</td>
-                    <td>
-                        <a href="#" class="btn btn-sm btn-warning">Редактировать</a>
-                        <a href="#" class="btn btn-sm btn-danger">Удалить</a>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="6" class="text-center">Нет сортамента на складе</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Материал</th>
+                        <th>Тип сортамента</th>
+                        <th>Размер (мм)</th>
+                        <th>Действия</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in stock_items %}
+                    <tr>
+                        <td>{{ item.id }}</td>
+                        <td>{{ item.material.name }}</td>
+                        <td>{{ item.get_section_type_display }}</td>
+                        <td>
+                            {% if item.section_type == 'sheet' %}
+                                {{ item.width }} мм
+                            {% elif item.section_type == 'round' %}
+                                Ø{{ item.diameter }} мм
+                            {% else %}
+                                S{{ item.key_size }} мм
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{% url 'stock_edit' item.id %}" class="btn btn-sm btn-warning">Редактировать</a>
+                            <a href="{% url 'stock_delete' item.id %}" class="btn btn-sm btn-danger">Удалить</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center">Нет сортамента на складе</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 {% endblock %}

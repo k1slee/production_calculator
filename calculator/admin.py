@@ -57,33 +57,49 @@ class PartNameAdmin(admin.ModelAdmin):
 
 @admin.register(StockItem)
 class StockItemAdmin(admin.ModelAdmin):
-    list_display = ['id', 'material', 'section_type', 'quantity']
+    list_display = ['id', 'material', 'section_type', 'get_size']
     list_filter = ['section_type', 'material']
     search_fields = ['material__name']
     
+    def get_size(self, obj):
+        if obj.section_type == 'sheet':
+            return f"{obj.width} мм"
+        elif obj.section_type == 'round':
+            return f"Ø{obj.diameter} мм"
+        elif obj.section_type == 'hexagon':
+            return f"S{obj.key_size} мм"
+        return "-"
+    get_size.short_description = 'Размер'
+    
     def get_fieldsets(self, request, obj=None):
-        fieldsets = [
-            ('Основная информация', {
-                'fields': ['material', 'section_type', 'quantity']
-            }),
-        ]
+        if not obj:
+            return (
+                (None, {
+                    'fields': ('material', 'section_type')
+                }),
+            )
         
-        if obj:
-            if obj.section_type == 'sheet':
-                fieldsets.append(('Параметры листа', {
-                    'fields': ['length', 'width', 'height']
-                }))
-            elif obj.section_type == 'round':
-                fieldsets.append(('Параметры кругляка', {
-                    'fields': ['diameter', 'round_length']
-                }))
-            elif obj.section_type == 'hexagon':
-                fieldsets.append(('Параметры шестигранника', {
-                    'fields': ['key_size', 'hex_length']
-                }))
-        
-        return fieldsets
+        if obj.section_type == 'sheet':
+            return (
+                (None, {
+                    'fields': ('material', 'section_type', 'width')
+                }),
+            )
+        elif obj.section_type == 'round':
+            return (
+                (None, {
+                    'fields': ('material', 'section_type', 'diameter')
+                }),
+            )
+        elif obj.section_type == 'hexagon':
+            return (
+                (None, {
+                    'fields': ('material', 'section_type', 'key_size')
+                }),
+            )
+        return super().get_fieldsets(request, obj)
 
+        
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
     list_display = ['id', 'order_number', 'order_name', 'drawing_number', 'user', 'created_at', 'coefficient']

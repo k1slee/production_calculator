@@ -38,20 +38,14 @@ class StockItem(models.Model):
     material = models.ForeignKey(Material, on_delete=models.CASCADE, verbose_name='Материал')
     section_type = models.CharField('Тип сортамента', max_length=20, choices=SECTION_TYPE_CHOICES)
     
-    # Параметры для листа
-    length = models.DecimalField('Длина (мм)', max_digits=8, decimal_places=2, null=True, blank=True)
+    # Параметры для листа - только ширина
     width = models.DecimalField('Ширина (мм)', max_digits=8, decimal_places=2, null=True, blank=True)
-    height = models.DecimalField('Высота (мм)', max_digits=8, decimal_places=2, null=True, blank=True)
     
-    # Параметры для кругляка
+    # Параметры для кругляка - только диаметр
     diameter = models.DecimalField('Диаметр (мм)', max_digits=8, decimal_places=2, null=True, blank=True)
-    round_length = models.DecimalField('Длина (мм)', max_digits=8, decimal_places=2, null=True, blank=True)
     
-    # Параметры для шестигранника
+    # Параметры для шестигранника - только размер под ключ
     key_size = models.DecimalField('Размер под ключ (мм)', max_digits=8, decimal_places=2, null=True, blank=True)
-    hex_length = models.DecimalField('Длина (мм)', max_digits=8, decimal_places=2, null=True, blank=True)
-    
-    quantity = models.DecimalField('Количество на складе', max_digits=10, decimal_places=2, default=0)
     
     class Meta:
         verbose_name = 'Сортамент на складе'
@@ -59,11 +53,11 @@ class StockItem(models.Model):
     
     def __str__(self):
         if self.section_type == 'sheet':
-            return f"{self.material} - Лист {self.length}x{self.width}x{self.height}"
+            return f"{self.material} - Лист {self.width} мм"
         elif self.section_type == 'round':
-            return f"{self.material} - Кругляк Ø{self.diameter} L={self.round_length}"
+            return f"{self.material} - Кругляк Ø{self.diameter} мм"
         else:  # hexagon
-            return f"{self.material} - Шестигранник {self.key_size} L={self.hex_length}"
+            return f"{self.material} - Шестигранник S{self.key_size} мм"
 
 class Order(models.Model):
     """Модель заказа"""
@@ -96,6 +90,15 @@ class Order(models.Model):
     def total_weight(self):
         """Общий вес заказа в килограммах"""
         return self.total_weight_g / 1000
+    
+    @property
+    def total_items_count(self):
+        """Общее количество деталей в заказе"""
+        return sum(item.quantity for item in self.items.all())
+    @property
+    def materials_count(self):
+        """Количество уникальных материалов в заказе"""
+        return self.items.values('material').distinct().count()
     
     @property
     def total_items_count(self):
