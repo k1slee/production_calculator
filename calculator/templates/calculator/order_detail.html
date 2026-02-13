@@ -5,7 +5,9 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1>Заказ №{{ order.order_number }} - {{ order.order_name }}</h1>
     <div>
-        <div class="btn-group">
+        <div class="btn-group me-2">
+            <!-- Печатные формы -->
+            <div class="btn-group">
                 <button type="button" class="btn btn-info dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                     <i class="fas fa-print"></i> Печать
                 </button>
@@ -22,6 +24,22 @@
                     </a></li>
                 </ul>
             </div>
+            
+            
+            <!-- Кнопка копирования -->
+            <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#copyOrderModal{{ order.id }}">
+                <i class="fas fa-copy"></i> Копировать
+            </button>
+        </div>
+        
+        <!-- КНОПКА ДОБАВЛЕНИЯ ДЕТАЛИ -->
+        <a href="{% url 'add_order_item' order.id %}" class="btn btn-success">
+            <i class="fas fa-plus-circle"></i> Добавить деталь
+        </a>
+        
+        <a href="{% url 'order_list' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> К списку заказов
+        </a>
     </div>
 </div>
 
@@ -38,7 +56,7 @@
                         <p><strong>Дата создания:</strong> {{ order.created_at|date:"d.m.Y H:i" }}</p>
                     </div>
                     <div class="col-md-6">
-                        <p><strong>Номер чертежа:</strong> {{ order.drawing_number|default:"—" }}</p>  <!-- Новое поле -->
+                        <p><strong>Номер чертежа:</strong> {{ order.drawing_number|default:"—" }}</p>
                         <div class="d-flex align-items-center">
                             <strong class="me-2">Коэффициент массы:</strong>
                             <span id="current-coefficient" class="badge bg-primary fs-6 me-2">{{ order.coefficient }}</span>
@@ -103,10 +121,74 @@
     </div>
 </div>
 
+<!-- Модальное окно для копирования заказа -->
+<div class="modal fade" id="copyOrderModal{{ order.id }}" tabindex="-1" aria-labelledby="copyOrderModalLabel{{ order.id }}" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="copyOrderModalLabel{{ order.id }}">
+                    <i class="fas fa-copy"></i> Копирование заказа №{{ order.order_number }}
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" action="{% url 'copy_order' order.id %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> Будет создана копия заказа со всеми деталями.
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="new_order_number{{ order.id }}" class="form-label fw-bold">
+                            Номер нового заказа <span class="text-danger">*</span>
+                        </label>
+                        <input type="text" 
+                               class="form-control" 
+                               id="new_order_number{{ order.id }}" 
+                               name="new_order_number" 
+                               placeholder="Например: 2025-03"
+                               required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="new_order_name{{ order.id }}" class="form-label fw-bold">
+                            Наименование нового заказа
+                        </label>
+                        <input type="text" 
+                               class="form-control" 
+                               id="new_order_name{{ order.id }}" 
+                               name="new_order_name" 
+                               value="Копия {{ order.order_name }}">
+                    </div>
+                    
+                    <div class="bg-light p-3 rounded">
+                        <p class="mb-1"><strong>Исходный заказ:</strong></p>
+                        <p class="mb-0">Номер: {{ order.order_number }}</p>
+                        <p class="mb-0">Наименование: {{ order.order_name }}</p>
+                        <p class="mb-0">Деталей: {{ order.items.count }} шт.</p>
+                        <p class="mb-0">Вес: {{ order.total_weight|floatformat:2 }} кг</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="submit" class="btn btn-warning">
+                        <i class="fas fa-copy"></i> Создать копию
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
         <h5 class="card-title mb-0">Детали заказа</h5>
-        <span class="badge bg-info">Вес в килограммах</span>
+        <div>
+            <span class="badge bg-info me-2">Вес в килограммах</span>
+            <a href="{% url 'add_order_item' order.id %}" class="btn btn-sm btn-success">
+                <i class="fas fa-plus-circle"></i> Добавить деталь
+            </a>
+        </div>
     </div>
     <div class="card-body">
         <div class="table-responsive">
@@ -127,18 +209,18 @@
                 <tbody>
                     {% for item in items %}
                     <tr>
-                        <td>{{ item.sequence_number }}</td>
+                        <td class="text-center">{{ item.sequence_number }}</td>
                         <td>{{ item.part_name }}</td>
-                        <td>{{ item.material }}</td>
+                        <td>{{ item.material.name }}</td>
                         <td class="text-center">{{ item.quantity }}</td>
                         <td>
                             <small>
                                 {% if item.stock_item.section_type == 'sheet' %}
-                                    Лист
+                                    Лист {{ item.stock_item.width }} мм
                                 {% elif item.stock_item.section_type == 'round' %}
-                                    Кругляк
+                                    Кругляк Ø{{ item.stock_item.diameter }} мм
                                 {% else %}
-                                    Шестигранник
+                                    Шестигранник S{{ item.stock_item.key_size }} мм
                                 {% endif %}
                             </small>
                         </td>
@@ -156,24 +238,35 @@
                         <td class="text-end">{{ item.weight|floatformat:3 }}</td>
                         <td class="text-end"><strong>{{ item.total_weight|floatformat:3 }}</strong></td>
                         <td>
-                            <a href="{% url 'delete_order_item' order.id item.id %}" class="btn btn-sm btn-danger" 
-                               onclick="return confirm('Удалить деталь из заказа?')">
-                                <i class="fas fa-trash"></i>
-                            </a>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{% url 'edit_order_item' order.id item.id %}" class="btn btn-warning" title="Редактировать">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="{% url 'delete_order_item' order.id item.id %}" class="btn btn-danger" 
+                                   onclick="return confirm('Удалить деталь из заказа?')" title="Удалить">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </div>
                         </td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="9" class="text-center py-4">
-                            <p class="mb-0">В заказе нет деталей</p>
+                        <td colspan="9" class="text-center py-5">
+                            <i class="fas fa-box-open fa-3x mb-3 text-muted"></i>
+                            <p class="mb-2">В заказе нет деталей</p>
                             <a href="{% url 'add_order_item' order.id %}" class="btn btn-primary mt-2">
-                                Добавить первую деталь
+                                <i class="fas fa-plus-circle"></i> Добавить первую деталь
                             </a>
                         </td>
                     </tr>
                     {% endfor %}
                 </tbody>
                 <tfoot class="table-light">
+                    <tr>
+                        <th colspan="7" class="text-end">Итого:</th>
+                        <th class="text-end">{{ order.total_weight|floatformat:3 }} кг</th>
+                        <th></th>
+                    </tr>
                 </tfoot>
             </table>
         </div>
@@ -191,10 +284,4 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
-
-<style>
-.fs-6 {
-    font-size: 1.1rem;
-}
-</style>
 {% endblock %}

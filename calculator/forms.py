@@ -42,25 +42,21 @@ class StockItemForm(forms.ModelForm):
         if section_type == 'sheet':
             if not cleaned_data.get('width'):
                 self.add_error('width', 'Обязательное поле для листа')
-            # Очищаем ненужные поля
             cleaned_data['diameter'] = None
             cleaned_data['key_size'] = None
-            
         elif section_type == 'round':
             if not cleaned_data.get('diameter'):
                 self.add_error('diameter', 'Обязательное поле для кругляка')
-            # Очищаем ненужные поля
             cleaned_data['width'] = None
             cleaned_data['key_size'] = None
-            
         elif section_type == 'hexagon':
             if not cleaned_data.get('key_size'):
                 self.add_error('key_size', 'Обязательное поле для шестигранника')
-            # Очищаем ненужные поля
             cleaned_data['width'] = None
             cleaned_data['diameter'] = None
         
         return cleaned_data
+
 class OrderForm(forms.ModelForm):
     class Meta:
         model = Order
@@ -71,6 +67,19 @@ class OrderForm(forms.ModelForm):
             'drawing_number': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Например: ДМ-123-2024'}),
             'coefficient': forms.Select(attrs={'class': 'form-select'}, 
                                        choices=[(x/10, x/10) for x in range(10, 21)]),
+        }
+
+class OrderCoefficientForm(forms.ModelForm):
+    class Meta:
+        model = Order
+        fields = ['coefficient']
+        widgets = {
+            'coefficient': forms.Select(
+                attrs={'class': 'form-select'},
+                choices=[(1.0, '1.0'), (1.1, '1.1'), (1.2, '1.2'), (1.3, '1.3'), 
+                        (1.4, '1.4'), (1.5, '1.5'), (1.6, '1.6'), (1.7, '1.7'), 
+                        (1.8, '1.8'), (1.9, '1.9'), (2.0, '2.0')]
+            ),
         }
 
 class OrderItemForm(forms.ModelForm):
@@ -93,7 +102,8 @@ class OrderItemForm(forms.ModelForm):
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['stock_item'].queryset = StockItem.objects.filter(quantity__gt=0)
+        # Показываем все сортаменты без фильтрации
+        self.fields['stock_item'].queryset = StockItem.objects.all()
         self.fields['stock_item'].label = 'Сортамент со склада'
         self.fields['stock_item'].empty_label = '---------'
         
@@ -118,28 +128,28 @@ class OrderItemForm(forms.ModelForm):
                     self.add_error('width', 'Обязательное поле для листа')
                 if not cleaned_data.get('height'):
                     self.add_error('height', 'Обязательное поле для листа')
+                # Очищаем ненужные поля
+                cleaned_data['diameter'] = None
+                cleaned_data['key_size'] = None
                     
             elif section_type == 'round':
                 if not cleaned_data.get('diameter'):
                     self.add_error('diameter', 'Обязательное поле для кругляка')
                 if not cleaned_data.get('length'):
                     self.add_error('length', 'Обязательное поле для кругляка')
+                # Очищаем ненужные поля
+                cleaned_data['width'] = None
+                cleaned_data['height'] = None
+                cleaned_data['key_size'] = None
                     
             elif section_type == 'hexagon':
                 if not cleaned_data.get('key_size'):
                     self.add_error('key_size', 'Обязательное поле для шестигранника')
                 if not cleaned_data.get('length'):
                     self.add_error('length', 'Обязательное поле для шестигранника')
+                # Очищаем ненужные поля
+                cleaned_data['width'] = None
+                cleaned_data['height'] = None
+                cleaned_data['diameter'] = None
         
         return cleaned_data
-
-class OrderCoefficientForm(forms.ModelForm):
-    class Meta:
-        model = Order
-        fields = ['coefficient']
-        widgets = {
-            'coefficient': forms.Select(
-                attrs={'class': 'form-select form-select-sm', 'style': 'width: auto; display: inline-block;'},
-                choices=[(x/10, x/10) for x in range(10, 21)]
-            ),
-        }

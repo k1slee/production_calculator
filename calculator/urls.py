@@ -42,7 +42,7 @@ urlpatterns = [
     path('orders/<int:order_id>/print-cutting/', views.print_cutting_task, name='print_cutting_task'),
 
     path('orders/<int:order_id>/copy/', views.copy_order, name='copy_order'),
-    
+    path('orders/<int:order_id>/item/<int:item_id>/edit/', views.edit_order_item, name='edit_order_item'),
     # API
     path('api/stock-items/', views.get_stock_items_by_material, name='api_stock_items'),
 ]

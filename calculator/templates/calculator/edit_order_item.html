@@ -7,7 +7,7 @@
         <div class="card">
             <div class="card-header">
                 <h3 class="card-title">
-                    <i class="fas fa-plus-circle"></i> Добавление детали в заказ
+                    <i class="fas fa-edit"></i> Редактирование детали
                 </h3>
                 <p class="mb-0 text-muted">
                     Заказ №{{ order.order_number }} - {{ order.order_name }}
@@ -24,12 +24,10 @@
                         </label>
                         <input type="number" 
                                name="sequence_number" 
-                               value="{{ form.sequence_number.value|default:order.items.count|add:1 }}"
+                               value="{{ form.sequence_number.value|default:item.sequence_number }}"
                                class="form-control" 
                                id="id_sequence_number"
-                               readonly
                                required>
-                        <div class="form-text">Номер назначается автоматически</div>
                         {% if form.sequence_number.errors %}
                             <div class="text-danger">{{ form.sequence_number.errors }}</div>
                         {% endif %}
@@ -86,7 +84,7 @@
                         </label>
                         <input type="number" 
                                name="quantity" 
-                               value="{{ form.quantity.value|default:1 }}"
+                               value="{{ form.quantity.value|default:item.quantity }}"
                                class="form-control" 
                                id="id_quantity"
                                min="1"
@@ -142,7 +140,7 @@
                                                step="0.01" 
                                                class="form-control" 
                                                id="id_sheet_length"
-                                               value="{{ form.length.value|default:'' }}">
+                                               value="{{ form.length.value|default:item.length }}">
                                         {% if form.length.errors %}
                                             <div class="text-danger">{{ form.length.errors }}</div>
                                         {% endif %}
@@ -158,7 +156,7 @@
                                                step="0.01" 
                                                class="form-control" 
                                                id="id_width"
-                                               value="{{ form.width.value|default:'' }}">
+                                               value="{{ form.width.value|default:item.width }}">
                                         {% if form.width.errors %}
                                             <div class="text-danger">{{ form.width.errors }}</div>
                                         {% endif %}
@@ -174,7 +172,7 @@
                                                step="0.01" 
                                                class="form-control" 
                                                id="id_height"
-                                               value="{{ form.height.value|default:'' }}">
+                                               value="{{ form.height.value|default:item.height }}">
                                         {% if form.height.errors %}
                                             <div class="text-danger">{{ form.height.errors }}</div>
                                         {% endif %}
@@ -196,7 +194,7 @@
                                                step="0.01" 
                                                class="form-control" 
                                                id="id_diameter"
-                                               value="{{ form.diameter.value|default:'' }}">
+                                               value="{{ form.diameter.value|default:item.diameter }}">
                                         {% if form.diameter.errors %}
                                             <div class="text-danger">{{ form.diameter.errors }}</div>
                                         {% endif %}
@@ -212,7 +210,7 @@
                                                step="0.01" 
                                                class="form-control" 
                                                id="id_round_length"
-                                               value="{{ form.length.value|default:'' }}">
+                                               value="{{ form.length.value|default:item.length }}">
                                         {% if form.length.errors %}
                                             <div class="text-danger">{{ form.length.errors }}</div>
                                         {% endif %}
@@ -234,7 +232,7 @@
                                                step="0.01" 
                                                class="form-control" 
                                                id="id_key_size"
-                                               value="{{ form.key_size.value|default:'' }}">
+                                               value="{{ form.key_size.value|default:item.key_size }}">
                                         {% if form.key_size.errors %}
                                             <div class="text-danger">{{ form.key_size.errors }}</div>
                                         {% endif %}
@@ -250,7 +248,7 @@
                                                step="0.01" 
                                                class="form-control" 
                                                id="id_hex_length"
-                                               value="{{ form.length.value|default:'' }}">
+                                               value="{{ form.length.value|default:item.length }}">
                                         {% if form.length.errors %}
                                             <div class="text-danger">{{ form.length.errors }}</div>
                                         {% endif %}
@@ -262,7 +260,7 @@
                     
                     <div class="d-flex justify-content-between mt-4">
                         <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-plus-circle"></i> Добавить деталь
+                            <i class="fas fa-save"></i> Сохранить изменения
                         </button>
                         <a href="{% url 'order_detail' order.id %}" class="btn btn-secondary">
                             <i class="fas fa-times"></i> Отмена
@@ -285,6 +283,15 @@
         const sheetMeasurements = document.getElementById('sheet-measurements');
         const roundMeasurements = document.getElementById('round-measurements');
         const hexagonMeasurements = document.getElementById('hexagon-measurements');
+        
+        function clearLengthFields() {
+            const sheetLength = document.getElementById('id_sheet_length');
+            const roundLength = document.getElementById('id_round_length');
+            const hexLength = document.getElementById('id_hex_length');
+            if (sheetLength) sheetLength.value = '';
+            if (roundLength) roundLength.value = '';
+            if (hexLength) hexLength.value = '';
+        }
         
         function toggleMeasurements() {
             const selectedOption = stockItemSelect.options[stockItemSelect.selectedIndex];

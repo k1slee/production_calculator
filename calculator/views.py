@@ -226,78 +226,31 @@ def add_order_item(request, order_id):
     order = get_object_or_404(Order, id=order_id, user=request.user)
     
     if request.method == 'POST':
-        # Копируем POST данные для модификации
-        post_data = request.POST.copy()
-        
-        # Определяем тип сортамента и очищаем ненужные поля
-        stock_item_id = post_data.get('stock_item')
-        if stock_item_id:
-            try:
-                stock_item = StockItem.objects.get(id=stock_item_id)
-                
-                # Оставляем только нужные поля в зависимости от типа сортамента
-                if stock_item.section_type == 'sheet':
-                    # Удаляем поля для кругляка и шестигранника
-                    post_data.pop('diameter', None)
-                    post_data.pop('key_size', None)
-                    # Убеждаемся что поля для листа заполнены
-                    if not post_data.get('width'):
-                        post_data['width'] = '0'
-                    if not post_data.get('height'):
-                        post_data['height'] = '0'
-                        
-                elif stock_item.section_type == 'round':
-                    # Удаляем поля для листа и шестигранника
-                    post_data.pop('width', None)
-                    post_data.pop('height', None)
-                    post_data.pop('key_size', None)
-                    # Переносим длину в правильное поле
-                    if post_data.get('length'):
-                        post_data['diameter'] = post_data.get('diameter', '0')
-                    else:
-                        post_data['diameter'] = '0'
-                        
-                elif stock_item.section_type == 'hexagon':
-                    # Удаляем поля для листа и кругляка
-                    post_data.pop('width', None)
-                    post_data.pop('height', None)
-                    post_data.pop('diameter', None)
-                    if not post_data.get('key_size'):
-                        post_data['key_size'] = '0'
-            except StockItem.DoesNotExist:
-                pass
-        
-        form = OrderItemForm(post_data)
+        form = OrderItemForm(request.POST)
         
         if form.is_valid():
             try:
                 item = form.save(commit=False)
                 item.order = order
-                
-                # Убеждаемся что установлены правильные значения в зависимости от типа
-                if item.stock_item.section_type == 'round':
-                    item.length = item.diameter  # Для кругляка используем diameter как длину
-                
                 item.save()
                 messages.success(request, 'Деталь успешно добавлена в заказ')
                 return redirect('order_detail', order_id=order.id)
             except Exception as e:
                 messages.error(request, f'Ошибка при сохранении: {str(e)}')
         else:
-            # Выводим ошибки валидации
             for field, errors in form.errors.items():
                 for error in errors:
                     messages.error(request, f'{field}: {error}')
     else:
         # Автоматически устанавливаем следующий порядковый номер
         next_number = order.items.count() + 1
-        form = OrderItemForm(initial={'sequence_number': next_number})
+        initial_data = {'sequence_number': next_number}
+        form = OrderItemForm(initial=initial_data)
     
     return render(request, 'calculator/order_item_form.html', {
         'form': form, 
         'order': order
     })
-
 @login_required
 def delete_order_item(request, order_id, item_id):
     order = get_object_or_404(Order, id=order_id, user=request.user)
@@ -539,3 +492,33 @@ def copy_order(request, order_id):
         return redirect('order_detail', order_id=new_order.id)
     
     return render(request, 'calculator/copy_order_modal.html', {'order': original_order})
+
+
+@login_required
+@transaction.atomic
+def edit_order_item(request, order_id, item_id):
+    """Редактирование детали в заказе"""
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+    item = get_object_or_404(OrderItem, id=item_id, order=order)
+    
+    if request.method == 'POST':
+        form = OrderItemForm(request.POST, instance=item)
+        if form.is_valid():
+            try:
+                form.save()
+                messages.success(request, 'Деталь успешно обновлена')
+                return redirect('order_detail', order_id=order.id)
+            except Exception as e:
+                messages.error(request, f'Ошибка при сохранении: {str(e)}')
+        else:
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f'{field}: {error}')
+    else:
+        form = OrderItemForm(instance=item)
+    
+    return render(request, 'calculator/edit_order_item.html', {
+        'form': form, 
+        'order': order,
+        'item': item
+    })
