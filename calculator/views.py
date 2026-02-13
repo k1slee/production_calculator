@@ -160,12 +160,9 @@ def stock_delete(request, pk):
 
 @login_required
 def order_list(request):
-    """Список заказов с поиском"""
-    # Базовый запрос
-    if request.user.is_superuser or request.user.is_staff:
-        orders = Order.objects.all()
-    else:
-        orders = Order.objects.filter(user=request.user)
+    """Список всех заказов для всех пользователей"""
+    # Все пользователи видят все заказы
+    orders = Order.objects.all()
     
     # Поиск
     search_query = request.GET.get('search', '')
@@ -176,7 +173,7 @@ def order_list(request):
             models.Q(drawing_number__icontains=search_query)
         )
     
-    # Сортировка
+    # Сортировка по дате создания (сначала новые)
     orders = orders.order_by('-created_at')
     
     # Подсчет статистики
@@ -210,7 +207,7 @@ def order_create(request):
 
 @login_required
 def order_detail(request, order_id):
-    order = get_object_or_404(Order, id=order_id, user=request.user)
+    order = get_object_or_404(Order, id=order_id)
     items = order.items.all().select_related('part_name', 'material', 'stock_item')
     total_weight = sum(item.total_weight for item in items)
     return render(request, 'calculator/order_detail.html', {
@@ -295,7 +292,7 @@ def get_stock_items_by_material(request):
 @login_required
 def print_order_report(request, order_id):
     """Печатная форма основного отчета по заказу"""
-    order = get_object_or_404(Order, id=order_id, user=request.user)
+    order = get_object_or_404(Order, id=order_id)
     items = order.items.all().select_related('part_name', 'material', 'stock_item')
     
     # Рассчитываем общий вес в кг
@@ -346,8 +343,9 @@ def generate_order_pdf(request, order_id):
 @login_required
 @transaction.atomic
 def update_order_coefficient(request, order_id):
-    """Обновление коэффициента массы в заказе"""
-    order = get_object_or_404(Order, id=order_id, user=request.user)
+    """Обновление коэффициента массы в заказе (любой пользователь может менять)"""
+    # Убираем фильтр по user, любой может менять коэффициент
+    order = get_object_or_404(Order, id=order_id)
     
     if request.method == 'POST':
         form = OrderCoefficientForm(request.POST, instance=order)
@@ -372,7 +370,7 @@ def update_order_coefficient(request, order_id):
 @login_required
 def print_grouped_report(request, order_id):
     """Печатная форма группированного отчета по материалам и сортаменту"""
-    order = get_object_or_404(Order, id=order_id, user=request.user)
+    order = get_object_or_404(Order, id=order_id)
     items = order.items.all().select_related('part_name', 'material', 'stock_item')
     
     # Группируем детали по материалу и сортаменту
@@ -412,7 +410,7 @@ def print_grouped_report(request, order_id):
 @login_required
 def print_cutting_task(request, order_id):
     """Печатная форма - Задание на заготовку"""
-    order = get_object_or_404(Order, id=order_id, user=request.user)
+    order = get_object_or_404(Order, id=order_id)
     items = order.items.all().select_related('part_name', 'material', 'stock_item')
     
     # Группируем детали по типу сортамента
@@ -449,8 +447,9 @@ def print_cutting_task(request, order_id):
 @login_required
 @transaction.atomic
 def copy_order(request, order_id):
-    """Копирование заказа с новым номером"""
-    original_order = get_object_or_404(Order, id=order_id, user=request.user)
+    """Копирование заказа с новым номером (можно копировать любой заказ)"""
+    # Убираем фильтр по user, можно копировать любой заказ
+    original_order = get_object_or_404(Order, id=order_id)
     
     if request.method == 'POST':
         new_order_number = request.POST.get('new_order_number')
@@ -460,12 +459,12 @@ def copy_order(request, order_id):
             messages.error(request, 'Необходимо указать номер нового заказа')
             return redirect('order_list')
         
-        # Создаем новый заказ - убираем "Копия" из наименования
+        # Создаем новый заказ от имени текущего пользователя
         new_order = Order.objects.create(
             order_number=new_order_number,
-            order_name=new_order_name or original_order.order_name,  # Убрано "Копия"
+            order_name=new_order_name or original_order.order_name,
             drawing_number=original_order.drawing_number,
-            user=request.user,
+            user=request.user,  # Новый заказ создается от имени текущего пользователя
             coefficient=original_order.coefficient
         )
         
