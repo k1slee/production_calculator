@@ -157,7 +157,8 @@
                                class="form-control" 
                                id="new_order_name{{ order.id }}" 
                                name="new_order_name" 
-                               value="Копия {{ order.order_name }}">
+                               value="{{ order.order_name }}">  <!-- Убрано "Копия" -->
+                        <div class="form-text">Оставьте поле пустым, чтобы скопировать наименование исходного заказа</div>
                     </div>
                     
                     <div class="bg-light p-3 rounded">

@@ -242,12 +242,11 @@
                                 Номер нового заказа <span class="text-danger">*</span>
                             </label>
                             <input type="text" 
-                                   class="form-control" 
-                                   id="new_order_number{{ order.id }}" 
-                                   name="new_order_number" 
-                                   placeholder="Например: 2025-03"
-                                   required>
-                            <div class="form-text">Укажите уникальный номер для нового заказа</div>
+                                class="form-control" 
+                                id="new_order_number{{ order.id }}" 
+                                name="new_order_number" 
+                                placeholder="Например: 2025-03"
+                                required>
                         </div>
                         
                         <div class="mb-3">
@@ -255,11 +254,11 @@
                                 Наименование нового заказа
                             </label>
                             <input type="text" 
-                                   class="form-control" 
-                                   id="new_order_name{{ order.id }}" 
-                                   name="new_order_name" 
-                                   value="Копия {{ order.order_name }}">
-                            <div class="form-text">Если не указано, будет использовано "Копия {{ order.order_name }}"</div>
+                                class="form-control" 
+                                id="new_order_name{{ order.id }}" 
+                                name="new_order_name" 
+                                value="{{ order.order_name }}">  <!-- Убрано "Копия" -->
+                            <div class="form-text">Оставьте поле пустым, чтобы скопировать наименование исходного заказа</div>
                         </div>
                         
                         <div class="bg-light p-3 rounded">

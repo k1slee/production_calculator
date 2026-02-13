@@ -460,10 +460,10 @@ def copy_order(request, order_id):
             messages.error(request, 'Необходимо указать номер нового заказа')
             return redirect('order_list')
         
-        # Создаем новый заказ
+        # Создаем новый заказ - убираем "Копия" из наименования
         new_order = Order.objects.create(
             order_number=new_order_number,
-            order_name=new_order_name or f"Копия {original_order.order_name}",
+            order_name=new_order_name or original_order.order_name,  # Убрано "Копия"
             drawing_number=original_order.drawing_number,
             user=request.user,
             coefficient=original_order.coefficient
@@ -482,7 +482,8 @@ def copy_order(request, order_id):
                 width=item.width,
                 height=item.height,
                 diameter=item.diameter,
-                key_size=item.key_size
+                key_size=item.key_size,
+                is_special=item.is_special
             )
         
         messages.success(request, f'Заказ успешно скопирован. Новый номер: {new_order_number}')
