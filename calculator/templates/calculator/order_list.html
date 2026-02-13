@@ -9,48 +9,6 @@
     </a>
 </div>
 
-<!-- Статистика -->
-<div class="row mb-4">
-    <div class="col-md-4">
-        <div class="card bg-primary text-white">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <h6 class="card-title mb-1">Всего заказов</h6>
-                        <h2 class="mb-0">{{ total_orders }}</h2>
-                    </div>
-                    <i class="fas fa-shopping-cart fa-3x opacity-50"></i>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card bg-success text-white">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <h6 class="card-title mb-1">Общий вес</h6>
-                        <h2 class="mb-0">{{ total_weight|floatformat:1 }} кг</h2>
-                    </div>
-                    <i class="fas fa-weight fa-3x opacity-50"></i>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card bg-info text-white">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <h6 class="card-title mb-1">Всего деталей</h6>
-                        <h2 class="mb-0">{{ total_items }}</h2>
-                    </div>
-                    <i class="fas fa-cogs fa-3x opacity-50"></i>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
 
 <!-- Панель поиска и фильтров -->
 <div class="card mb-4">
@@ -78,30 +36,6 @@
                 </div>
                 <div class="form-text mt-2">
                     <i class="fas fa-info-circle"></i> Можно искать по номеру заказа, наименованию или номеру чертежа
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="d-flex justify-content-end align-items-center h-100">
-                    <span class="text-muted me-2">
-                        <i class="fas fa-sort"></i> Сортировка:
-                    </span>
-                    <select name="sort" class="form-select w-auto" onchange="this.form.submit()">
-                        <option value="-created_at" {% if sort == '-created_at' %}selected{% endif %}>
-                            Сначала новые
-                        </option>
-                        <option value="created_at" {% if sort == 'created_at' %}selected{% endif %}>
-                            Сначала старые
-                        </option>
-                        <option value="-total_weight" {% if sort == '-total_weight' %}selected{% endif %}>
-                            По весу (убывание)
-                        </option>
-                        <option value="total_weight" {% if sort == 'total_weight' %}selected{% endif %}>
-                            По весу (возрастание)
-                        </option>
-                        <option value="order_number" {% if sort == 'order_number' %}selected{% endif %}>
-                            По номеру заказа
-                        </option>
-                    </select>
                 </div>
             </div>
         </form>
