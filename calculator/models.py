@@ -148,7 +148,7 @@ def save_user_profile(sender, instance, **kwargs):
 class OrderItem(models.Model):
     """Детали заказа"""
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items', verbose_name='Заказ')
-    sequence_number = models.IntegerField('Порядковый номер')
+    sequence_number = models.CharField('Порядковый номер', max_length=20)
     part_name = models.ForeignKey(PartName, on_delete=models.PROTECT, verbose_name='Наименование детали')
     material = models.ForeignKey(Material, on_delete=models.PROTECT, verbose_name='Марка материала')
     quantity = models.IntegerField('Количество деталей', validators=[MinValueValidator(1)])

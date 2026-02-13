@@ -88,7 +88,7 @@ class OrderItemForm(forms.ModelForm):
         fields = ['sequence_number', 'part_name', 'material', 'quantity', 
                  'stock_item', 'length', 'width', 'height', 'diameter', 'key_size']
         widgets = {
-            'sequence_number': forms.NumberInput(attrs={'class': 'form-control'}),
+            'sequence_number': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Например: 01-2'}),
             'part_name': forms.Select(attrs={'class': 'form-select'}),
             'material': forms.Select(attrs={'class': 'form-select'}),
             'quantity': forms.NumberInput(attrs={'class': 'form-control', 'min': '1'}),
@@ -113,6 +113,8 @@ class OrderItemForm(forms.ModelForm):
         self.fields['height'].required = False
         self.fields['diameter'].required = False
         self.fields['key_size'].required = False
+        self.fields['sequence_number'].required = True
+        self.fields['sequence_number'].label = 'номер'
     
     def clean(self):
         cleaned_data = super().clean()

@@ -22,12 +22,13 @@
                         <label for="id_sequence_number" class="form-label fw-bold">
                             Порядковый номер <span class="text-danger">*</span>
                         </label>
-                        <input type="number" 
-                               name="sequence_number" 
-                               value="{{ form.sequence_number.value|default:item.sequence_number }}"
-                               class="form-control" 
-                               id="id_sequence_number"
-                               required>
+                        <input type="text" 
+                            name="sequence_number" 
+                            value="{{ form.sequence_number.value|default:item.sequence_number }}"
+                            class="form-control" 
+                            id="id_sequence_number"
+                            placeholder="Например: 01-2"
+                            required>
                         {% if form.sequence_number.errors %}
                             <div class="text-danger">{{ form.sequence_number.errors }}</div>
                         {% endif %}

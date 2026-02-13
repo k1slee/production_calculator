@@ -242,10 +242,7 @@ def add_order_item(request, order_id):
                 for error in errors:
                     messages.error(request, f'{field}: {error}')
     else:
-        # Автоматически устанавливаем следующий порядковый номер
-        next_number = order.items.count() + 1
-        initial_data = {'sequence_number': next_number}
-        form = OrderItemForm(initial=initial_data)
+        form = OrderItemForm()
     
     return render(request, 'calculator/order_item_form.html', {
         'form': form, 

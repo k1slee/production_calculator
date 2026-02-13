@@ -22,14 +22,14 @@
                         <label for="id_sequence_number" class="form-label fw-bold">
                             Порядковый номер <span class="text-danger">*</span>
                         </label>
-                        <input type="number" 
-                               name="sequence_number" 
-                               value="{{ form.sequence_number.value|default:order.items.count|add:1 }}"
-                               class="form-control" 
-                               id="id_sequence_number"
-                               readonly
-                               required>
-                        <div class="form-text">Номер назначается автоматически</div>
+                        <input type="text" 
+                            name="sequence_number" 
+                            value="{{ form.sequence_number.value|default:'' }}"
+                            class="form-control" 
+                            id="id_sequence_number"
+                            placeholder="Например: 01-2, 1.3, 5/1"
+                            required>
+                        <div class="form-text">Введите номер детали в формате, принятом на производстве</div>
                         {% if form.sequence_number.errors %}
                             <div class="text-danger">{{ form.sequence_number.errors }}</div>
                         {% endif %}
