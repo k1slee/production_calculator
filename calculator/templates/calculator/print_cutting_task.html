@@ -174,8 +174,9 @@
             <thead>
                 <tr>
                     <th>№ п/п</th>
+                    <th>Наименование детали</th>
                     <th>Материал</th>
-                    <th>Чистовые размеры, мм</th>
+                    <th>Размеры, мм</th>
                     <th>Кол-во, шт</th>
                 </tr>
             </thead>
@@ -183,10 +184,8 @@
                 {% for item in sheet_items %}
                 <tr>
                     <td class="text-center">{{ item.sequence_number }}</td>
-                    <td>
-                        {{ item.material.name }}<br>
-                        <span style="font-size: 9pt; color: #666;">пл. {{ item.material.density }} г/см³</span>
-                    </td>
+                    <td>{{ item.part_name }}</td>
+                    <td>{{ item.material.name }}</td>
                     <td class="text-center">
                         {{ item.length }} x {{ item.width }} x {{ item.height }}
                     </td>
@@ -197,7 +196,7 @@
         </table>
     </div>
     {% endif %}
-    
+
     <!-- Блок: КРУГЛЯК -->
     {% if round_items %}
     <div class="section-block">
@@ -206,8 +205,9 @@
             <thead>
                 <tr>
                     <th>№ п/п</th>
+                    <th>Наименование детали</th>
                     <th>Материал</th>
-                    <th>Чистовые размеры, мм</th>
+                    <th>Размеры, мм</th>
                     <th>Кол-во, шт</th>
                 </tr>
             </thead>
@@ -215,10 +215,8 @@
                 {% for item in round_items %}
                 <tr>
                     <td class="text-center">{{ item.sequence_number }}</td>
-                    <td>
-                        {{ item.material.name }}<br>
-                        <span style="font-size: 9pt; color: #666;">пл. {{ item.material.density }} г/см³</span>
-                    </td>
+                    <td>{{ item.part_name }}</td>
+                    <td>{{ item.material.name }}</td>
                     <td class="text-center">
                         Ø{{ item.diameter }} x L{{ item.length }}
                     </td>
@@ -229,7 +227,7 @@
         </table>
     </div>
     {% endif %}
-    
+
     <!-- Блок: ШЕСТИГРАННИК -->
     {% if hexagon_items %}
     <div class="section-block">
@@ -238,8 +236,9 @@
             <thead>
                 <tr>
                     <th>№ п/п</th>
+                    <th>Наименование детали</th>
                     <th>Материал</th>
-                    <th>Чистовые размеры, мм</th>
+                    <th>Размеры, мм</th>
                     <th>Кол-во, шт</th>
                 </tr>
             </thead>
@@ -247,10 +246,8 @@
                 {% for item in hexagon_items %}
                 <tr>
                     <td class="text-center">{{ item.sequence_number }}</td>
-                    <td>
-                        {{ item.material.name }}<br>
-                        <span style="font-size: 9pt; color: #666;">пл. {{ item.material.density }} г/см³</span>
-                    </td>
+                    <td>{{ item.part_name }}</td>
+                    <td>{{ item.material.name }}</td>
                     <td class="text-center">
                         S{{ item.key_size }} x L{{ item.length }}
                     </td>

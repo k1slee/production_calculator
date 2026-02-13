@@ -313,54 +313,26 @@ def get_stock_items_by_material(request):
 
 @login_required
 def print_order_report(request, order_id):
-    """Печатная форма основного отчета по заказу"""
+    """Печатная форма - детальный отчет"""
     order = get_object_or_404(Order, id=order_id)
     items = order.items.all().select_related('part_name', 'material', 'stock_item')
     
-    # Рассчитываем общий вес в кг
-    total_weight_kg = order.total_weight / 1000
+    # Сортируем с использованием sort_key
+    items_list = list(items)
+    items_list.sort(key=lambda x: x.sort_key)
     
-    # Формируем данные для отчета
-    report_data = {
-        'order': order,
-        'items': items,
-        'total_weight_kg': total_weight_kg,
-        'date': timezone.now().strftime('%d.%m.%Y'),
-        'user': request.user
-    }
-    
-    return render(request, 'calculator/print_order_report.html', report_data)
-
-@login_required
-def generate_order_pdf(request, order_id):
-    """Генерация PDF отчета по заказу"""
-    order = get_object_or_404(Order, id=order_id, user=request.user)
-    items = order.items.all().select_related('part_name', 'material', 'stock_item')
-    
-    total_weight_kg = order.total_weight / 1000
+    total_weight_kg = order.total_weight
     
     context = {
         'order': order,
-        'items': items,
+        'items': items_list,
         'total_weight_kg': total_weight_kg,
         'date': timezone.now().strftime('%d.%m.%Y'),
         'user': request.user
     }
     
-    # Загружаем шаблон
-    template = get_template('calculator/pdf_order_report.html')
-    html = template.render(context)
-    
-    # Создаем PDF
-    result = BytesIO()
-    pdf = pisa.pisaDocument(BytesIO(html.encode('UTF-8')), result)
-    
-    if not pdf.err:
-        response = HttpResponse(result.getvalue(), content_type='application/pdf')
-        response['Content-Disposition'] = f'attachment; filename="order_{order.order_number}_{datetime.datetime.now().strftime("%Y%m%d")}.pdf"'
-        return response
-    
-    return HttpResponse('Ошибка при генерации PDF', status=400)
+    return render(request, 'calculator/print_order_report.html', context)
+
 
 @login_required
 @transaction.atomic
@@ -388,34 +360,40 @@ def update_order_coefficient(request, order_id):
     
     return redirect('order_detail', order_id=order.id)
 
-
 @login_required
 def print_grouped_report(request, order_id):
-    """Печатная форма группированного отчета по материалам и сортаменту"""
+    """Печатная форма - группированный отчет"""
     order = get_object_or_404(Order, id=order_id)
     items = order.items.all().select_related('part_name', 'material', 'stock_item')
     
-    # Группируем детали по материалу и сортаменту
+    # Сортируем детали для группировки
+    items_list = list(items)
+    items_list.sort(key=lambda x: x.sort_key)
+    
+    # Группируем по материалу и сортаменту
     grouped_data = {}
-    for item in items:
-        key = (item.material.id, item.stock_item.id)
+    for item in items_list:
+        key = (item.material.id, item.stock_item.id) if not item.is_special else ('special', item.id)
         if key not in grouped_data:
             grouped_data[key] = {
                 'material': item.material,
                 'stock_item': item.stock_item,
                 'total_weight': 0,
                 'quantity': 0,
-                'weight_per_item': item.weight,  # Вес одной детали
-                'items': []
+                'weight_per_item': item.weight,
+                'items': [],
+                'is_special': item.is_special,
+                'part_name': item.part_name if item.is_special else None
             }
         grouped_data[key]['total_weight'] += item.total_weight
         grouped_data[key]['quantity'] += item.quantity
         grouped_data[key]['items'].append(item)
     
-    # Сортируем по материалу
-    grouped_list = sorted(grouped_data.values(), key=lambda x: x['material'].name)
+    # Сортируем группы
+    grouped_list = sorted(grouped_data.values(), 
+                         key=lambda x: (x['material'].name if x['material'] else 'zzz', 
+                                      x['stock_item'].id if x['stock_item'] else 0))
     
-    # Общий вес заказа
     total_weight_kg = order.total_weight
     
     context = {
@@ -431,28 +409,32 @@ def print_grouped_report(request, order_id):
 
 @login_required
 def print_cutting_task(request, order_id):
-    """Печатная форма - Задание на заготовку"""
+    """Печатная форма - задание на заготовку"""
     order = get_object_or_404(Order, id=order_id)
     items = order.items.all().select_related('part_name', 'material', 'stock_item')
     
-    # Группируем детали по типу сортамента
+    # Сортируем все детали
+    items_list = list(items)
+    items_list.sort(key=lambda x: x.sort_key)
+    
+    # Группируем по типу сортамента
     grouped_by_section = {
         'sheet': [],  # Лист
         'round': [],  # Кругляк
         'hexagon': [] # Шестигранник
     }
     
-    for item in items:
+    for item in items_list:
+        if item.is_special:
+            # Особые запижи можно добавить в отдельную группу или пропустить
+            continue
         section_type = item.stock_item.section_type
         if section_type in grouped_by_section:
             grouped_by_section[section_type].append(item)
     
-    # Сортируем внутри каждой группы по порядковому номеру
+    # Внутри каждой группы сортируем по номеру
     for section_type in grouped_by_section:
-        grouped_by_section[section_type] = sorted(
-            grouped_by_section[section_type], 
-            key=lambda x: x.sequence_number
-        )
+        grouped_by_section[section_type].sort(key=lambda x: x.sort_key)
     
     context = {
         'order': order,
