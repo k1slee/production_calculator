@@ -150,16 +150,19 @@ class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items', verbose_name='Заказ')
     sequence_number = models.CharField('Порядковый номер', max_length=20)
     part_name = models.ForeignKey(PartName, on_delete=models.PROTECT, verbose_name='Наименование детали')
-    material = models.ForeignKey(Material, on_delete=models.PROTECT, verbose_name='Марка материала')
+    material = models.ForeignKey(Material, on_delete=models.PROTECT, verbose_name='Марка материала', null=True, blank=True)
     quantity = models.IntegerField('Количество деталей', validators=[MinValueValidator(1)])
-    stock_item = models.ForeignKey(StockItem, on_delete=models.PROTECT, verbose_name='Сортамент со склада')
+    stock_item = models.ForeignKey(StockItem, on_delete=models.PROTECT, verbose_name='Сортамент со склада', null=True, blank=True)
     
     # Замеры детали
-    length = models.DecimalField('Длина (мм)', max_digits=8, decimal_places=2)
+    length = models.DecimalField('Длина (мм)', max_digits=8, decimal_places=2, null=True, blank=True)
     width = models.DecimalField('Ширина (мм)', max_digits=8, decimal_places=2, null=True, blank=True)
     height = models.DecimalField('Высота (мм)', max_digits=8, decimal_places=2, null=True, blank=True)
-    diameter = models.DecimalField('Диаметр (мм)', max_digits=8, decimal_places=2, null=True, blank=True)
+    diameter = models.DecimalField('Диаметр (мм)', max_digits=8, decimal_places=2, null=True, blank=True)  # Исправлено
     key_size = models.DecimalField('Размер под ключ (мм)', max_digits=8, decimal_places=2, null=True, blank=True)
+    
+    # Особая запись
+    is_special = models.BooleanField('Особая запись', default=False)
     
     class Meta:
         verbose_name = 'Деталь заказа'
@@ -172,19 +175,18 @@ class OrderItem(models.Model):
     @property
     def volume(self):
         """Расчёт объёма детали в мм³"""
+        if self.is_special or not self.stock_item:
+            return 0
         section_type = self.stock_item.section_type
         
         if section_type == 'sheet':
-            # Объём листа: длина * ширина * высота
-            return float(self.length) * float(self.width) * float(self.height)
+            return float(self.length or 0) * float(self.width or 0) * float(self.height or 0)
         elif section_type == 'round':
-            # Объём кругляка: π * (d/2)² * длина
-            d = float(self.diameter)
-            return 3.14159 * (d/2)**2 * float(self.length)
+            d = float(self.diameter or 0)
+            return 3.14159 * (d/2)**2 * float(self.length or 0)
         else:  # hexagon
-            # Объём шестигранника: (3√3/2) * a² * длина
-            a = float(self.key_size)
-            return (3 * 1.73205 / 2) * a**2 * float(self.length)
+            a = float(self.key_size or 0)
+            return (3 * 1.73205 / 2) * a**2 * float(self.length or 0)
     
     @property
     def volume_cm3(self):
@@ -194,6 +196,8 @@ class OrderItem(models.Model):
     @property
     def weight_g(self):
         """Вес одной детали в граммах"""
+        if self.is_special or not self.material:
+            return 0
         return self.volume_cm3 * float(self.material.density)
     
     @property
@@ -204,6 +208,8 @@ class OrderItem(models.Model):
     @property
     def total_weight_g(self):
         """Общий вес с учётом количества и коэффициента в граммах"""
+        if self.is_special:
+            return 0
         return self.weight_g * self.quantity * float(self.order.coefficient)
     
     @property

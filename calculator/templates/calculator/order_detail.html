@@ -25,7 +25,6 @@
                 </ul>
             </div>
             
-            
             <!-- Кнопка копирования -->
             <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#copyOrderModal{{ order.id }}">
                 <i class="fas fa-copy"></i> Копировать
@@ -185,6 +184,7 @@
         <h5 class="card-title mb-0">Детали заказа</h5>
         <div>
             <span class="badge bg-info me-2">Вес в килограммах</span>
+            <span class="badge bg-warning me-2">Особая запись</span>
             <a href="{% url 'add_order_item' order.id %}" class="btn btn-sm btn-success">
                 <i class="fas fa-plus-circle"></i> Добавить деталь
             </a>
@@ -210,33 +210,64 @@
                     {% for item in items %}
                     <tr>
                         <td class="text-center">{{ item.sequence_number }}</td>
-                        <td>{{ item.part_name }}</td>
-                        <td>{{ item.material.name }}</td>
+                        <td>
+                            {{ item.part_name }}
+                            {% if item.is_special %}
+                                <span class="badge bg-warning">Особая запись</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if item.is_special %}
+                                <span class="text-muted">—</span>
+                            {% else %}
+                                {{ item.material.name|default:"—" }}
+                            {% endif %}
+                        </td>
                         <td class="text-center">{{ item.quantity }}</td>
                         <td>
-                            <small>
-                                {% if item.stock_item.section_type == 'sheet' %}
-                                    Лист {{ item.stock_item.width }} мм
-                                {% elif item.stock_item.section_type == 'round' %}
-                                    Кругляк Ø{{ item.stock_item.diameter }} мм
-                                {% else %}
-                                    Шестигранник S{{ item.stock_item.key_size }} мм
-                                {% endif %}
-                            </small>
+                            {% if item.is_special %}
+                                <span class="text-muted">—</span>
+                            {% else %}
+                                <small>
+                                    {% if item.stock_item.section_type == 'sheet' %}
+                                        Лист {{ item.stock_item.width }} мм
+                                    {% elif item.stock_item.section_type == 'round' %}
+                                        Кругляк Ø{{ item.stock_item.diameter }} мм
+                                    {% else %}
+                                        Шестигранник S{{ item.stock_item.key_size }} мм
+                                    {% endif %}
+                                </small>
+                            {% endif %}
                         </td>
                         <td>
-                            <small>
-                                {% if item.stock_item.section_type == 'sheet' %}
-                                    Д:{{ item.length }} Ш:{{ item.width }} В:{{ item.height }}
-                                {% elif item.stock_item.section_type == 'round' %}
-                                    Ø:{{ item.diameter }} L:{{ item.length }}
-                                {% else %}
-                                    S:{{ item.key_size }} L:{{ item.length }}
-                                {% endif %}
-                            </small>
+                            {% if item.is_special %}
+                                <span class="text-muted">—</span>
+                            {% else %}
+                                <small>
+                                    {% if item.stock_item.section_type == 'sheet' %}
+                                        Д:{{ item.length }} Ш:{{ item.width }} В:{{ item.height }}
+                                    {% elif item.stock_item.section_type == 'round' %}
+                                        Ø:{{ item.diameter }} L:{{ item.length }}
+                                    {% else %}
+                                        S:{{ item.key_size }} L:{{ item.length }}
+                                    {% endif %}
+                                </small>
+                            {% endif %}
                         </td>
-                        <td class="text-end">{{ item.weight|floatformat:3 }}</td>
-                        <td class="text-end"><strong>{{ item.total_weight|floatformat:3 }}</strong></td>
+                        <td class="text-end">
+                            {% if item.is_special %}
+                                <span class="text-muted">—</span>
+                            {% else %}
+                                {{ item.weight|floatformat:3 }}
+                            {% endif %}
+                        </td>
+                        <td class="text-end">
+                            {% if item.is_special %}
+                                <span class="text-muted">—</span>
+                            {% else %}
+                                <strong>{{ item.total_weight|floatformat:3 }}</strong>
+                            {% endif %}
+                        </td>
                         <td>
                             <div class="btn-group btn-group-sm">
                                 <a href="{% url 'edit_order_item' order.id item.id %}" class="btn btn-warning" title="Редактировать">

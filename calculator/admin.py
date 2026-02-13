@@ -99,7 +99,7 @@ class StockItemAdmin(admin.ModelAdmin):
             )
         return super().get_fieldsets(request, obj)
 
-        
+
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
     list_display = ['id', 'order_number', 'order_name', 'drawing_number', 'user', 'created_at', 'coefficient']
@@ -109,6 +109,6 @@ class OrderAdmin(admin.ModelAdmin):
 
 @admin.register(OrderItem)
 class OrderItemAdmin(admin.ModelAdmin):
-    list_display = ['id', 'order', 'sequence_number', 'part_name', 'material', 'quantity']
-    list_filter = ['order', 'material', 'part_name']
+    list_display = ['id', 'order', 'sequence_number', 'part_name', 'material', 'quantity', 'is_special']
+    list_filter = ['order', 'material', 'part_name', 'is_special']
     search_fields = ['order__order_number', 'part_name__name']

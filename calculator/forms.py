@@ -86,7 +86,8 @@ class OrderItemForm(forms.ModelForm):
     class Meta:
         model = OrderItem
         fields = ['sequence_number', 'part_name', 'material', 'quantity', 
-                 'stock_item', 'length', 'width', 'height', 'diameter', 'key_size']
+                 'stock_item', 'length', 'width', 'height', 'diameter', 'key_size',
+                 'is_special']
         widgets = {
             'sequence_number': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Например: 01-2'}),
             'part_name': forms.Select(attrs={'class': 'form-select'}),
@@ -98,14 +99,16 @@ class OrderItemForm(forms.ModelForm):
             'height': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
             'diameter': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
             'key_size': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'is_special': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Показываем все сортаменты без фильтрации
         self.fields['stock_item'].queryset = StockItem.objects.all()
         self.fields['stock_item'].label = 'Сортамент со склада'
         self.fields['stock_item'].empty_label = '---------'
+        self.fields['is_special'].label = 'Особая запись (без расчета веса)'
+        self.fields['is_special'].required = False
         
         # Делаем поля необязательными
         self.fields['length'].required = False
@@ -113,45 +116,52 @@ class OrderItemForm(forms.ModelForm):
         self.fields['height'].required = False
         self.fields['diameter'].required = False
         self.fields['key_size'].required = False
+        self.fields['material'].required = False
+        self.fields['stock_item'].required = False
         self.fields['sequence_number'].required = True
-        self.fields['sequence_number'].label = 'номер'
+        self.fields['part_name'].required = True
+        self.fields['quantity'].required = True
     
     def clean(self):
         cleaned_data = super().clean()
-        stock_item = cleaned_data.get('stock_item')
+        is_special = cleaned_data.get('is_special')
         
-        if stock_item:
-            section_type = stock_item.section_type
+        if not is_special:
+            # Для обычной записи проверяем обязательные поля
+            if not cleaned_data.get('material'):
+                self.add_error('material', 'Обязательное поле для обычной записи')
+            if not cleaned_data.get('stock_item'):
+                self.add_error('stock_item', 'Обязательное поле для обычной записи')
             
-            if section_type == 'sheet':
-                if not cleaned_data.get('length'):
-                    self.add_error('length', 'Обязательное поле для листа')
-                if not cleaned_data.get('width'):
-                    self.add_error('width', 'Обязательное поле для листа')
-                if not cleaned_data.get('height'):
-                    self.add_error('height', 'Обязательное поле для листа')
-                # Очищаем ненужные поля
-                cleaned_data['diameter'] = None
-                cleaned_data['key_size'] = None
-                    
-            elif section_type == 'round':
-                if not cleaned_data.get('diameter'):
-                    self.add_error('diameter', 'Обязательное поле для кругляка')
-                if not cleaned_data.get('length'):
-                    self.add_error('length', 'Обязательное поле для кругляка')
-                # Очищаем ненужные поля
-                cleaned_data['width'] = None
-                cleaned_data['height'] = None
-                cleaned_data['key_size'] = None
-                    
-            elif section_type == 'hexagon':
-                if not cleaned_data.get('key_size'):
-                    self.add_error('key_size', 'Обязательное поле для шестигранника')
-                if not cleaned_data.get('length'):
-                    self.add_error('length', 'Обязательное поле для шестигранника')
-                # Очищаем ненужные поля
-                cleaned_data['width'] = None
-                cleaned_data['height'] = None
-                cleaned_data['diameter'] = None
+            stock_item = cleaned_data.get('stock_item')
+            if stock_item:
+                section_type = stock_item.section_type
+                
+                if section_type == 'sheet':
+                    if not cleaned_data.get('length'):
+                        self.add_error('length', 'Обязательное поле для листа')
+                    if not cleaned_data.get('width'):
+                        self.add_error('width', 'Обязательное поле для листа')
+                    if not cleaned_data.get('height'):
+                        self.add_error('height', 'Обязательное поле для листа')
+                elif section_type == 'round':
+                    if not cleaned_data.get('diameter'):
+                        self.add_error('diameter', 'Обязательное поле для кругляка')
+                    if not cleaned_data.get('length'):
+                        self.add_error('length', 'Обязательное поле для кругляка')
+                elif section_type == 'hexagon':
+                    if not cleaned_data.get('key_size'):
+                        self.add_error('key_size', 'Обязательное поле для шестигранника')
+                    if not cleaned_data.get('length'):
+                        self.add_error('length', 'Обязательное поле для шестигранника')
+        else:
+            # Для особой записи очищаем ненужные поля
+            cleaned_data['material'] = None
+            cleaned_data['stock_item'] = None
+            cleaned_data['length'] = None
+            cleaned_data['width'] = None
+            cleaned_data['height'] = None
+            cleaned_data['diameter'] = None
+            cleaned_data['key_size'] = None
         
         return cleaned_data
