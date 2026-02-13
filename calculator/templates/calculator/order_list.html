@@ -9,7 +9,6 @@
     </a>
 </div>
 
-
 <!-- Панель поиска и фильтров -->
 <div class="card mb-4">
     <div class="card-body">
@@ -75,18 +74,11 @@
             </div>
             <div class="card-body">
                 <div class="row mb-2">
-                    <div class="col-8">
+                    <div class="col-7">
                         <p class="mb-1"><strong>Наименование:</strong></p>
                         <p class="mb-1">{{ order.order_name|truncatechars:50 }}</p>
                     </div>
-                    <div class="col-4">
-                        <p class="mb-1"><strong>Деталей:</strong></p>
-                        <p class="mb-1">{{ order.items.count }} шт.</p>
-                    </div>
-                </div>
-                
-                <div class="row mb-2">
-                    <div class="col-6">
+                    <div class="col-5">
                         <p class="mb-1"><strong>Создатель:</strong></p>
                         <p class="mb-1">
                             <i class="fas fa-user"></i> 
@@ -96,18 +88,18 @@
                             {% endif %}
                         </p>
                     </div>
-                    <div class="col-6">
-                        <p class="mb-1"><strong>Дата:</strong></p>
-                        <p class="mb-1">{{ order.created_at|date:"d.m.Y H:i" }}</p>
-                    </div>
                 </div>
                 
                 <div class="row mb-3">
-                    <div class="col-6">
-                        <p class="mb-1"><strong>Коэффициент:</strong></p>
+                    <div class="col-4">
+                        <p class="mb-1"><strong>Деталей:</strong></p>
+                        <p class="mb-1">{{ order.items.count }} шт.</p>
+                    </div>
+                    <div class="col-4">
+                        <p class="mb-1"><strong>Коэф.:</strong></p>
                         <p class="mb-1">{{ order.coefficient }}</p>
                     </div>
-                    <div class="col-6">
+                    <div class="col-4">
                         <p class="mb-1"><strong>Материалов:</strong></p>
                         <p class="mb-1">{{ order.materials_count }} шт.</p>
                     </div>
@@ -147,8 +139,7 @@
             </div>
             <div class="card-footer text-muted">
                 <small>
-                    <i class="fas fa-calendar"></i> {{ order.created_at|date:"d.m.Y" }} 
-                    <i class="fas fa-user ms-2"></i> {{ order.user.last_name }} {{ order.user.first_name|first }}.
+                    <i class="fas fa-calendar"></i> {{ order.created_at|date:"d.m.Y" }}
                 </small>
             </div>
         </div>
@@ -191,7 +182,7 @@
                                 class="form-control" 
                                 id="new_order_name{{ order.id }}" 
                                 name="new_order_name" 
-                                value="{{ order.order_name }}">  <!-- Убрано "Копия" -->
+                                value="{{ order.order_name }}">
                             <div class="form-text">Оставьте поле пустым, чтобы скопировать наименование исходного заказа</div>
                         </div>
                         
