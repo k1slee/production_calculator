@@ -14,6 +14,16 @@
                 margin: 0;
                 padding: 0;
             }
+            
+            /* Запрещаем разрыв строк внутри таблицы */
+            tr {
+                page-break-inside: avoid;
+            }
+            
+            /* Повторяем заголовок таблицы на каждой странице */
+            thead {
+                display: table-header-group;
+            }
         }
         
         @page {
@@ -32,58 +42,58 @@
             margin-bottom: 20px;
         }
         
+        /* УМЕНЬШАЕМ ШАПКУ */
         .print-header {
             text-align: center;
-            margin-bottom: 30px;
-            position: relative;
+            margin-bottom: 15px; /* Было 30px */
         }
         
         .print-title {
-            font-size: 18pt;
+            font-size: 14pt; /* Было 18pt */
             font-weight: bold;
             text-transform: uppercase;
-            margin-bottom: 5px;
+            margin-bottom: 2px; /* Было 5px */
         }
         
         .print-subtitle {
-            font-size: 16pt;
+            font-size: 13pt; /* Было 16pt */
             font-weight: 500;
-            margin-bottom: 5px;
+            margin-bottom: 2px; /* Было 5px */
         }
         
         .drawing-number {
-            font-size: 14pt;
+            font-size: 12pt; /* Было 14pt */
             font-weight: normal;
-            margin-bottom: 10px;
+            margin-bottom: 2px; /* Было 10px */
             color: #333;
         }
         
         .order-number {
-            position: static; /* убираем абсолютное позиционирование */ 
-            font-size: 12pt; 
-            font-weight: bold; 
-            text-align: center; /* выравниваем по центру */ 
-            margin-top: 5px;
+            font-size: 11pt; /* Было 12pt */
+            font-weight: bold;
+            text-align: center;
+            margin-top: 0px; /* Было 5px */
         }
         
+        /* УМЕНЬШАЕМ ТАБЛИЦУ */
         .report-table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 40px;
-            font-size: 11pt;
+            margin-bottom: 25px; /* Было 40px */
+            font-size: 9pt; /* Было 11pt */
         }
         
         .report-table th {
             background-color: #f0f0f0;
             border: 1px solid #000;
-            padding: 10px;
+            padding: 6px; /* Было 10px */
             text-align: center;
             font-weight: bold;
         }
         
         .report-table td {
             border: 1px solid #000;
-            padding: 8px;
+            padding: 5px; /* Было 8px */
             vertical-align: middle;
         }
         
@@ -100,19 +110,53 @@
             background-color: #f8f9fa;
         }
         
+        /* УМЕНЬШАЕМ ФУТЕР */
         .footer {
-            margin-top: 50px;
+            margin-top: 20px; /* Было 50px */
             display: flex;
-            justify-content: flex-end;
+            justify-content: space-between; /* Меняем на space-between для даты слева */
+            align-items: center;
+            border-top: 1px solid #ccc;
+            padding-top: 10px;
         }
         
         .technologist {
-            font-size: 12pt;
+            font-size: 10pt; /* Было 12pt */
             font-weight: normal;
         }
         
         .technologist span {
             font-weight: bold;
+        }
+        
+        /* Стили для даты */
+        .date {
+            font-size: 10pt;
+        }
+        
+        .date span {
+            font-weight: bold;
+        }
+        
+        /* Уменьшаем мелкий текст */
+        small {
+            font-size: 8pt !important;
+        }
+        
+        /* Стили для badge */
+        .badge {
+            display: inline-block;
+            padding: 1px 3px;
+            font-size: 7pt;
+            border-radius: 2px;
+        }
+        .bg-warning {
+            background-color: #ffc107;
+            color: #000;
+        }
+        .text-muted {
+            color: #6c757d;
+            font-size: 8pt;
         }
 
         .report-table th:nth-child(1) { width: 30%; }
@@ -131,7 +175,7 @@
         </a>
     </div>
 
-    <!-- Шапка документа -->
+    <!-- Шапка документа (уменьшенная) -->
     <div class="print-header">
         <div class="print-title">РАСХОД МАТЕРИАЛА НА ИЗГОТОВЛЕНИЕ:</div>
         <div class="print-subtitle">{{ order.order_name }}</div>
@@ -146,21 +190,21 @@
         </div>
     </div>
     
-    <!-- Таблица с группированными данными -->
+    <!-- Таблица с группированными данными (уменьшенная) -->
     <table class="report-table">
         <thead>
             <tr>
                 <th>Марка материала</th>
                 <th>Сортамент на складе</th>
-                <th>Вес на 1 изделие, кг</th>
+                <th>Вес 1 шт, кг</th> <!-- Сократил заголовок -->
             </tr>
         </thead>
         <tbody>
-            
             {% for group in grouped_items %}
                 <tr>
-                    <td><strong>{{ group.material.name }}</strong><br>
-                        <small style="color: #666;">пл. {{ group.material.density }} г/см³</small>
+                    <td>
+                        <strong>{{ group.material.name }}</strong><br>
+                        <small>пл. {{ group.material.density }} г/см³</small>
                     </td>
                     <td>
                         {% if group.stock_item.section_type == 'sheet' %}
@@ -170,9 +214,9 @@
                         {% elif group.stock_item.section_type == 'hexagon' %}
                             Шестигранник S{{ group.stock_item.key_size }} мм
                         {% endif %}
-                        <br><small>Количество деталей: {{ group.quantity }} шт.</small>
+                        <br><small>Кол-во: {{ group.quantity }} шт.</small>
                         {% if group.is_special %}
-                            <br><span class="badge bg-warning">Особая запись: {{ group.part_name }}</span>
+                            <br><span class="badge bg-warning">Особая запись</span>
                         {% endif %}
                     </td>
                     <td class="text-right">
@@ -183,12 +227,15 @@
                         {% endif %}
                     </td>
                 </tr>
-                {% endfor %}
+            {% endfor %}
         </tbody>
     </table>
     
-    <!-- Подпись технолога -->
+    <!-- Подпись технолога и дата -->
     <div class="footer">
+        <div class="date">
+            Дата: <span>{% now "d.m.Y" %}</span>
+        </div>
         <div class="technologist">
             Технолог: <span>{{ user.last_name }} {{ user.first_name|first }}. {{ user.profile.patronymic|first|default:'' }}.</span>
         </div>
