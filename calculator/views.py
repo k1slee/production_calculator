@@ -265,35 +265,6 @@ def order_detail(request, order_id):
     })
 
 @login_required
-@transaction.atomic
-def add_order_item(request, order_id):
-    """Добавление детали в заказ"""
-    order = get_object_or_404(Order, id=order_id, user=request.user)
-    
-    if request.method == 'POST':
-        form = OrderItemForm(request.POST)
-        
-        if form.is_valid():
-            try:
-                item = form.save(commit=False)
-                item.order = order
-                item.save()
-                messages.success(request, 'Деталь успешно добавлена в заказ')
-                return redirect('order_detail', order_id=order.id)
-            except Exception as e:
-                messages.error(request, f'Ошибка при сохранении: {str(e)}')
-        else:
-            for field, errors in form.errors.items():
-                for error in errors:
-                    messages.error(request, f'{field}: {error}')
-    else:
-        form = OrderItemForm()
-    
-    return render(request, 'calculator/order_item_form.html', {
-        'form': form, 
-        'order': order
-    })
-@login_required
 def delete_order_item(request, order_id, item_id):
     order = get_object_or_404(Order, id=order_id, user=request.user)
     item = get_object_or_404(OrderItem, id=item_id, order=order)
@@ -525,7 +496,7 @@ def copy_order(request, order_id):
 @transaction.atomic
 def edit_order_item(request, order_id, item_id):
     """Редактирование детали в заказе"""
-    order = get_object_or_404(Order, id=order_id, user=request.user)
+    order = get_object_or_404(Order, id=order_id)
     item = get_object_or_404(OrderItem, id=item_id, order=order)
     
     if request.method == 'POST':
@@ -600,3 +571,95 @@ def search_materials(request):
     
     data = [{'id': m.id, 'text': f"{m.name} ({m.density} г/см³)"} for m in materials]
     return JsonResponse({'results': data})
+@login_required
+@transaction.atomic
+def add_order_item(request, order_id):
+    """Добавление детали в заказ"""
+    order = get_object_or_404(Order, id=order_id)
+    
+    if request.method == 'POST':
+        form = OrderItemForm(request.POST)
+        
+        if form.is_valid():
+            try:
+                item = form.save(commit=False)
+                item.order = order
+                item.save()
+                
+                # Сохраняем ВСЕ параметры детали в сессию
+                request.session['last_item_params'] = {
+                    'part_name_id': item.part_name_id,
+                    'material_id': item.material_id if item.material else None,
+                    'quantity': item.quantity,
+                    'stock_item_id': item.stock_item_id if item.stock_item else None,
+                    'length': float(item.length) if item.length else None,
+                    'width': float(item.width) if item.width else None,
+                    'height': float(item.height) if item.height else None,
+                    'diameter': float(item.diameter) if item.diameter else None,
+                    'key_size': float(item.key_size) if item.key_size else None,
+                    'is_special': item.is_special,
+                    'section_type': item.stock_item.section_type if item.stock_item else None,
+                }
+                
+                messages.success(request, 'Деталь успешно добавлена в заказ')
+                return redirect('order_detail', order_id=order.id)
+            except Exception as e:
+                messages.error(request, f'Ошибка при сохранении: {str(e)}')
+        else:
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f'{field}: {error}')
+    else:
+        # Получаем сохраненные параметры из сессии
+        last_params = request.session.get('last_item_params', {})
+        
+        # Устанавливаем следующий порядковый номер (только как предложение)
+        next_number = order.items.count() + 1
+        
+        # Базовые начальные данные
+        initial_data = {'sequence_number': next_number}
+        
+        # Добавляем все сохраненные параметры
+        if last_params:
+            # Основные поля
+            if 'part_name_id' in last_params and last_params['part_name_id']:
+                initial_data['part_name'] = last_params['part_name_id']
+            if 'material_id' in last_params and last_params['material_id']:
+                initial_data['material'] = last_params['material_id']
+            if 'quantity' in last_params and last_params['quantity']:
+                initial_data['quantity'] = last_params['quantity']
+            if 'stock_item_id' in last_params and last_params['stock_item_id']:
+                initial_data['stock_item'] = last_params['stock_item_id']
+            if 'is_special' in last_params:
+                initial_data['is_special'] = last_params['is_special']
+            
+            # Поля замеров - ВАЖНО: сохраняем их!
+            if 'length' in last_params and last_params['length']:
+                initial_data['length'] = last_params['length']
+            if 'width' in last_params and last_params['width']:
+                initial_data['width'] = last_params['width']
+            if 'height' in last_params and last_params['height']:
+                initial_data['height'] = last_params['height']
+            if 'diameter' in last_params and last_params['diameter']:
+                initial_data['diameter'] = last_params['diameter']
+            if 'key_size' in last_params and last_params['key_size']:
+                initial_data['key_size'] = last_params['key_size']
+        
+        form = OrderItemForm(initial=initial_data)
+        
+        # Передаем тип сортамента в шаблон для правильного отображения полей
+        last_section_type = last_params.get('section_type') if last_params else None
+        
+    return render(request, 'calculator/order_item_form.html', {
+        'form': form, 
+        'order': order,
+        'last_section_type': last_section_type,
+        'edit_mode': False  # Режим добавления
+    })
+@login_required
+def clear_last_item_params(request):
+    """Очистка сохраненных параметров последней детали"""
+    if 'last_item_params' in request.session:
+        del request.session['last_item_params']
+    messages.success(request, 'Настройки по умолчанию сброшены')
+    return redirect(request.META.get('HTTP_REFERER', 'order_list'))

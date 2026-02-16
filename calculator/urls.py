@@ -32,7 +32,7 @@ urlpatterns = [
     path('orders/<int:order_id>/delete/', views.delete_order, name='delete_order'),
     path('orders/<int:order_id>/item/<int:item_id>/delete/', views.delete_order_item, name='delete_order_item'),
     path('orders/<int:order_id>/update-coefficient/', views.update_order_coefficient, name='update_order_coefficient'),
-    
+    path('clear-last-params/', views.clear_last_item_params, name='clear_last_params'),
     # Печатные формы - детальный отчет
     path('orders/<int:order_id>/print/', views.print_order_report, name='print_order_report'),
     
