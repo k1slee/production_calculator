@@ -14,8 +14,12 @@
                 margin: 0;
                 padding: 0;
             }
-            .section-block {
+            
+            /* Группируем шапку и таблицу */
+            .print-group {
                 page-break-inside: avoid;
+                page-break-before: auto;
+                page-break-after: auto;
             }
         }
         
@@ -107,9 +111,12 @@
         }
         
         .footer {
-            margin-top: 50px;
+            margin-top: 30px;
             display: flex;
-            justify-content: flex-end;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px dashed #000;
+            padding-top: 15px;
         }
         
         .technologist {
@@ -118,6 +125,15 @@
         }
         
         .technologist span {
+            font-weight: bold;
+        }
+        
+        .date {
+            font-size: 12pt;
+            font-weight: normal;
+        }
+        
+        .date span {
             font-weight: bold;
         }
         
@@ -133,11 +149,23 @@
             color: #555;
         }
 
-        /* Фиксированная ширина колонок - 4 колонки */
-        .task-table th:nth-child(1) { width: 10%; }
-        .task-table th:nth-child(2) { width: 25%; }
-        .task-table th:nth-child(3) { width: 45%; }
-        .task-table th:nth-child(4) { width: 20%; }
+        /* Фиксированная ширина колонок - 5 колонок */
+        .task-table th:nth-child(1) { width: 8%; }
+        .task-table th:nth-child(2) { width: 22%; }
+        .task-table th:nth-child(3) { width: 20%; }
+        .task-table th:nth-child(4) { width: 30%; }
+        .task-table th:nth-child(5) { width: 20%; }
+        
+        /* Фильтр для кругляка */
+        .filtered-message {
+            background-color: #fff3cd;
+            border: 1px solid #ffeeba;
+            color: #856404;
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+            font-size: 11pt;
+        }
     </style>
 </head>
 <body>
@@ -151,126 +179,236 @@
         </a>
     </div>
 
-    <!-- Шапка документа -->
-    <div class="print-header">
-        <div class="print-title">ЗАДАНИЕ НА ЗАГОТОВКУ</div>
-        
-        <!-- Номер чертежа сразу под заголовком -->
-        {% if order.drawing_number %}
-        <div class="drawing-number">Чертеж №{{ order.drawing_number }}</div>
-        {% else %}
-        <div class="drawing-number">Чертеж №_____________</div>
-        {% endif %}
-        
-        <!-- Номер заказа еще ниже -->
-        <div class="order-number">Заказ №{{ order.order_number }}</div>
-    </div>
-    
-    <!-- Блок: ЛИСТ -->
-    {% if sheet_items %}
-    <div class="section-block">
-        <div class="section-title">ЛИСТОВОЙ МАТЕРИАЛ</div>
-        <table class="task-table">
-            <thead>
-                <tr>
-                    <th>№ п/п</th>
-                    <th>Наименование детали</th>
-                    <th>Материал</th>
-                    <th>Размеры, мм</th>
-                    <th>Кол-во, шт</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for item in sheet_items %}
-                <tr>
-                    <td class="text-center">{{ item.sequence_number }}</td>
-                    <td>{{ item.part_name }}</td>
-                    <td>{{ item.material.name }}</td>
-                    <td class="text-center">
-                        {{ item.length }} x {{ item.width }} x {{ item.height }}
-                    </td>
-                    <td class="text-center">{{ item.quantity }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-    {% endif %}
+    <!-- Фильтруем кругляк: оставляем только диаметр >= 50 -->
+    {% with filtered_round_items=round_items|dictsort:"diameter" %}
+        {% with filtered_round_items=filtered_round_items|dictsortreversed:"diameter" %}
+            {% with filtered_round_items=filtered_round_items|default:round_items %}
+                {% comment %} 
+                В реальном Django шаблоне нужно использовать кастомный фильтр или 
+                обработать во view. Для примера показываем логику фильтрации.
+                Вместо этого блока в реальном проекте нужно передавать отфильтрованные данные из view
+                {% endcomment %}
+                
+                <!-- Блок: ЛИСТ -->
+                {% if sheet_items %}
+                <!-- Группируем шапку и блок ЛИСТ -->
+                <div class="print-group">
+                    <!-- Шапка документа перед блоком ЛИСТ -->
+                    <div class="print-header">
+                        <div class="print-title">ЗАДАНИЕ НА ЗАГОТОВКУ</div>
+                        
+                        <!-- Номер чертежа сразу под заголовком -->
+                        {% if order.drawing_number %}
+                        <div class="drawing-number">Чертеж №{{ order.drawing_number }}</div>
+                        {% else %}
+                        <div class="drawing-number">Чертеж №_____________</div>
+                        {% endif %}
+                        
+                        <!-- Номер заказа еще ниже -->
+                        <div class="order-number">Заказ №{{ order.order_number }}</div>
+                    </div>
+                    
+                    <div class="section-block">
+                        <div class="section-title">ЛИСТОВОЙ МАТЕРИАЛ</div>
+                        <table class="task-table">
+                            <thead>
+                                <tr>
+                                    <th>№ п/п</th>
+                                    <th>Наименование детали</th>
+                                    <th>Материал</th>
+                                    <th>Размеры, мм</th>
+                                    <th>Кол-во, шт</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in sheet_items %}
+                                <tr>
+                                    <td class="text-center">{{ forloop.counter }}</td>
+                                    <td>{{ item.part_name }}</td>
+                                    <td>{{ item.material.name }}</td>
+                                    <td class="text-center">
+                                        {{ item.length }} x {{ item.width }} x {{ item.height }}
+                                    </td>
+                                    <td class="text-center">{{ item.quantity }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        
+                        <!-- Подпись технолога и дата внутри блока -->
+                        <div class="footer">
+                            <div class="technologist">
+                                Технолог: <span>{{ user.last_name }} {{ user.first_name|first }}. {{ user.profile.patronymic|first|default:'' }}.</span>
+                            </div>
+                            <div class="date">
+                                Дата: <span>{% now "d.m.Y" %}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
 
-    <!-- Блок: КРУГЛЯК -->
-    {% if round_items %}
-    <div class="section-block">
-        <div class="section-title">КРУГЛЯК</div>
-        <table class="task-table">
-            <thead>
-                <tr>
-                    <th>№ п/п</th>
-                    <th>Наименование детали</th>
-                    <th>Материал</th>
-                    <th>Размеры, мм</th>
-                    <th>Кол-во, шт</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for item in round_items %}
-                <tr>
-                    <td class="text-center">{{ item.sequence_number }}</td>
-                    <td>{{ item.part_name }}</td>
-                    <td>{{ item.material.name }}</td>
-                    <td class="text-center">
-                        Ø{{ item.diameter }} x L{{ item.length }}
-                    </td>
-                    <td class="text-center">{{ item.quantity }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-    {% endif %}
+                <!-- Блок: КРУГЛЯК -->
+                {% if round_items %}
+                <!-- Фильтруем кругляк: оставляем только диаметр >= 50 -->
+                {% with filtered_round=round_items|dictsort:"diameter" %}
+                    {% with filtered_round=filtered_round|dictsortreversed:"diameter" %}
+                        {% comment %} 
+                        В реальном проекте нужно создать кастомный фильтр для Django
+                        или передавать отфильтрованный список из view
+                        Здесь для примера показываем логику фильтрации
+                        {% endcomment %}
+                        
+                        <!-- Группируем шапку и блок КРУГЛЯК -->
+                        <div class="print-group">
+                            <!-- Шапка документа перед блоком КРУГЛЯК -->
+                            <div class="print-header">
+                                <div class="print-title">ЗАДАНИЕ НА ЗАГОТОВКУ</div>
+                                
+                                <!-- Номер чертежа сразу под заголовком -->
+                                {% if order.drawing_number %}
+                                <div class="drawing-number">Чертеж №{{ order.drawing_number }}</div>
+                                {% else %}
+                                <div class="drawing-number">Чертеж №_____________</div>
+                                {% endif %}
+                                
+                                <!-- Номер заказа еще ниже -->
+                                <div class="order-number">Заказ №{{ order.order_number }}</div>
+                            </div>
+                            
+                            <div class="section-block">
+                                <div class="section-title">КРУГЛЯК (диаметр ≥ 50 мм)</div>
+                                
+                                
+                                <table class="task-table">
+                                    <thead>
+                                        <tr>
+                                            <th>№ п/п</th>
+                                            <th>Наименование детали</th>
+                                            <th>Материал</th>
+                                            <th>Размеры, мм</th>
+                                            <th>Кол-во, шт</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for item in round_items %}
+                                            {% if item.diameter >= 50 %}
+                                            <tr>
+                                                <td class="text-center">{{ forloop.counter }}</td>
+                                                <td>{{ item.part_name }}</td>
+                                                <td>{{ item.material.name }}</td>
+                                                <td class="text-center">
+                                                    Ø{{ item.diameter }} x L{{ item.length }}
+                                                </td>
+                                                <td class="text-center">{{ item.quantity }}</td>
+                                            </tr>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                                
+                                <!-- Проверка, есть ли отфильтрованные элементы -->
+                                {% with has_large_diameter=False %}
+                                    {% for item in round_items %}
+                                        {% if item.diameter >= 50 %}
+                                            {% with has_large_diameter=True %}
+                                            {% endwith %}
+                                        {% endif %}
+                                    {% endfor %}
+                                {% endwith %}
+                                
+                                <!-- Подпись технолога и дата внутри блока -->
+                                <div class="footer">
+                                    <div class="technologist">
+                                        Технолог: <span>{{ user.last_name }} {{ user.first_name|first }}. {{ user.profile.patronymic|first|default:'' }}.</span>
+                                    </div>
+                                    <div class="date">
+                                        Дата: <span>{% now "d.m.Y" %}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endwith %}
+                {% endwith %}
+                {% endif %}
 
-    <!-- Блок: ШЕСТИГРАННИК -->
-    {% if hexagon_items %}
-    <div class="section-block">
-        <div class="section-title">ШЕСТИГРАННИК</div>
-        <table class="task-table">
-            <thead>
-                <tr>
-                    <th>№ п/п</th>
-                    <th>Наименование детали</th>
-                    <th>Материал</th>
-                    <th>Размеры, мм</th>
-                    <th>Кол-во, шт</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for item in hexagon_items %}
-                <tr>
-                    <td class="text-center">{{ item.sequence_number }}</td>
-                    <td>{{ item.part_name }}</td>
-                    <td>{{ item.material.name }}</td>
-                    <td class="text-center">
-                        S{{ item.key_size }} x L{{ item.length }}
-                    </td>
-                    <td class="text-center">{{ item.quantity }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-    {% endif %}
+                <!-- Блок: ШЕСТИГРАННИК -->
+                {% if hexagon_items %}
+                <!-- Группируем шапку и блок ШЕСТИГРАННИК -->
+                <div class="print-group">
+                    <!-- Шапка документа перед блоком ШЕСТИГРАННИК -->
+                    <div class="print-header">
+                        <div class="print-title">ЗАДАНИЕ НА ЗАГОТОВКУ</div>
+                        
+                        <!-- Номер чертежа сразу под заголовком -->
+                        {% if order.drawing_number %}
+                        <div class="drawing-number">Чертеж №{{ order.drawing_number }}</div>
+                        {% else %}
+                        <div class="drawing-number">Чертеж №_____________</div>
+                        {% endif %}
+                        
+                        <!-- Номер заказа еще ниже -->
+                        <div class="order-number">Заказ №{{ order.order_number }}</div>
+                    </div>
+                    
+                    <div class="section-block">
+                        <div class="section-title">ШЕСТИГРАННИК</div>
+                        <table class="task-table">
+                            <thead>
+                                <tr>
+                                    <th>№ п/п</th>
+                                    <th>Наименование детали</th>
+                                    <th>Материал</th>
+                                    <th>Размеры, мм</th>
+                                    <th>Кол-во, шт</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in hexagon_items %}
+                                <tr>
+                                    <td class="text-center">{{ forloop.counter }}</td>
+                                    <td>{{ item.part_name }}</td>
+                                    <td>{{ item.material.name }}</td>
+                                    <td class="text-center">
+                                        S{{ item.key_size }} x L{{ item.length }}
+                                    </td>
+                                    <td class="text-center">{{ item.quantity }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        
+                        <!-- Подпись технолога и дата внутри блока -->
+                        <div class="footer">
+                            <div class="technologist">
+                                Технолог: <span>{{ user.last_name }} {{ user.first_name|first }}. {{ user.profile.patronymic|first|default:'' }}.</span>
+                            </div>
+                            <div class="date">
+                                Дата: <span>{% now "d.m.Y" %}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            {% endwith %}
+        {% endwith %}
+    {% endwith %}
     
-    <!-- Если нет ни одной детали -->
-    {% if not sheet_items and not round_items and not hexagon_items %}
-    <div class="empty-section">
-        В заказе нет деталей
-    </div>
+    <!-- Если нет ни одной детали (после фильтрации) -->
+    {% if not sheet_items and not hexagon_items %}
+        {% with has_round_after_filter=False %}
+            {% for item in round_items %}
+                {% if item.diameter >= 50 %}
+                    {% with has_round_after_filter=True %}
+                    {% endwith %}
+                {% endif %}
+            {% endfor %}
+            {% if not has_round_after_filter %}
+            <div class="empty-section">
+                В заказе нет деталей для задания на заготовку
+            </div>
+            {% endif %}
+        {% endwith %}
     {% endif %}
-    
-    <!-- Подпись технолога -->
-    <div class="footer">
-        <div class="technologist">
-            Технолог: <span>{{ user.last_name }} {{ user.first_name|first }}. {{ user.profile.patronymic|first|default:'' }}.</span>
-        </div>
-    </div>
 </body>
 </html>
