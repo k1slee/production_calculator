@@ -189,7 +189,7 @@
     <table class="report-table">
         <thead>
             <tr>
-                <th>№</th>
+                <th>Номер детали</th>
                 <th>Наименование детали</th>
                 <th>Марка материала</th>
                 <th>Кол-во, шт</th>
@@ -201,7 +201,7 @@
         <tbody>
             {% for item in items %}
             <tr>
-                <td class="text-center">{{ forloop.counter }}</td>
+                <td class="text-center">{{ item.sequence_number }}</td>
                 <td>{{ item.part_name }}</td>
                 <td>
                     {% if item.is_special %}
