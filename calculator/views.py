@@ -277,6 +277,35 @@ def delete_order_item(request, order_id, item_id):
     return render(request, 'calculator/order_item_confirm_delete.html', {'item': item, 'order': order})
 
 @login_required
+@transaction.atomic
+def copy_order_item(request, order_id, item_id):
+    """Копирование детали в заказе"""
+    order = get_object_or_404(Order, id=order_id)
+    item = get_object_or_404(OrderItem, id=item_id, order=order)
+    
+    try:
+        next_number = str(order.items.count() + 1)
+        new_item = OrderItem(
+            order=order,
+            part_name=item.part_name,
+            material=item.material,
+            stock_item=item.stock_item,
+            quantity=item.quantity,
+            sequence_number=next_number,
+            is_special=item.is_special,
+            length=item.length,
+            width=item.width,
+            height=item.height,
+            diameter=item.diameter,
+            key_size=item.key_size,
+        )
+        new_item.save()
+        messages.success(request, f'Деталь №{item.sequence_number} скопирована как №{next_number}')
+    except Exception as e:
+        messages.error(request, f'Не удалось скопировать деталь: {e}')
+    
+    return redirect('order_detail', order_id=order.id)
+@login_required
 def delete_order(request, order_id):
     order = get_object_or_404(Order, id=order_id, user=request.user)
     

@@ -137,11 +137,11 @@
                                             {% if form.stock_item.value|stringformat:"s" == stock.id|stringformat:"s" %}selected{% endif %}>
                                         {{ stock.material.name }} - 
                                         {% if stock.section_type == 'sheet' %}
-                                            Лист {{ stock.width }} мм
+                                            # {{ stock.width }} мм
                                         {% elif stock.section_type == 'round' %}
-                                            Кругляк Ø{{ stock.diameter }} мм
+                                            Ø{{ stock.diameter }} мм
                                         {% else %}
-                                            Шестигранник S{{ stock.key_size }} мм
+                                            S{{ stock.key_size }} мм
                                         {% endif %}
                                     </option>
                                 {% endfor %}
@@ -159,16 +159,15 @@
                                 <div class="row">
                                     <div class="col-md-4">
                                         <div class="mb-3">
-                                            <label for="id_sheet_length" class="form-label fw-bold">
-                                                Длина (мм)
+                                            <label for="id_height" class="form-label fw-bold">
+                                                Высота (мм)
                                             </label>
                                             <input type="number" 
-                                                   name="sheet_length" 
+                                                   name="height" 
                                                    step="0.01" 
-                                                   class="form-control length-field" 
-                                                   id="id_sheet_length"
-                                                   data-type="sheet"
-                                                   value="{{ form.length.value|default:item.length }}">
+                                                   class="form-control" 
+                                                   id="id_height"
+                                                   value="{{ form.height.value|default:item.height }}">
                                         </div>
                                     </div>
                                     <div class="col-md-4">
@@ -186,15 +185,16 @@
                                     </div>
                                     <div class="col-md-4">
                                         <div class="mb-3">
-                                            <label for="id_height" class="form-label fw-bold">
-                                                Высота (мм)
+                                            <label for="id_sheet_length" class="form-label fw-bold">
+                                                Длина (мм)
                                             </label>
                                             <input type="number" 
-                                                   name="height" 
+                                                   name="sheet_length" 
                                                    step="0.01" 
-                                                   class="form-control" 
-                                                   id="id_height"
-                                                   value="{{ form.height.value|default:item.height }}">
+                                                   class="form-control length-field" 
+                                                   id="id_sheet_length"
+                                                   data-type="sheet"
+                                                   value="{{ form.length.value|default:item.length }}">
                                         </div>
                                     </div>
                                 </div>

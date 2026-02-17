@@ -31,6 +31,7 @@ urlpatterns = [
     path('orders/<int:order_id>/add-item/', views.add_order_item, name='add_order_item'),
     path('orders/<int:order_id>/delete/', views.delete_order, name='delete_order'),
     path('orders/<int:order_id>/item/<int:item_id>/delete/', views.delete_order_item, name='delete_order_item'),
+    path('orders/<int:order_id>/item/<int:item_id>/copy/', views.copy_order_item, name='copy_order_item'),
     path('orders/<int:order_id>/update-coefficient/', views.update_order_coefficient, name='update_order_coefficient'),
     path('clear-last-params/', views.clear_last_item_params, name='clear_last_params'),
     # Печатные формы - детальный отчет

@@ -184,7 +184,7 @@
                         <td>{{ item.part_name }}</td>
                         <td>{{ item.material.name }}</td>
                         <td class="text-center">
-                            {{ item.length }} x {{ item.width }} x {{ item.height }}
+                            {{ item.height }} x {{ item.width }} x {{ item.length }}
                         </td>
                         <td class="text-center">{{ item.quantity }}</td>
                     </tr>
@@ -215,7 +215,7 @@
                         <td>{{ item.part_name }}</td>
                         <td>{{ item.material.name }}</td>
                         <td class="text-center">
-                            Ø{{ item.diameter }} x L{{ item.length }}
+                            Ø{{ item.diameter }} x {{ item.length }}
                         </td>
                         <td class="text-center">{{ item.quantity }}</td>
                     </tr>
@@ -246,7 +246,7 @@
                         <td>{{ item.part_name }}</td>
                         <td>{{ item.material.name }}</td>
                         <td class="text-center">
-                            S{{ item.key_size }} x L{{ item.length }}
+                            S{{ item.key_size }} x {{ item.length }}
                         </td>
                         <td class="text-center">{{ item.quantity }}</td>
                     </tr>

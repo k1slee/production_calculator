@@ -335,6 +335,9 @@
                         </td>
                         <td>
                             <div class="btn-group btn-group-sm">
+                                <a href="{% url 'copy_order_item' order.id item.id %}" class="btn btn-info" title="Копировать">
+                                    <i class="fas fa-copy"></i>
+                                </a>
                                 <a href="{% url 'edit_order_item' order.id item.id %}" class="btn btn-warning" title="Редактировать">
                                     <i class="fas fa-edit"></i>
                                 </a>
