@@ -207,7 +207,6 @@
                             <strong>{{ group.part_name }}</strong>
                         {% else %}
                             <strong>{{ group.material.name }}</strong><br>
-                            <small>пл. {{ group.material.density }} г/см³</small>
                         {% endif %}
                     </td>
                     <td>
@@ -218,8 +217,8 @@
                         {% elif group.stock_item.section_type == 'hexagon' %}
                             S{{ group.stock_item.key_size }} мм
                         {% endif %}
-                        <br><small>Кол-во: {{ group.quantity }} шт.</small>
                         {% if group.is_special %}
+                            <br><small>Кол-во: {{ group.quantity }} шт.</small>
                             <br><span class="badge bg-warning">Особая запись</span>
                         {% endif %}
                     </td>
