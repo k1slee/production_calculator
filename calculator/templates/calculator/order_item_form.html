@@ -61,6 +61,7 @@
                                 </option>
                             {% endfor %}
                         </select>
+                        <button type="button" class="btn btn-sm btn-outline-primary mt-2" data-bs-toggle="modal" data-bs-target="#addPartModal">Добавить наименование</button>
                         {% if form.part_name.errors %}
                             <div class="text-danger">{{ form.part_name.errors }}</div>
                         {% endif %}
@@ -105,6 +106,7 @@
                                     </option>
                                 {% endfor %}
                             </select>
+                            <button type="button" class="btn btn-sm btn-outline-primary mt-2" data-bs-toggle="modal" data-bs-target="#addMaterialModal">Добавить материал</button>
                             {% if form.material.errors %}
                                 <div class="text-danger">{{ form.material.errors }}</div>
                             {% endif %}
@@ -149,6 +151,7 @@
                                     </option>
                                 {% endfor %}
                             </select>
+                            <button type="button" class="btn btn-sm btn-outline-primary mt-2" data-bs-toggle="modal" data-bs-target="#addStockItemModal">Добавить сортамент</button>
                             {% if form.stock_item.errors %}
                                 <div class="text-danger">{{ form.stock_item.errors }}</div>
                             {% endif %}
@@ -288,6 +291,105 @@
     </div>
 </div>
 
+<!-- Modal: Add PartName -->
+<div class="modal fade" id="addPartModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Добавить наименование детали</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label">Наименование</label>
+          <input type="text" class="form-control" id="new_part_name">
+        </div>
+        <div class="text-danger" id="addPartErrors" style="display:none"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+        <button type="button" class="btn btn-primary" id="submitAddPart">Сохранить</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Add Material -->
+<div class="modal fade" id="addMaterialModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Добавить материал</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label">Название</label>
+          <input type="text" class="form-control" id="new_material_name">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Плотность (г/см³)</label>
+          <input type="number" step="0.01" class="form-control" id="new_material_density">
+        </div>
+        <div class="text-danger" id="addMaterialErrors" style="display:none"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+        <button type="button" class="btn btn-primary" id="submitAddMaterial">Сохранить</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Add StockItem -->
+<div class="modal fade" id="addStockItemModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Добавить сортамент</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label">Материал</label>
+          <select class="form-select" id="new_stock_material">
+            <option value="">---------</option>
+            {% for material in form.fields.material.queryset %}
+              <option value="{{ material.id }}">{{ material.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Тип сортамента</label>
+          <select class="form-select" id="new_stock_section">
+            <option value="">---------</option>
+            <option value="sheet">Лист</option>
+            <option value="round">Кругляк</option>
+            <option value="hexagon">Шестигранник</option>
+          </select>
+        </div>
+        <div class="mb-3" id="new_stock_width_wrapper" style="display:none">
+          <label class="form-label">Ширина (мм)</label>
+          <input type="number" step="0.01" class="form-control" id="new_stock_width">
+        </div>
+        <div class="mb-3" id="new_stock_diameter_wrapper" style="display:none">
+          <label class="form-label">Диаметр (мм)</label>
+          <input type="number" step="0.01" class="form-control" id="new_stock_diameter">
+        </div>
+        <div class="mb-3" id="new_stock_keysize_wrapper" style="display:none">
+          <label class="form-label">Размер под ключ (мм)</label>
+          <input type="number" step="0.01" class="form-control" id="new_stock_keysize">
+        </div>
+        <div class="text-danger" id="addStockErrors" style="display:none"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+        <button type="button" class="btn btn-primary" id="submitAddStock">Сохранить</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
 (function() {
     'use strict';
@@ -307,6 +409,7 @@
             diameter: "{{ last_measurements.diameter|default:''|escapejs }}",
             key_size: "{{ last_measurements.key_size|default:''|escapejs }}"
         };
+        const csrfToken = document.querySelector('#orderItemForm input[name=csrfmiddlewaretoken]').value;
         
         // Функция фильтрации сортамента по материалу
         function filterStockItems() {
@@ -466,6 +569,104 @@
             
             return true;
         }
+        
+        function postJSON(url, data) {
+            return fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': csrfToken
+                },
+                body: new URLSearchParams(data)
+            }).then(r => r.json());
+        }
+        
+        document.getElementById('new_stock_section').addEventListener('change', function() {
+            const v = this.value;
+            document.getElementById('new_stock_width_wrapper').style.display = v === 'sheet' ? 'block' : 'none';
+            document.getElementById('new_stock_diameter_wrapper').style.display = v === 'round' ? 'block' : 'none';
+            document.getElementById('new_stock_keysize_wrapper').style.display = v === 'hexagon' ? 'block' : 'none';
+        });
+        
+        document.getElementById('submitAddPart').addEventListener('click', function() {
+            const name = document.getElementById('new_part_name').value.trim();
+            document.getElementById('addPartErrors').style.display = 'none';
+            postJSON("{% url 'create_part_name' %}", {name})
+                .then(json => {
+                    if (json.success) {
+                        const opt = document.createElement('option');
+                        opt.value = json.id;
+                        opt.textContent = json.name;
+                        document.getElementById('id_part_name').appendChild(opt);
+                        document.getElementById('id_part_name').value = String(json.id);
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('addPartModal'));
+                        modal.hide();
+                        document.getElementById('new_part_name').value = '';
+                    } else {
+                        document.getElementById('addPartErrors').textContent = JSON.stringify(json.errors);
+                        document.getElementById('addPartErrors').style.display = 'block';
+                    }
+                });
+        });
+        
+        document.getElementById('submitAddMaterial').addEventListener('click', function() {
+            const name = document.getElementById('new_material_name').value.trim();
+            const density = document.getElementById('new_material_density').value.trim();
+            document.getElementById('addMaterialErrors').style.display = 'none';
+            postJSON("{% url 'create_material' %}", {name, density})
+                .then(json => {
+                    if (json.success) {
+                        const opt = document.createElement('option');
+                        opt.value = json.id;
+                        opt.textContent = `${json.name} (${json.density} г/см³)`;
+                        document.getElementById('id_material').appendChild(opt);
+                        document.getElementById('id_material').value = String(json.id);
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('addMaterialModal'));
+                        modal.hide();
+                        document.getElementById('new_material_name').value = '';
+                        document.getElementById('new_material_density').value = '';
+                    } else {
+                        document.getElementById('addMaterialErrors').textContent = JSON.stringify(json.errors);
+                        document.getElementById('addMaterialErrors').style.display = 'block';
+                    }
+                });
+        });
+        
+        document.getElementById('submitAddStock').addEventListener('click', function() {
+            const material_id = document.getElementById('new_stock_material').value;
+            const section_type = document.getElementById('new_stock_section').value;
+            const width = document.getElementById('new_stock_width').value;
+            const diameter = document.getElementById('new_stock_diameter').value;
+            const key_size = document.getElementById('new_stock_keysize').value;
+            document.getElementById('addStockErrors').style.display = 'none';
+            postJSON("{% url 'create_stock_item' %}", {material: material_id, section_type, width, diameter, key_size})
+                .then(json => {
+                    if (json.success) {
+                        const opt = document.createElement('option');
+                        opt.value = json.id;
+                        opt.textContent = json.text;
+                        opt.setAttribute('data-section-type', json.section_type);
+                        opt.setAttribute('data-material-id', String(json.material_id));
+                        document.getElementById('id_stock_item').appendChild(opt);
+                        document.getElementById('id_stock_item').value = String(json.id);
+                        toggleMeasurements();
+                        setMeasurementDefaults();
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('addStockItemModal'));
+                        modal.hide();
+                        document.getElementById('new_stock_material').value = '';
+                        document.getElementById('new_stock_section').value = '';
+                        document.getElementById('new_stock_width').value = '';
+                        document.getElementById('new_stock_diameter').value = '';
+                        document.getElementById('new_stock_keysize').value = '';
+                        document.getElementById('new_stock_width_wrapper').style.display = 'none';
+                        document.getElementById('new_stock_diameter_wrapper').style.display = 'none';
+                        document.getElementById('new_stock_keysize_wrapper').style.display = 'none';
+                    } else {
+                        document.getElementById('addStockErrors').textContent = JSON.stringify(json.errors);
+                        document.getElementById('addStockErrors').style.display = 'block';
+                    }
+                });
+        });
         
         // Назначаем обработчики
         if (specialCheckbox) {

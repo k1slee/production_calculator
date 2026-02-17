@@ -708,3 +708,45 @@ def clear_last_item_params(request):
         del request.session['last_item_params']
     messages.success(request, 'Настройки по умолчанию сброшены')
     return redirect(request.META.get('HTTP_REFERER', 'order_list'))
+
+@login_required
+@transaction.atomic
+def create_part_name(request):
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Invalid method'}, status=405)
+    form = PartNameForm(request.POST)
+    if form.is_valid():
+        part = form.save()
+        return JsonResponse({'success': True, 'id': part.id, 'name': part.name})
+    return JsonResponse({'success': False, 'errors': form.errors}, status=400)
+
+@login_required
+@transaction.atomic
+def create_material(request):
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Invalid method'}, status=405)
+    form = MaterialForm(request.POST)
+    if form.is_valid():
+        m = form.save()
+        return JsonResponse({'success': True, 'id': m.id, 'name': m.name, 'density': str(m.density)})
+    return JsonResponse({'success': False, 'errors': form.errors}, status=400)
+
+@login_required
+@transaction.atomic
+def create_stock_item(request):
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Invalid method'}, status=405)
+    form = StockItemForm(request.POST)
+    if form.is_valid():
+        si = form.save()
+        return JsonResponse({
+            'success': True,
+            'id': si.id,
+            'text': str(si),
+            'section_type': si.section_type,
+            'material_id': si.material_id,
+            'width': str(si.width) if si.width else None,
+            'diameter': str(si.diameter) if si.diameter else None,
+            'key_size': str(si.key_size) if si.key_size else None,
+        })
+    return JsonResponse({'success': False, 'errors': form.errors}, status=400)

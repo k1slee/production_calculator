@@ -49,4 +49,7 @@ urlpatterns = [
     path('api/stock-items-by-material/', views.get_stock_items_by_material_and_type, name='api_stock_items_by_material'),
     path('api/search-part-names/', views.search_part_names, name='search_part_names'),
     path('api/search-materials/', views.search_materials, name='search_materials'),
+    path('api/create-part-name/', views.create_part_name, name='create_part_name'),
+    path('api/create-material/', views.create_material, name='create_material'),
+    path('api/create-stock-item/', views.create_stock_item, name='create_stock_item'),
 ]
