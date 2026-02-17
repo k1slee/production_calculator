@@ -295,11 +295,11 @@
                             {% else %}
                                 <small>
                                     {% if item.stock_item.section_type == 'sheet' %}
-                                        Лист {{ item.stock_item.width }} мм
+                                        # {{ item.stock_item.width }} мм
                                     {% elif item.stock_item.section_type == 'round' %}
-                                        Кругляк Ø{{ item.stock_item.diameter }} мм
+                                        Ø{{ item.stock_item.diameter }} мм
                                     {% else %}
-                                        Шестигранник S{{ item.stock_item.key_size }} мм
+                                        S{{ item.stock_item.key_size }} мм
                                     {% endif %}
                                 </small>
                             {% endif %}
@@ -310,11 +310,11 @@
                             {% else %}
                                 <small>
                                     {% if item.stock_item.section_type == 'sheet' %}
-                                        Д:{{ item.length }} Ш:{{ item.width }} В:{{ item.height }}
+                                        {{ item.height }}x{{ item.width }}x{{ item.length }}
                                     {% elif item.stock_item.section_type == 'round' %}
-                                        Ø:{{ item.diameter }} L:{{ item.length }}
+                                        Ø{{ item.diameter }} x {{ item.length }}
                                     {% else %}
-                                        S:{{ item.key_size }} L:{{ item.length }}
+                                        S{{ item.key_size }} x {{ item.length }}
                                     {% endif %}
                                 </small>
                             {% endif %}

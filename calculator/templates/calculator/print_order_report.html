@@ -195,7 +195,7 @@
                 <th>Кол-во, шт</th>
                 <th>Чистовые размеры, мм</th>
                 <th>Сортамент на складе</th>
-                <th>Вес 1 шт, кг</th>
+                <th>Общий вес, кг</th>
             </tr>
         </thead>
         <tbody>
@@ -203,27 +203,33 @@
             <tr>
                 <td class="text-center">{{ forloop.counter }}</td>
                 <td>{{ item.part_name }}</td>
-                <td>{{ item.material.name }}</td>
+                <td>
+                    {% if item.is_special %}
+                        {{ item.part_name }}
+                    {% else %}
+                        {{ item.material.name }}
+                    {% endif %}
+                </td>
                 <td class="text-center">{{ item.quantity }}</td>
                 <td>
                     {% if item.stock_item.section_type == 'sheet' %}
-                        {{ item.length }}x{{ item.width }}x{{ item.height }}
+                        {{ item.height }}x{{ item.width }}x{{ item.length }}
                     {% elif item.stock_item.section_type == 'round' %}
-                        Ø{{ item.diameter }} x L{{ item.length }}
+                        Ø{{ item.diameter }} x {{ item.length }}
                     {% elif item.stock_item.section_type == 'hexagon' %}
-                        S{{ item.key_size }} x L{{ item.length }}
+                        S{{ item.key_size }} x {{ item.length }}
                     {% endif %}
                 </td>
                 <td>
                     {% if item.stock_item.section_type == 'sheet' %}
-                        Лист {{ item.stock_item.length }}x{{ item.stock_item.width }}x{{ item.stock_item.height }}
+                        # {{ item.stock_item.width }} мм
                     {% elif item.stock_item.section_type == 'round' %}
-                        Круг Ø{{ item.stock_item.diameter }} x L{{ item.stock_item.round_length }}
+                        Ø{{ item.stock_item.diameter }} мм
                     {% elif item.stock_item.section_type == 'hexagon' %}
-                        Шестигр. S{{ item.stock_item.key_size }} x L{{ item.stock_item.hex_length }}
+                        S{{ item.stock_item.key_size }} мм
                     {% endif %}
                 </td>
-                <td class="text-right">{{ item.weight|floatformat:3 }}</td>
+                <td class="text-right">{{ item.total_weight|floatformat:3 }}</td>
             </tr>
             {% endfor %}
         </tbody>

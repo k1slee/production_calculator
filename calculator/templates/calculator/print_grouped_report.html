@@ -196,23 +196,27 @@
             <tr>
                 <th>Марка материала</th>
                 <th>Сортамент на складе</th>
-                <th>Вес 1 шт, кг</th> <!-- Сократил заголовок -->
+                <th>Общий вес, кг</th>
             </tr>
         </thead>
         <tbody>
             {% for group in grouped_items %}
                 <tr>
                     <td>
-                        <strong>{{ group.material.name }}</strong><br>
-                        <small>пл. {{ group.material.density }} г/см³</small>
+                        {% if group.is_special %}
+                            <strong>{{ group.part_name }}</strong>
+                        {% else %}
+                            <strong>{{ group.material.name }}</strong><br>
+                            <small>пл. {{ group.material.density }} г/см³</small>
+                        {% endif %}
                     </td>
                     <td>
                         {% if group.stock_item.section_type == 'sheet' %}
-                            Лист {{ group.stock_item.width }} мм
+                            # {{ group.stock_item.width }} мм
                         {% elif group.stock_item.section_type == 'round' %}
-                            Кругляк Ø{{ group.stock_item.diameter }} мм
+                            Ø{{ group.stock_item.diameter }} мм
                         {% elif group.stock_item.section_type == 'hexagon' %}
-                            Шестигранник S{{ group.stock_item.key_size }} мм
+                            S{{ group.stock_item.key_size }} мм
                         {% endif %}
                         <br><small>Кол-во: {{ group.quantity }} шт.</small>
                         {% if group.is_special %}
@@ -223,7 +227,7 @@
                         {% if group.is_special %}
                             <span class="text-muted">—</span>
                         {% else %}
-                            <strong>{{ group.weight_per_item|floatformat:3 }}</strong>
+                            <strong>{{ group.total_weight|floatformat:3 }}</strong>
                         {% endif %}
                     </td>
                 </tr>
