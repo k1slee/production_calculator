@@ -578,7 +578,28 @@ def add_order_item(request, order_id):
     order = get_object_or_404(Order, id=order_id)
     
     if request.method == 'POST':
-        form = OrderItemForm(request.POST)
+        # Копируем POST данные
+        post_data = request.POST.copy()
+        
+        # Получаем выбранный сортамент
+        stock_item_id = post_data.get('stock_item')
+        if stock_item_id:
+            try:
+                stock_item = StockItem.objects.get(id=stock_item_id)
+                section_type = stock_item.section_type
+                
+                # Устанавливаем правильное поле length
+                if section_type == 'sheet':
+                    post_data['length'] = post_data.get('sheet_length', '')
+                elif section_type == 'round':
+                    post_data['length'] = post_data.get('round_length', '')
+                elif section_type == 'hexagon':
+                    post_data['length'] = post_data.get('hex_length', '')
+                    
+            except StockItem.DoesNotExist:
+                pass
+        
+        form = OrderItemForm(post_data)
         
         if form.is_valid():
             try:
@@ -586,7 +607,7 @@ def add_order_item(request, order_id):
                 item.order = order
                 item.save()
                 
-                # Сохраняем ВСЕ параметры детали в сессию
+                # Сохраняем в сессию (ОДИН КЛЮЧ - 'last_item_params')
                 request.session['last_item_params'] = {
                     'part_name_id': item.part_name_id,
                     'material_id': item.material_id if item.material else None,
@@ -599,62 +620,86 @@ def add_order_item(request, order_id):
                     'key_size': float(item.key_size) if item.key_size else None,
                     'is_special': item.is_special,
                     'section_type': item.stock_item.section_type if item.stock_item else None,
+                    'sequence_number': item.sequence_number,
                 }
                 
-                messages.success(request, 'Деталь успешно добавлена в заказ')
+                messages.success(request, 'Деталь успешно добавлена')
                 return redirect('order_detail', order_id=order.id)
             except Exception as e:
-                messages.error(request, f'Ошибка при сохранении: {str(e)}')
+                messages.error(request, f'Ошибка: {str(e)}')
         else:
             for field, errors in form.errors.items():
                 for error in errors:
                     messages.error(request, f'{field}: {error}')
     else:
-        # Получаем сохраненные параметры из сессии
-        last_params = request.session.get('last_item_params', {})
-        
-        # Устанавливаем следующий порядковый номер (только как предложение)
+        last_item = order.items.order_by('-id').first()
         next_number = order.items.count() + 1
         
-        # Базовые начальные данные
-        initial_data = {'sequence_number': next_number}
-        
-        # Добавляем все сохраненные параметры
-        if last_params:
-            # Основные поля
-            if 'part_name_id' in last_params and last_params['part_name_id']:
-                initial_data['part_name'] = last_params['part_name_id']
-            if 'material_id' in last_params and last_params['material_id']:
-                initial_data['material'] = last_params['material_id']
-            if 'quantity' in last_params and last_params['quantity']:
-                initial_data['quantity'] = last_params['quantity']
-            if 'stock_item_id' in last_params and last_params['stock_item_id']:
-                initial_data['stock_item'] = last_params['stock_item_id']
-            if 'is_special' in last_params:
-                initial_data['is_special'] = last_params['is_special']
-            
-            # Поля замеров - ВАЖНО: сохраняем их!
-            if 'length' in last_params and last_params['length']:
-                initial_data['length'] = last_params['length']
-            if 'width' in last_params and last_params['width']:
-                initial_data['width'] = last_params['width']
-            if 'height' in last_params and last_params['height']:
-                initial_data['height'] = last_params['height']
-            if 'diameter' in last_params and last_params['diameter']:
-                initial_data['diameter'] = last_params['diameter']
-            if 'key_size' in last_params and last_params['key_size']:
-                initial_data['key_size'] = last_params['key_size']
-        
+        initial_data = {'sequence_number': str(next_number)}
+        last_section_type = None
+        last_measurements = {}
+        if last_item:
+            if last_item.part_name_id:
+                initial_data['part_name'] = last_item.part_name_id
+            if last_item.material_id:
+                initial_data['material'] = last_item.material_id
+            if last_item.quantity:
+                initial_data['quantity'] = last_item.quantity
+            if last_item.stock_item_id:
+                initial_data['stock_item'] = last_item.stock_item_id
+            initial_data['is_special'] = last_item.is_special
+            if last_item.length:
+                initial_data['length'] = float(last_item.length)
+                last_measurements['length'] = str(last_item.length)
+            if last_item.width:
+                initial_data['width'] = float(last_item.width)
+                last_measurements['width'] = str(last_item.width)
+            if last_item.height:
+                initial_data['height'] = float(last_item.height)
+                last_measurements['height'] = str(last_item.height)
+            if last_item.diameter:
+                initial_data['diameter'] = float(last_item.diameter)
+                last_measurements['diameter'] = str(last_item.diameter)
+            if last_item.key_size:
+                initial_data['key_size'] = float(last_item.key_size)
+                last_measurements['key_size'] = str(last_item.key_size)
+            last_section_type = last_item.stock_item.section_type if last_item.stock_item else None
+        else:
+            last_params = request.session.get('last_item_params', {})
+            if last_params:
+                if 'part_name_id' in last_params and last_params['part_name_id']:
+                    initial_data['part_name'] = last_params['part_name_id']
+                if 'material_id' in last_params and last_params['material_id']:
+                    initial_data['material'] = last_params['material_id']
+                if 'quantity' in last_params and last_params['quantity']:
+                    initial_data['quantity'] = last_params['quantity']
+                if 'stock_item_id' in last_params and last_params['stock_item_id']:
+                    initial_data['stock_item'] = last_params['stock_item_id']
+                if 'is_special' in last_params:
+                    initial_data['is_special'] = last_params['is_special']
+                if 'length' in last_params and last_params['length']:
+                    initial_data['length'] = last_params['length']
+                    last_measurements['length'] = str(last_params['length'])
+                if 'width' in last_params and last_params['width']:
+                    initial_data['width'] = last_params['width']
+                    last_measurements['width'] = str(last_params['width'])
+                if 'height' in last_params and last_params['height']:
+                    initial_data['height'] = last_params['height']
+                    last_measurements['height'] = str(last_params['height'])
+                if 'diameter' in last_params and last_params['diameter']:
+                    initial_data['diameter'] = last_params['diameter']
+                    last_measurements['diameter'] = str(last_params['diameter'])
+                if 'key_size' in last_params and last_params['key_size']:
+                    initial_data['key_size'] = last_params['key_size']
+                    last_measurements['key_size'] = str(last_params['key_size'])
+            last_section_type = last_params.get('section_type')
         form = OrderItemForm(initial=initial_data)
-        
-        # Передаем тип сортамента в шаблон для правильного отображения полей
-        last_section_type = last_params.get('section_type') if last_params else None
-        
+    
     return render(request, 'calculator/order_item_form.html', {
-        'form': form, 
+        'form': form,
         'order': order,
         'last_section_type': last_section_type,
-        'edit_mode': False  # Режим добавления
+        'last_measurements': last_measurements,
     })
 @login_required
 def clear_last_item_params(request):

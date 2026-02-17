@@ -300,6 +300,13 @@
         const stockItemSelect = document.getElementById('id_stock_item');
         const form = document.getElementById('orderItemForm');
         const finalLength = document.getElementById('final_length');
+        const lastMeasurements = {
+            length: "{{ last_measurements.length|default:''|escapejs }}",
+            width: "{{ last_measurements.width|default:''|escapejs }}",
+            height: "{{ last_measurements.height|default:''|escapejs }}",
+            diameter: "{{ last_measurements.diameter|default:''|escapejs }}",
+            key_size: "{{ last_measurements.key_size|default:''|escapejs }}"
+        };
         
         // Функция фильтрации сортамента по материалу
         function filterStockItems() {
@@ -349,6 +356,7 @@
             } else {
                 normalFields.style.display = 'block';
                 toggleMeasurements();
+                setMeasurementDefaults();
             }
         }
         
@@ -376,6 +384,30 @@
                 } else if (sectionType === 'hexagon') {
                     hexagonMeasurements.style.display = 'block';
                 }
+            }
+        }
+        
+        function setMeasurementDefaults() {
+            const selectedOption = stockItemSelect.options[stockItemSelect.selectedIndex];
+            if (!selectedOption || !selectedOption.value) return;
+            const sectionType = selectedOption.getAttribute('data-section-type');
+            if (sectionType === 'sheet') {
+                const sheetLength = document.getElementById('id_sheet_length');
+                const width = document.getElementById('id_width');
+                const height = document.getElementById('id_height');
+                if (sheetLength && lastMeasurements.length) sheetLength.value = lastMeasurements.length;
+                if (width && lastMeasurements.width) width.value = lastMeasurements.width;
+                if (height && lastMeasurements.height) height.value = lastMeasurements.height;
+            } else if (sectionType === 'round') {
+                const roundLength = document.getElementById('id_round_length');
+                const diameter = document.getElementById('id_diameter');
+                if (roundLength && lastMeasurements.length) roundLength.value = lastMeasurements.length;
+                if (diameter && lastMeasurements.diameter) diameter.value = lastMeasurements.diameter;
+            } else if (sectionType === 'hexagon') {
+                const hexLength = document.getElementById('id_hex_length');
+                const keySize = document.getElementById('id_key_size');
+                if (hexLength && lastMeasurements.length) hexLength.value = lastMeasurements.length;
+                if (keySize && lastMeasurements.key_size) keySize.value = lastMeasurements.key_size;
             }
         }
         
@@ -461,7 +493,10 @@
         }
         
         if (stockItemSelect) {
-            stockItemSelect.addEventListener('change', toggleMeasurements);
+            stockItemSelect.addEventListener('change', function() {
+                toggleMeasurements();
+                setMeasurementDefaults();
+            });
         }
         
         if (form) {
@@ -485,6 +520,8 @@
         if (materialSelect.value && sectionTypeSelect.value) {
             filterStockItems();
         }
+        toggleMeasurements();
+        setMeasurementDefaults();
     });
 })();
 </script>
