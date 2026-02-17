@@ -414,24 +414,44 @@ def print_cutting_task(request, order_id):
     items_list = list(items)
     items_list.sort(key=lambda x: x.sort_key)
     
-    # Группируем по типу сортамента
+    # Группируем по типу сортамента с фильтрацией
     grouped_by_section = {
         'sheet': [],  # Лист
-        'round': [],  # Кругляк
+        'round': [],  # Кругляк (только диаметр > 50)
         'hexagon': [] # Шестигранник
     }
     
     for item in items_list:
         if item.is_special:
-            # Особые запижи можно добавить в отдельную группу или пропустить
             continue
+            
         section_type = item.stock_item.section_type
-        if section_type in grouped_by_section:
-            grouped_by_section[section_type].append(item)
+        
+        if section_type == 'sheet':
+            grouped_by_section['sheet'].append(item)
+            
+        elif section_type == 'round':
+            # Фильтр: только кругляк с диаметром > 50
+            if item.diameter and float(item.diameter) > 50:
+                grouped_by_section['round'].append(item)
+                
+        elif section_type == 'hexagon':
+            grouped_by_section['hexagon'].append(item)
     
     # Внутри каждой группы сортируем по номеру
     for section_type in grouped_by_section:
         grouped_by_section[section_type].sort(key=lambda x: x.sort_key)
+    
+    # Подсчет статистики для информации
+    filtered_round_count = len(grouped_by_section['round'])
+    total_round_count = sum(1 for item in items_list if not item.is_special and 
+                           item.stock_item and item.stock_item.section_type == 'round')
+    
+    # Если есть отфильтрованные детали, показываем сообщение
+    if total_round_count > filtered_round_count:
+        messages.info(request, 
+            f'Кругляк диаметром ≤ 50 мм не включен в задание на заготовку '
+            f'(исключено {total_round_count - filtered_round_count} позиций)')
     
     context = {
         'order': order,
