@@ -7,5 +7,8 @@ RUN python -m pip install --upgrade pip && pip install --no-cache-dir -r require
 COPY . /app
 ENV DJANGO_SETTINGS_MODULE=production_calculator.settings
 ENV DJANGO_ALLOWED_HOSTS=*
+ENV SQLITE_PATH=/data/db.sqlite3
+RUN mkdir -p /data
+VOLUME ["/data"]
 EXPOSE 8001
 CMD ["sh","-c","python manage.py migrate --noinput && python manage.py collectstatic --noinput || true && python manage.py runserver 0.0.0.0:8001"]
