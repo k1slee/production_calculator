@@ -452,12 +452,34 @@
             }
         }
         
+        function setNormalFieldsEnabled(enabled) {
+            if (!normalFields) return;
+            const controls = normalFields.querySelectorAll('input, select, textarea, button');
+            controls.forEach(el => {
+                if (enabled) {
+                    el.disabled = false;
+                    if (el.dataset.wasRequired === '1') {
+                        el.required = true;
+                        delete el.dataset.wasRequired;
+                    }
+                } else {
+                    if (el.required) {
+                        el.dataset.wasRequired = '1';
+                        el.required = false;
+                    }
+                    el.disabled = true;
+                }
+            });
+        }
+        
         // Функция переключения полей для обычной/особой записи
         function toggleNormalFields() {
             if (specialCheckbox && specialCheckbox.checked) {
                 normalFields.style.display = 'none';
+                setNormalFieldsEnabled(false);
             } else {
                 normalFields.style.display = 'block';
+                setNormalFieldsEnabled(true);
                 toggleMeasurements();
                 setMeasurementDefaults();
             }
