@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.db import transaction
+from django.db import transaction, IntegrityError
 from django.utils import timezone 
 from django.db.models import Count, Sum
 from django.http import JsonResponse
@@ -766,6 +766,21 @@ def create_part_name(request):
     form = PartNameForm(request.POST)
     if form.is_valid():
         part = form.save()
+        return JsonResponse({'success': True, 'id': part.id, 'name': part.name})
+    return JsonResponse({'success': False, 'errors': form.errors}, status=400)
+
+@login_required
+@transaction.atomic
+def update_part_name(request, pk):
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Invalid method'}, status=405)
+    part = get_object_or_404(PartName, pk=pk)
+    form = PartNameForm(request.POST, instance=part)
+    if form.is_valid():
+        try:
+            part = form.save()
+        except IntegrityError:
+            return JsonResponse({'success': False, 'errors': {'name': ['Такое наименование уже существует']}}, status=400)
         return JsonResponse({'success': True, 'id': part.id, 'name': part.name})
     return JsonResponse({'success': False, 'errors': form.errors}, status=400)
 

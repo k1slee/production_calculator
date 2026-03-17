@@ -60,6 +60,9 @@
                                 </option>
                             {% endfor %}
                         </select>
+                        <div class="d-flex gap-2 mt-2">
+                            <button type="button" class="btn btn-sm btn-outline-secondary" id="editPartBtn" data-bs-toggle="modal" data-bs-target="#editPartModal">Редактировать наименование</button>
+                        </div>
                         {% if form.part_name.errors %}
                             <div class="text-danger">{{ form.part_name.errors }}</div>
                         {% endif %}
@@ -285,6 +288,28 @@
     </div>
 </div>
 
+<div class="modal fade" id="editPartModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Редактировать наименование детали</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label">Наименование</label>
+          <input type="text" class="form-control" id="edit_part_name">
+        </div>
+        <div class="text-danger" id="editPartErrors" style="display:none"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+        <button type="button" class="btn btn-primary" id="submitEditPart">Сохранить</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
 (function() {
     'use strict';
@@ -295,8 +320,14 @@
         const materialSelect = document.getElementById('id_material');
         const sectionTypeSelect = document.getElementById('section_type');
         const stockItemSelect = document.getElementById('id_stock_item');
+        const partNameSelect = document.getElementById('id_part_name');
+        const editPartBtn = document.getElementById('editPartBtn');
+        const editPartInput = document.getElementById('edit_part_name');
+        const editPartErrors = document.getElementById('editPartErrors');
         const form = document.getElementById('orderItemForm');
         const finalLength = document.getElementById('final_length');
+        const csrfToken = document.querySelector('#orderItemForm input[name=csrfmiddlewaretoken]').value;
+        const updatePartUrlTemplate = "{% url 'update_part_name' 0 %}";
         
         // Функция фильтрации сортамента по материалу
         function filterStockItems() {
@@ -339,6 +370,26 @@
             }
         }
         
+        function postJSON(url, data) {
+            return fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': csrfToken
+                },
+                body: new URLSearchParams(data)
+            }).then(r => r.json());
+        }
+
+        function getUpdatePartUrl(id) {
+            return updatePartUrlTemplate.replace('/0/', `/${id}/`);
+        }
+
+        function updateEditPartState() {
+            if (!editPartBtn || !partNameSelect) return;
+            editPartBtn.disabled = !partNameSelect.value;
+        }
+
         function setNormalFieldsEnabled(enabled) {
             if (!normalFields) return;
             const controls = normalFields.querySelectorAll('input, select, textarea, button');
@@ -491,9 +542,63 @@
             });
         }
         
+
+        if (partNameSelect) {
+            partNameSelect.addEventListener('change', updateEditPartState);
+        }
+
+        if (editPartBtn) {
+            editPartBtn.addEventListener('click', function(e) {
+                if (!partNameSelect || !partNameSelect.value) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return;
+                }
+                if (editPartErrors) editPartErrors.style.display = 'none';
+                const selectedOption = partNameSelect.options[partNameSelect.selectedIndex];
+                if (editPartInput) {
+                    editPartInput.value = selectedOption ? selectedOption.textContent.trim() : '';
+                    editPartInput.dataset.partId = partNameSelect.value;
+                    editPartInput.focus();
+                }
+            });
+        }
+
+        const submitEditPart = document.getElementById('submitEditPart');
+        if (submitEditPart) {
+            submitEditPart.addEventListener('click', function() {
+                if (!editPartInput) return;
+                const partId = editPartInput.dataset.partId;
+                const name = editPartInput.value.trim();
+                if (!partId) return;
+                if (editPartErrors) editPartErrors.style.display = 'none';
+                if (!name) {
+                    if (editPartErrors) {
+                        editPartErrors.textContent = 'Наименование не может быть пустым';
+                        editPartErrors.style.display = 'block';
+                    }
+                    return;
+                }
+                postJSON(getUpdatePartUrl(partId), {name})
+                    .then(json => {
+                        if (json.success) {
+                            const option = partNameSelect.querySelector(`option[value="${json.id}"]`);
+                            if (option) option.textContent = json.name;
+                            const modal = bootstrap.Modal.getInstance(document.getElementById('editPartModal'));
+                            if (modal) modal.hide();
+                        } else {
+                            if (editPartErrors) {
+                                editPartErrors.textContent = JSON.stringify(json.errors);
+                                editPartErrors.style.display = 'block';
+                            }
+                        }
+                    });
+            });
+        }
         // Принудительно показываем все опции при загрузке
         const options = stockItemSelect.options;
         for (let i = 0; i < options.length; i++) {
+            options[i].style.display = '';
             options[i].style.display = '';
             options[i].disabled = false;
         }
@@ -504,6 +609,7 @@
         if (materialSelect.value && sectionTypeSelect.value) {
             filterStockItems();
         }
+        updateEditPartState();
     });
 })();
 </script>
