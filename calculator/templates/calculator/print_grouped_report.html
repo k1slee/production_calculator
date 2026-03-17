@@ -160,10 +160,11 @@
         }
 
         .report-table th:nth-child(1) { width: 8%; }  /* № карточки */
-        .report-table th:nth-child(2) { width: 27%; } /* Марка материала */
-        .report-table th:nth-child(3) { width: 40%; } /* Сортамент */
-        .report-table th:nth-child(4) { width: 12.5%; } /* Общий вес */
-        .report-table th:nth-child(5) { width: 12.5%; } /* Факт */
+        .report-table th:nth-child(2) { width: 26%; } /* Марка материала */
+        .report-table th:nth-child(3) { width: 22%; } /* Сортамент на складе */
+        .report-table th:nth-child(4) { width: 14%; } /* Общий вес */
+        .report-table th:nth-child(5) { width: 15%; } /* Сортамент факт */
+        .report-table th:nth-child(6) { width: 15%; } /* Вес факт */
     </style>
 </head>
 <body>
@@ -200,7 +201,8 @@
                 <th>Марка материала</th>
                 <th>Сортамент на складе</th>
                 <th>Общий вес, кг</th>
-                <th>Факт</th>
+                <th>Сортамент факт</th>
+                <th>Вес факт</th>
             </tr>
         </thead>
         <tbody>
@@ -234,6 +236,7 @@
                             <strong>{{ group.total_weight|floatformat:3 }}</strong>
                         {% endif %}
                     </td>
+                    <td></td>
                     <td></td>
                 </tr>
             {% endfor %}

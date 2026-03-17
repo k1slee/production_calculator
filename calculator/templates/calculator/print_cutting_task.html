@@ -170,6 +170,16 @@
             <table class="task-table">
                 <thead>
                     <tr>
+                        <th colspan="5">
+                            Заказ №{{ order.order_number }}
+                            {% if order.drawing_number %}
+                                — Чертеж №{{ order.drawing_number }}
+                            {% else %}
+                                — Чертеж №_____________
+                            {% endif %}
+                        </th>
+                    </tr>
+                    <tr>
                         <th>№ п/п</th>
                         <th>Наименование детали</th>
                         <th>Материал</th>
@@ -200,6 +210,16 @@
             <div class="section-title">КРУГЛЯК</div>
             <table class="task-table">
                 <thead>
+                    <tr>
+                        <th colspan="5">
+                            Заказ №{{ order.order_number }}
+                            {% if order.drawing_number %}
+                                — Чертеж №{{ order.drawing_number }}
+                            {% else %}
+                                — Чертеж №_____________
+                            {% endif %}
+                        </th>
+                    </tr>
                     <tr>
                         <th>№ п/п</th>
                         <th>Наименование детали</th>
