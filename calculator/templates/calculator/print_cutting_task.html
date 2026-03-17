@@ -161,7 +161,7 @@
     </div>
     
     <!-- Проверяем, есть ли вообще детали -->
-    {% if sheet_items or round_items or hexagon_items %}
+    {% if sheet_items or round_items %}
         
         <!-- Блок: ЛИСТ - показываем только если есть детали -->
         {% if sheet_items %}
@@ -216,37 +216,6 @@
                         <td>{{ item.material.name }}</td>
                         <td class="text-center">
                             Ø{{ item.diameter }} x {{ item.length }}
-                        </td>
-                        <td class="text-center">{{ item.quantity }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        {% endif %}
-        
-        <!-- Блок: ШЕСТИГРАННИК - показываем только если есть детали -->
-        {% if hexagon_items %}
-        <div class="section-block">
-            <div class="section-title">ШЕСТИГРАННИК</div>
-            <table class="task-table">
-                <thead>
-                    <tr>
-                        <th>№ п/п</th>
-                        <th>Наименование детали</th>
-                        <th>Материал</th>
-                        <th>Размеры, мм</th>
-                        <th>Кол-во, шт</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for item in hexagon_items %}
-                    <tr>
-                        <td class="text-center">{{ item.sequence_number }}</td>
-                        <td>{{ item.part_name }}</td>
-                        <td>{{ item.material.name }}</td>
-                        <td class="text-center">
-                            S{{ item.key_size }} x {{ item.length }}
                         </td>
                         <td class="text-center">{{ item.quantity }}</td>
                     </tr>

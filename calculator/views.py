@@ -246,16 +246,16 @@ def order_detail(request, order_id):
     items_list = list(items)
     
     # Сортировка с учетом числовых значений
-    sort_by = request.GET.get('sort', 'sequence_number')
+    sort_by = request.GET.get('sort', 'part_name__name')
     if sort_by == 'sequence_number':
         # Кастомная сортировка по числовому значению
         items_list.sort(key=lambda x: x.sort_key)
     elif sort_by == 'part_name__name':
-        items_list.sort(key=lambda x: x.part_name.name)
+        items_list.sort(key=lambda x: (x.part_name.name, x.sort_key))
     elif sort_by == 'material__name':
-        items_list.sort(key=lambda x: x.material.name if x.material else '')
+        items_list.sort(key=lambda x: (x.material.name if x.material else '', x.part_name.name, x.sort_key))
     elif sort_by == 'quantity':
-        items_list.sort(key=lambda x: x.quantity)
+        items_list.sort(key=lambda x: (x.quantity, x.part_name.name, x.sort_key))
     
     return render(request, 'calculator/order_detail.html', {
         'order': order, 
@@ -322,7 +322,7 @@ def get_stock_items_by_material(request):
     material_id = request.GET.get('material_id')
     section_type = request.GET.get('section_type')
     
-    stock_items = StockItem.objects.filter(quantity__gt=0)
+    stock_items = StockItem.objects.filter(quantity__gt=0).order_by('material__name', 'section_type', 'width', 'diameter', 'key_size')
     
     if material_id:
         stock_items = stock_items.filter(material_id=material_id)
@@ -343,9 +343,8 @@ def print_order_report(request, order_id):
     order = get_object_or_404(Order, id=order_id)
     items = order.items.all().select_related('part_name', 'material', 'stock_item')
     
-    # Сортируем с использованием sort_key
     items_list = list(items)
-    items_list.sort(key=lambda x: x.sort_key)
+    items_list.sort(key=lambda x: (x.part_name.name, x.sort_key))
     
     total_weight_kg = order.total_weight
     
@@ -392,9 +391,8 @@ def print_grouped_report(request, order_id):
     order = get_object_or_404(Order, id=order_id)
     items = order.items.all().select_related('part_name', 'material', 'stock_item')
     
-    # Сортируем детали для группировки
     items_list = list(items)
-    items_list.sort(key=lambda x: x.sort_key)
+    items_list.sort(key=lambda x: (x.material.name if x.material else 'zzz', str(x.stock_item) if x.stock_item else '', x.part_name.name, x.sort_key))
     
     # Группируем по материалу и сортаменту
     grouped_data = {}
@@ -416,9 +414,13 @@ def print_grouped_report(request, order_id):
         grouped_data[key]['items'].append(item)
     
     # Сортируем группы
-    grouped_list = sorted(grouped_data.values(), 
-                         key=lambda x: (x['material'].name if x['material'] else 'zzz', 
-                                      x['stock_item'].id if x['stock_item'] else 0))
+    grouped_list = sorted(
+        grouped_data.values(),
+        key=lambda x: (
+            x['material'].name if x['material'] else 'zzz',
+            str(x['stock_item']) if x['stock_item'] else '',
+        ),
+    )
     
     total_weight_kg = order.total_weight
     
@@ -439,15 +441,13 @@ def print_cutting_task(request, order_id):
     order = get_object_or_404(Order, id=order_id)
     items = order.items.all().select_related('part_name', 'material', 'stock_item')
     
-    # Сортируем все детали
     items_list = list(items)
-    items_list.sort(key=lambda x: x.sort_key)
+    items_list.sort(key=lambda x: (x.part_name.name, x.sort_key))
     
     # Группируем по типу сортамента с фильтрацией
     grouped_by_section = {
         'sheet': [],  # Лист
         'round': [],  # Кругляк (только диаметр > 50)
-        'hexagon': [] # Шестигранник
     }
     
     for item in items_list:
@@ -463,13 +463,10 @@ def print_cutting_task(request, order_id):
             # Фильтр: только кругляк с диаметром > 50
             if item.diameter and float(item.diameter) > 50:
                 grouped_by_section['round'].append(item)
-                
-        elif section_type == 'hexagon':
-            grouped_by_section['hexagon'].append(item)
     
-    # Внутри каждой группы сортируем по номеру
+    # Внутри каждой группы сортируем по алфавиту
     for section_type in grouped_by_section:
-        grouped_by_section[section_type].sort(key=lambda x: x.sort_key)
+        grouped_by_section[section_type].sort(key=lambda x: (x.part_name.name, x.sort_key))
     
     # Подсчет статистики для информации
     filtered_round_count = len(grouped_by_section['round'])
@@ -486,7 +483,6 @@ def print_cutting_task(request, order_id):
         'order': order,
         'sheet_items': grouped_by_section['sheet'],
         'round_items': grouped_by_section['round'],
-        'hexagon_items': grouped_by_section['hexagon'],
         'date': timezone.now().strftime('%d.%m.%Y'),
         'user': request.user
     }
@@ -576,7 +572,7 @@ def get_stock_items_by_material_and_type(request):
     material_id = request.GET.get('material_id')
     section_type = request.GET.get('section_type')
     
-    stock_items = StockItem.objects.all()
+    stock_items = StockItem.objects.all().order_by('material__name', 'section_type', 'width', 'diameter', 'key_size')
     
     if material_id:
         stock_items = stock_items.filter(material_id=material_id)
@@ -602,9 +598,9 @@ def search_part_names(request):
     """API для поиска наименований деталей"""
     query = request.GET.get('q', '')
     if query:
-        parts = PartName.objects.filter(name__icontains=query)[:10]
+        parts = PartName.objects.filter(name__icontains=query).order_by('name')[:10]
     else:
-        parts = PartName.objects.all()[:10]
+        parts = PartName.objects.all().order_by('name')[:10]
     
     data = [{'id': part.id, 'text': part.name} for part in parts]
     return JsonResponse({'results': data})
@@ -614,9 +610,9 @@ def search_materials(request):
     """API для поиска материалов"""
     query = request.GET.get('q', '')
     if query:
-        materials = Material.objects.filter(name__icontains=query)[:10]
+        materials = Material.objects.filter(name__icontains=query).order_by('name')[:10]
     else:
-        materials = Material.objects.all()[:10]
+        materials = Material.objects.all().order_by('name')[:10]
     
     data = [{'id': m.id, 'text': f"{m.name} ({m.density} г/см³)"} for m in materials]
     return JsonResponse({'results': data})

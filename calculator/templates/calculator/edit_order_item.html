@@ -381,6 +381,20 @@
             }).then(r => r.json());
         }
 
+        function sortSelectOptions(selectEl) {
+            if (!selectEl) return;
+            const selectedValue = selectEl.value;
+            const options = Array.from(selectEl.options);
+            const emptyOptions = options.filter(o => !o.value);
+            const nonEmptyOptions = options.filter(o => o.value);
+            const collator = new Intl.Collator('ru', { sensitivity: 'base', numeric: true });
+            nonEmptyOptions.sort((a, b) => collator.compare(a.textContent.trim(), b.textContent.trim()));
+            while (selectEl.firstChild) selectEl.removeChild(selectEl.firstChild);
+            emptyOptions.forEach(o => selectEl.appendChild(o));
+            nonEmptyOptions.forEach(o => selectEl.appendChild(o));
+            selectEl.value = selectedValue;
+        }
+
         function getUpdatePartUrl(id) {
             return updatePartUrlTemplate.replace('/0/', `/${id}/`);
         }
@@ -584,6 +598,7 @@
                         if (json.success) {
                             const option = partNameSelect.querySelector(`option[value="${json.id}"]`);
                             if (option) option.textContent = json.name;
+                            sortSelectOptions(partNameSelect);
                             const modal = bootstrap.Modal.getInstance(document.getElementById('editPartModal'));
                             if (modal) modal.hide();
                         } else {

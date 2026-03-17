@@ -633,6 +633,20 @@
             }).then(r => r.json());
         }
 
+        function sortSelectOptions(selectEl) {
+            if (!selectEl) return;
+            const selectedValue = selectEl.value;
+            const options = Array.from(selectEl.options);
+            const emptyOptions = options.filter(o => !o.value);
+            const nonEmptyOptions = options.filter(o => o.value);
+            const collator = new Intl.Collator('ru', { sensitivity: 'base', numeric: true });
+            nonEmptyOptions.sort((a, b) => collator.compare(a.textContent.trim(), b.textContent.trim()));
+            while (selectEl.firstChild) selectEl.removeChild(selectEl.firstChild);
+            emptyOptions.forEach(o => selectEl.appendChild(o));
+            nonEmptyOptions.forEach(o => selectEl.appendChild(o));
+            selectEl.value = selectedValue;
+        }
+
         function getUpdatePartUrl(id) {
             return updatePartUrlTemplate.replace('/0/', `/${id}/`);
         }
@@ -658,8 +672,9 @@
                         const opt = document.createElement('option');
                         opt.value = json.id;
                         opt.textContent = json.name;
-                        document.getElementById('id_part_name').appendChild(opt);
-                        document.getElementById('id_part_name').value = String(json.id);
+                        partNameSelect.appendChild(opt);
+                        partNameSelect.value = String(json.id);
+                        sortSelectOptions(partNameSelect);
                         const modal = bootstrap.Modal.getInstance(document.getElementById('addPartModal'));
                         modal.hide();
                         document.getElementById('new_part_name').value = '';
@@ -711,6 +726,7 @@
                         if (json.success) {
                             const option = partNameSelect.querySelector(`option[value="${json.id}"]`);
                             if (option) option.textContent = json.name;
+                            sortSelectOptions(partNameSelect);
                             const modal = bootstrap.Modal.getInstance(document.getElementById('editPartModal'));
                             if (modal) modal.hide();
                         } else {
@@ -733,8 +749,9 @@
                         const opt = document.createElement('option');
                         opt.value = json.id;
                         opt.textContent = `${json.name} (${json.density} г/см³)`;
-                        document.getElementById('id_material').appendChild(opt);
-                        document.getElementById('id_material').value = String(json.id);
+                        materialSelect.appendChild(opt);
+                        materialSelect.value = String(json.id);
+                        sortSelectOptions(materialSelect);
                         const modal = bootstrap.Modal.getInstance(document.getElementById('addMaterialModal'));
                         modal.hide();
                         document.getElementById('new_material_name').value = '';
@@ -761,8 +778,9 @@
                         opt.textContent = json.text;
                         opt.setAttribute('data-section-type', json.section_type);
                         opt.setAttribute('data-material-id', String(json.material_id));
-                        document.getElementById('id_stock_item').appendChild(opt);
-                        document.getElementById('id_stock_item').value = String(json.id);
+                        stockItemSelect.appendChild(opt);
+                        stockItemSelect.value = String(json.id);
+                        sortSelectOptions(stockItemSelect);
                         toggleMeasurements();
                         setMeasurementDefaults();
                         const modal = bootstrap.Modal.getInstance(document.getElementById('addStockItemModal'));

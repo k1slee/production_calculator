@@ -104,7 +104,15 @@ class OrderItemForm(forms.ModelForm):
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['stock_item'].queryset = StockItem.objects.all()
+        self.fields['part_name'].queryset = PartName.objects.all().order_by('name')
+        self.fields['material'].queryset = Material.objects.all().order_by('name')
+        self.fields['stock_item'].queryset = StockItem.objects.all().order_by(
+            'material__name',
+            'section_type',
+            'width',
+            'diameter',
+            'key_size',
+        )
         self.fields['stock_item'].label = 'Сортамент со склада'
         self.fields['stock_item'].empty_label = '---------'
         self.fields['is_special'].label = 'Особая запись (без расчета веса)'
@@ -178,3 +186,7 @@ class OrderItemForm(forms.ModelForm):
             cleaned_data['key_size'] = None
         
         return cleaned_data
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['material'].queryset = Material.objects.all().order_by('name')
