@@ -87,7 +87,7 @@ class OrderItemForm(forms.ModelForm):
         model = OrderItem
         fields = ['sequence_number', 'part_name', 'material', 'quantity', 
                  'stock_item', 'length', 'width', 'height', 'diameter', 'key_size',
-                 'is_special']
+                 'use_iz_prefix', 'is_special']
         widgets = {
             'sequence_number': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Например: 01-2'}),
             'part_name': forms.Select(attrs={'class': 'form-select'}),
@@ -99,6 +99,7 @@ class OrderItemForm(forms.ModelForm):
             'height': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
             'diameter': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
             'key_size': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'use_iz_prefix': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'is_special': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
     
@@ -115,6 +116,8 @@ class OrderItemForm(forms.ModelForm):
         )
         self.fields['stock_item'].label = 'Сортамент со склада'
         self.fields['stock_item'].empty_label = '---------'
+        self.fields['use_iz_prefix'].label = 'Добавлять «из» перед сортаментом (только кругляк)'
+        self.fields['use_iz_prefix'].required = False
         self.fields['is_special'].label = 'Особая запись (без расчета веса)'
         self.fields['is_special'].required = False
         
@@ -155,6 +158,7 @@ class OrderItemForm(forms.ModelForm):
                     # Очищаем ненужные поля
                     cleaned_data['diameter'] = None
                     cleaned_data['key_size'] = None
+                    cleaned_data['use_iz_prefix'] = False
                     
                 elif section_type == 'round':
                     if not cleaned_data.get('diameter'):
@@ -175,6 +179,7 @@ class OrderItemForm(forms.ModelForm):
                     cleaned_data['width'] = None
                     cleaned_data['height'] = None
                     cleaned_data['diameter'] = None
+                    cleaned_data['use_iz_prefix'] = False
         else:
             # Для особой записи очищаем ненужные поля
             cleaned_data['material'] = None
@@ -184,9 +189,6 @@ class OrderItemForm(forms.ModelForm):
             cleaned_data['height'] = None
             cleaned_data['diameter'] = None
             cleaned_data['key_size'] = None
+            cleaned_data['use_iz_prefix'] = False
         
         return cleaned_data
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields['material'].queryset = Material.objects.all().order_by('name')

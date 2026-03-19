@@ -211,6 +211,12 @@
                             
                             <!-- Поля для кругляка -->
                             <div id="round-measurements" style="display: none;">
+                                <div class="mb-2 form-check">
+                                    {{ form.use_iz_prefix }}
+                                    <label class="form-check-label" for="{{ form.use_iz_prefix.id_for_label }}">
+                                        Добавлять «из» перед сортаментом
+                                    </label>
+                                </div>
                                 <div class="row">
                                     <div class="col-md-6">
                                         <div class="mb-3">

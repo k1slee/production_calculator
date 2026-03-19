@@ -407,8 +407,11 @@ def print_grouped_report(request, order_id):
                 'weight_per_item': item.weight,
                 'items': [],
                 'is_special': item.is_special,
-                'part_name': item.part_name if item.is_special else None
+                'part_name': item.part_name if item.is_special else None,
+                'use_iz_prefix': False
             }
+        if not item.is_special and item.use_iz_prefix:
+            grouped_data[key]['use_iz_prefix'] = True
         grouped_data[key]['total_weight'] += item.total_weight
         grouped_data[key]['quantity'] += item.quantity
         grouped_data[key]['items'].append(item)

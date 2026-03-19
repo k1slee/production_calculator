@@ -160,6 +160,7 @@ class OrderItem(models.Model):
     height = models.DecimalField('Высота (мм)', max_digits=8, decimal_places=2, null=True, blank=True)
     diameter = models.DecimalField('Диаметр (мм)', max_digits=8, decimal_places=2, null=True, blank=True)  # Исправлено
     key_size = models.DecimalField('Размер под ключ (мм)', max_digits=8, decimal_places=2, null=True, blank=True)
+    use_iz_prefix = models.BooleanField('Добавлять "из" перед размером', default=False)
     
     # Особая запись
     is_special = models.BooleanField('Особая запись', default=False)
