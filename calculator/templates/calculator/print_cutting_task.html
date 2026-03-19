@@ -235,7 +235,7 @@
                         <td>{{ item.part_name }}</td>
                         <td>{{ item.material.name }}</td>
                         <td class="text-center">
-                            Ø{{ item.diameter }} x {{ item.length }}
+                            {% if item.use_iz_prefix %}из {% endif %}Ø{{ item.diameter }} x {{ item.length }}
                         </td>
                         <td class="text-center">{{ item.quantity }}</td>
                     </tr>

@@ -116,7 +116,7 @@ class OrderItemForm(forms.ModelForm):
         )
         self.fields['stock_item'].label = 'Сортамент со склада'
         self.fields['stock_item'].empty_label = '---------'
-        self.fields['use_iz_prefix'].label = 'Добавлять «из» перед сортаментом (только кругляк)'
+        self.fields['use_iz_prefix'].label = 'Добавлять «из» в задании на заготовку (кругляк)'
         self.fields['use_iz_prefix'].required = False
         self.fields['is_special'].label = 'Особая запись (без расчета веса)'
         self.fields['is_special'].required = False

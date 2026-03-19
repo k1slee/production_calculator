@@ -220,7 +220,7 @@
                         {% if group.stock_item.section_type == 'sheet' %}
                             # {{ group.stock_item.width }} мм
                         {% elif group.stock_item.section_type == 'round' %}
-                            {% if group.use_iz_prefix %}из {% endif %}Ø{{ group.stock_item.diameter }} мм
+                            Ø{{ group.stock_item.diameter }} мм
                         {% elif group.stock_item.section_type == 'hexagon' %}
                             S{{ group.stock_item.key_size }} мм
                         {% endif %}
