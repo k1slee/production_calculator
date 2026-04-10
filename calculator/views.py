@@ -5,7 +5,7 @@ from django.contrib import messages
 from django.db import transaction, IntegrityError
 from django.utils import timezone 
 from django.db.models import Count, Sum
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseForbidden
 from .models import Material, PartName, StockItem, Order, OrderItem
 from .forms import (LoginForm, MaterialForm, PartNameForm, StockItemForm, 
                    OrderForm, OrderItemForm, OrderCoefficientForm)
@@ -246,7 +246,7 @@ def order_detail(request, order_id):
     items_list = list(items)
     
     # Сортировка с учетом числовых значений
-    sort_by = request.GET.get('sort', 'part_name__name')
+    sort_by = request.GET.get('sort', 'sequence_number')
     if sort_by == 'sequence_number':
         # Кастомная сортировка по числовому значению
         items_list.sort(key=lambda x: x.sort_key)
@@ -344,7 +344,7 @@ def print_order_report(request, order_id):
     items = order.items.all().select_related('part_name', 'material', 'stock_item')
     
     items_list = list(items)
-    items_list.sort(key=lambda x: (x.part_name.name, x.sort_key))
+    items_list.sort(key=lambda x: (x.sort_key, x.part_name.name))
     
     total_weight_kg = order.total_weight
     
@@ -383,6 +383,20 @@ def update_order_coefficient(request, order_id):
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                 return JsonResponse({'success': False, 'errors': form.errors})
     
+    return redirect('order_detail', order_id=order.id)
+
+@login_required
+@transaction.atomic
+def update_order_drawing_number(request, order_id):
+    order = get_object_or_404(Order, id=order_id)
+    if not (request.user.is_staff or request.user.is_superuser):
+        return HttpResponseForbidden()
+
+    if request.method == 'POST':
+        drawing_number = (request.POST.get('drawing_number') or '').strip()
+        order.drawing_number = drawing_number or None
+        order.save(update_fields=['drawing_number'])
+        messages.success(request, 'Номер чертежа обновлен')
     return redirect('order_detail', order_id=order.id)
 
 @login_required
@@ -445,7 +459,7 @@ def print_cutting_task(request, order_id):
     items = order.items.all().select_related('part_name', 'material', 'stock_item')
     
     items_list = list(items)
-    items_list.sort(key=lambda x: (x.part_name.name, x.sort_key))
+    items_list.sort(key=lambda x: (x.sort_key, x.part_name.name))
     
     # Группируем по типу сортамента с фильтрацией
     grouped_by_section = {
@@ -467,9 +481,9 @@ def print_cutting_task(request, order_id):
             if item.diameter and float(item.diameter) > 50:
                 grouped_by_section['round'].append(item)
     
-    # Внутри каждой группы сортируем по алфавиту
+    # Внутри каждой группы сортируем по номеру
     for section_type in grouped_by_section:
-        grouped_by_section[section_type].sort(key=lambda x: (x.part_name.name, x.sort_key))
+        grouped_by_section[section_type].sort(key=lambda x: (x.sort_key, x.part_name.name))
     
     # Подсчет статистики для информации
     filtered_round_count = len(grouped_by_section['round'])
