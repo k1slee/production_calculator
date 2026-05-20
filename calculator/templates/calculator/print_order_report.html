@@ -160,6 +160,9 @@
     </style>
 </head>
 <body>
+    <!-- Загружаем фильтр один раз в начале body -->
+    {% load custom_filters %}
+
     <!-- Кнопки управления - только для экрана -->
     <div class="no-print" style="margin-bottom: 20px;">
         <button onclick="window.print()" style="padding: 6px 12px; background: #0d6efd; color: white; border: none; border-radius: 4px; cursor: pointer;">
@@ -211,22 +214,24 @@
                     {% endif %}
                 </td>
                 <td class="text-center">{{ item.quantity }}</td>
-                <td>
+                <!-- Чистовые размеры с фильтром format_decimal -->
+                <td class="text-center">
                     {% if item.stock_item.section_type == 'sheet' %}
-                        {{ item.height }}x{{ item.width }}x{{ item.length }}
+                        {{ item.height|format_decimal }}x{{ item.width|format_decimal }}x{{ item.length|format_decimal }}
                     {% elif item.stock_item.section_type == 'round' %}
-                        Ø{{ item.diameter }} x {{ item.length }}
+                        Ø{{ item.diameter|format_decimal }} x {{ item.length|format_decimal }}
                     {% elif item.stock_item.section_type == 'hexagon' %}
-                        S{{ item.key_size }} x {{ item.length }}
+                        S{{ item.key_size|format_decimal }} x {{ item.length|format_decimal }}
                     {% endif %}
                 </td>
+                <!-- Сортамент материала с фильтром format_decimal -->
                 <td>
                     {% if item.stock_item.section_type == 'sheet' %}
-                        # {{ item.stock_item.width }} мм
+                        # {{ item.stock_item.width|format_decimal }} мм
                     {% elif item.stock_item.section_type == 'round' %}
-                        Ø{{ item.stock_item.diameter }} мм
+                        Ø{{ item.stock_item.diameter|format_decimal }} мм
                     {% elif item.stock_item.section_type == 'hexagon' %}
-                        S{{ item.stock_item.key_size }} мм
+                        S{{ item.stock_item.key_size|format_decimal }} мм
                     {% endif %}
                 </td>
                 <td class="text-right">{{ item.total_weight|floatformat:3 }}</td>

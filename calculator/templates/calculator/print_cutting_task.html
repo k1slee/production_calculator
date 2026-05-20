@@ -146,7 +146,7 @@
             Назад к заказу
         </a>
     </div>
-
+    {% load custom_filters %}
     <!-- Шапка документа -->
     <div class="print-header">
         <div class="print-title">ЗАДАНИЕ НА ЗАГОТОВКУ</div>
@@ -194,7 +194,7 @@
                         <td>{{ item.part_name }}</td>
                         <td>{{ item.material.name }}</td>
                         <td class="text-center">
-                            {{ item.height }} x {{ item.width }} x {{ item.length }}
+                            {{ item.height|format_decimal }} x {{ item.width|format_decimal }} x {{ item.length|format_decimal }}
                         </td>
                         <td class="text-center">{{ item.quantity }}</td>
                     </tr>
@@ -235,7 +235,7 @@
                         <td>{{ item.part_name }}</td>
                         <td>{{ item.material.name }}</td>
                         <td class="text-center">
-                            {% if item.use_iz_prefix %}из {% endif %}Ø{{ item.diameter }} x {{ item.length }}
+                           {% if item.use_iz_prefix %}из {% endif %}Ø{{ item.diameter|format_decimal }} x {{ item.length|format_decimal }}
                         </td>
                         <td class="text-center">{{ item.quantity }}</td>
                     </tr>

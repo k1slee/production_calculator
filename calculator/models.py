@@ -67,10 +67,10 @@ class Order(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Пользователь')
     coefficient = models.DecimalField(
         'Коэффициент массы', 
-        max_digits=2, 
-        decimal_places=1, 
+        max_digits=3, 
+        decimal_places=2, 
         default=1.0,
-        validators=[MinValueValidator(1.0), MaxValueValidator(2.0)]
+        validators=[MinValueValidator(1.00), MaxValueValidator(2.00)]
     )
     created_at = models.DateTimeField('Дата создания', auto_now_add=True)
     
