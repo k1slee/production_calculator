@@ -2,6 +2,15 @@
 {% load static %}
 
 {% block content %}
+<pre style="background:#f0f0f0; padding:10px;">
+stock_item: {{ item.stock_item }}
+is_special: {{ item.is_special }}
+length: {{ item.length }}
+width: {{ item.width }}
+height: {{ item.height }}
+diameter: {{ item.diameter }}
+key_size: {{ item.key_size }}
+</pre>
 <div class="row justify-content-center">
     <div class="col-md-8">
         <div class="card">
@@ -270,7 +279,14 @@
                             </div>
                         </div>
                     </div>
-                    
+                    <!-- Чекбокс "Добавлять «из» в задании на заготовку (кругляк)" -->
+                    <div class="mb-3 form-check" id="izPrefixBlock" style="display: none;">
+                        {{ form.use_iz_prefix }}
+                        <label class="form-check-label" for="{{ form.use_iz_prefix.id_for_label }}">
+                            <strong>{{ form.use_iz_prefix.label }}</strong>
+                        </label>
+                        <div class="form-text">Актуально только для кругляка</div>
+                    </div>
                     <!-- Скрытое поле для передачи правильного значения length -->
                     <input type="hidden" name="length" id="final_length" value="{{ form.length.value|default:item.length }}">
                     
@@ -313,7 +329,6 @@
 <script>
 (function() {
     'use strict';
-    
     document.addEventListener('DOMContentLoaded', function() {
         const specialCheckbox = document.getElementById('{{ form.is_special.id_for_label }}');
         const normalFields = document.getElementById('normal-item-fields');
@@ -328,8 +343,37 @@
         const finalLength = document.getElementById('final_length');
         const csrfToken = document.querySelector('#orderItemForm input[name=csrfmiddlewaretoken]').value;
         const updatePartUrlTemplate = "{% url 'update_part_name' 0 %}";
+        // --- Элементы для чекбокса "из" ---
+        const izPrefixBlock = document.getElementById('izPrefixBlock');
+        const useIzPrefixCheckbox = document.getElementById('{{ form.use_iz_prefix.id_for_label }}');
         
-        // Функция фильтрации сортамента по материалу
+        // --- Функция обновления видимости чекбокса "из" ---
+        function toggleIzPrefixVisibility() {
+            if (!izPrefixBlock) return;
+            
+            // Если особая запись — скрываем и снимаем галочку
+            if (specialCheckbox && specialCheckbox.checked) {
+                izPrefixBlock.style.display = 'none';
+                if (useIzPrefixCheckbox) useIzPrefixCheckbox.checked = false;
+                return;
+            }
+            
+            // Для обычной записи показываем только если выбран кругляк
+            const selectedOption = stockItemSelect.options[stockItemSelect.selectedIndex];
+            if (selectedOption && selectedOption.value) {
+                const sectionType = selectedOption.getAttribute('data-section-type');
+                if (sectionType === 'round') {
+                    izPrefixBlock.style.display = 'block';
+                } else {
+                    izPrefixBlock.style.display = 'none';
+                    if (useIzPrefixCheckbox) useIzPrefixCheckbox.checked = false;
+                }
+            } else {
+                izPrefixBlock.style.display = 'none';
+            }
+        }
+        
+
         function filterStockItems() {
             const materialId = materialSelect.value;
             const sectionType = sectionTypeSelect.value;
@@ -368,6 +412,7 @@
                     toggleMeasurements();
                 }
             }
+            toggleIzPrefixVisibility();
         }
         
         function postJSON(url, data) {
@@ -424,15 +469,19 @@
             });
         }
         
-        // Функция переключения полей для обычной/особой записи
         function toggleNormalFields() {
             if (specialCheckbox && specialCheckbox.checked) {
                 normalFields.style.display = 'none';
                 setNormalFieldsEnabled(false);
+                // Скрываем чекбокс "из" для особой записи
+                if (izPrefixBlock) izPrefixBlock.style.display = 'none';
+                if (useIzPrefixCheckbox) useIzPrefixCheckbox.checked = false;
             } else {
                 normalFields.style.display = 'block';
                 setNormalFieldsEnabled(true);
                 toggleMeasurements();
+                // Обновляем видимость чекбокса "из" для обычной записи
+                toggleIzPrefixVisibility();
             }
         }
         
@@ -461,6 +510,7 @@
                     hexagonMeasurements.style.display = 'block';
                 }
             }
+             toggleIzPrefixVisibility();
         }
         
         // Функция подготовки данных перед отправкой формы
@@ -624,7 +674,7 @@
         if (materialSelect.value && sectionTypeSelect.value) {
             filterStockItems();
         }
-        updateEditPartState();
+        toggleIzPrefixVisibility();
     });
 })();
 </script>
