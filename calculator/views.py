@@ -562,7 +562,7 @@ def edit_order_item(request, order_id, item_id):
     item = get_object_or_404(OrderItem, id=item_id, order=order)
     
     if request.method == 'POST':
-        form = OrderItemForm(request.POST, instance=item)
+        form = OrderItemForm(request.POST, instance=item, order = order)
         if form.is_valid():
             try:
                 form.save()
@@ -575,7 +575,7 @@ def edit_order_item(request, order_id, item_id):
                 for error in errors:
                     messages.error(request, f'{field}: {error}')
     else:
-        form = OrderItemForm(instance=item)
+        form = OrderItemForm(instance=item, order = order)
     
     return render(request, 'calculator/edit_order_item.html', {
         'form': form, 
@@ -639,6 +639,69 @@ def add_order_item(request, order_id):
     """Добавление детали в заказ"""
     order = get_object_or_404(Order, id=order_id)
     
+    # ---- ОБЩАЯ ЛОГИКА ДЛЯ ЗНАЧЕНИЙ ПО УМОЛЧАНИЮ (GET и повторный рендер POST) ----
+    last_item = order.items.order_by('-id').first()
+    next_number = order.items.count() + 1
+    initial_data = {'sequence_number': str(next_number)}
+    last_section_type = None
+    last_measurements = {}
+    
+    if last_item:
+        if last_item.part_name_id:
+            initial_data['part_name'] = last_item.part_name_id
+        if last_item.material_id:
+            initial_data['material'] = last_item.material_id
+        if last_item.quantity:
+            initial_data['quantity'] = last_item.quantity
+        if last_item.stock_item_id:
+            initial_data['stock_item'] = last_item.stock_item_id
+        initial_data['is_special'] = last_item.is_special
+        if last_item.length:
+            initial_data['length'] = float(last_item.length)
+            last_measurements['length'] = str(last_item.length)
+        if last_item.width:
+            initial_data['width'] = float(last_item.width)
+            last_measurements['width'] = str(last_item.width)
+        if last_item.height:
+            initial_data['height'] = float(last_item.height)
+            last_measurements['height'] = str(last_item.height)
+        if last_item.diameter:
+            initial_data['diameter'] = float(last_item.diameter)
+            last_measurements['diameter'] = str(last_item.diameter)
+        if last_item.key_size:
+            initial_data['key_size'] = float(last_item.key_size)
+            last_measurements['key_size'] = str(last_item.key_size)
+        last_section_type = last_item.stock_item.section_type if last_item.stock_item else None
+    else:
+        last_params = request.session.get('last_item_params', {})
+        if last_params:
+            if 'part_name_id' in last_params and last_params['part_name_id']:
+                initial_data['part_name'] = last_params['part_name_id']
+            if 'material_id' in last_params and last_params['material_id']:
+                initial_data['material'] = last_params['material_id']
+            if 'quantity' in last_params and last_params['quantity']:
+                initial_data['quantity'] = last_params['quantity']
+            if 'stock_item_id' in last_params and last_params['stock_item_id']:
+                initial_data['stock_item'] = last_params['stock_item_id']
+            if 'is_special' in last_params:
+                initial_data['is_special'] = last_params['is_special']
+            if 'length' in last_params and last_params['length']:
+                initial_data['length'] = last_params['length']
+                last_measurements['length'] = str(last_params['length'])
+            if 'width' in last_params and last_params['width']:
+                initial_data['width'] = last_params['width']
+                last_measurements['width'] = str(last_params['width'])
+            if 'height' in last_params and last_params['height']:
+                initial_data['height'] = last_params['height']
+                last_measurements['height'] = str(last_params['height'])
+            if 'diameter' in last_params and last_params['diameter']:
+                initial_data['diameter'] = last_params['diameter']
+                last_measurements['diameter'] = str(last_params['diameter'])
+            if 'key_size' in last_params and last_params['key_size']:
+                initial_data['key_size'] = last_params['key_size']
+                last_measurements['key_size'] = str(last_params['key_size'])
+        last_section_type = last_params.get('section_type')
+    
     if request.method == 'POST':
         # Копируем POST данные
         post_data = request.POST.copy()
@@ -649,7 +712,6 @@ def add_order_item(request, order_id):
             try:
                 stock_item = StockItem.objects.get(id=stock_item_id)
                 section_type = stock_item.section_type
-                
                 # Устанавливаем правильное поле length
                 if section_type == 'sheet':
                     post_data['length'] = post_data.get('sheet_length', '')
@@ -657,11 +719,10 @@ def add_order_item(request, order_id):
                     post_data['length'] = post_data.get('round_length', '')
                 elif section_type == 'hexagon':
                     post_data['length'] = post_data.get('hex_length', '')
-                    
             except StockItem.DoesNotExist:
                 pass
         
-        form = OrderItemForm(post_data)
+        form = OrderItemForm(post_data, order=order)
         
         if form.is_valid():
             try:
@@ -669,7 +730,7 @@ def add_order_item(request, order_id):
                 item.order = order
                 item.save()
                 
-                # Сохраняем в сессию (ОДИН КЛЮЧ - 'last_item_params')
+                # Сохраняем в сессию
                 request.session['last_item_params'] = {
                     'part_name_id': item.part_name_id,
                     'material_id': item.material_id if item.material else None,
@@ -690,72 +751,18 @@ def add_order_item(request, order_id):
             except Exception as e:
                 messages.error(request, f'Ошибка: {str(e)}')
         else:
+            # При ошибках валидации показываем форму с ошибками
             for field, errors in form.errors.items():
                 for error in errors:
                     messages.error(request, f'{field}: {error}')
+            return render(request, 'calculator/order_item_form.html', {
+                'form': form,
+                'order': order,
+                'last_section_type': last_section_type,
+                'last_measurements': last_measurements,
+            })
     else:
-        last_item = order.items.order_by('-id').first()
-        next_number = order.items.count() + 1
-        
-        initial_data = {'sequence_number': str(next_number)}
-        last_section_type = None
-        last_measurements = {}
-        if last_item:
-            if last_item.part_name_id:
-                initial_data['part_name'] = last_item.part_name_id
-            if last_item.material_id:
-                initial_data['material'] = last_item.material_id
-            if last_item.quantity:
-                initial_data['quantity'] = last_item.quantity
-            if last_item.stock_item_id:
-                initial_data['stock_item'] = last_item.stock_item_id
-            initial_data['is_special'] = last_item.is_special
-            if last_item.length:
-                initial_data['length'] = float(last_item.length)
-                last_measurements['length'] = str(last_item.length)
-            if last_item.width:
-                initial_data['width'] = float(last_item.width)
-                last_measurements['width'] = str(last_item.width)
-            if last_item.height:
-                initial_data['height'] = float(last_item.height)
-                last_measurements['height'] = str(last_item.height)
-            if last_item.diameter:
-                initial_data['diameter'] = float(last_item.diameter)
-                last_measurements['diameter'] = str(last_item.diameter)
-            if last_item.key_size:
-                initial_data['key_size'] = float(last_item.key_size)
-                last_measurements['key_size'] = str(last_item.key_size)
-            last_section_type = last_item.stock_item.section_type if last_item.stock_item else None
-        else:
-            last_params = request.session.get('last_item_params', {})
-            if last_params:
-                if 'part_name_id' in last_params and last_params['part_name_id']:
-                    initial_data['part_name'] = last_params['part_name_id']
-                if 'material_id' in last_params and last_params['material_id']:
-                    initial_data['material'] = last_params['material_id']
-                if 'quantity' in last_params and last_params['quantity']:
-                    initial_data['quantity'] = last_params['quantity']
-                if 'stock_item_id' in last_params and last_params['stock_item_id']:
-                    initial_data['stock_item'] = last_params['stock_item_id']
-                if 'is_special' in last_params:
-                    initial_data['is_special'] = last_params['is_special']
-                if 'length' in last_params and last_params['length']:
-                    initial_data['length'] = last_params['length']
-                    last_measurements['length'] = str(last_params['length'])
-                if 'width' in last_params and last_params['width']:
-                    initial_data['width'] = last_params['width']
-                    last_measurements['width'] = str(last_params['width'])
-                if 'height' in last_params and last_params['height']:
-                    initial_data['height'] = last_params['height']
-                    last_measurements['height'] = str(last_params['height'])
-                if 'diameter' in last_params and last_params['diameter']:
-                    initial_data['diameter'] = last_params['diameter']
-                    last_measurements['diameter'] = str(last_params['diameter'])
-                if 'key_size' in last_params and last_params['key_size']:
-                    initial_data['key_size'] = last_params['key_size']
-                    last_measurements['key_size'] = str(last_params['key_size'])
-            last_section_type = last_params.get('section_type')
-        form = OrderItemForm(initial=initial_data)
+        form = OrderItemForm(initial=initial_data, order=order)
     
     return render(request, 'calculator/order_item_form.html', {
         'form': form,
