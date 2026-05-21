@@ -119,7 +119,7 @@
                             <select class="form-select" id="section_type" required>
                                 <option value="">---------</option>
                                 <option value="sheet" {% if last_section_type == 'sheet' %}selected{% endif %}>Лист</option>
-                                <option value="round" {% if last_section_type == 'round' %}selected{% endif %}>Кругляк</option>
+                                <option value="round" {% if last_section_type == 'round' %}selected{% endif %}>Круг</option>
                                 <option value="hexagon" {% if last_section_type == 'hexagon' %}selected{% endif %}>Шестигранник</option>
                             </select>
                         </div>
@@ -205,7 +205,7 @@
                                 </div>
                             </div>
                             
-                            <!-- Поля для кругляка -->
+                            <!-- Поля для круга -->
                             <div id="round-measurements" style="display: none;">
                                 <div class="mb-2 form-check">
                                     {{ form.use_iz_prefix }}
@@ -391,7 +391,7 @@
           <select class="form-select" id="new_stock_section">
             <option value="">---------</option>
             <option value="sheet">Лист</option>
-            <option value="round">Кругляк</option>
+            <option value="round">Круг</option>
             <option value="hexagon">Шестигранник</option>
           </select>
         </div>
