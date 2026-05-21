@@ -153,7 +153,13 @@ class OrderItem(models.Model):
     material = models.ForeignKey(Material, on_delete=models.PROTECT, verbose_name='Марка материала', null=True, blank=True)
     quantity = models.IntegerField('Количество деталей', validators=[MinValueValidator(1)])
     stock_item = models.ForeignKey(StockItem, on_delete=models.PROTECT, verbose_name='Сортамент со склада', null=True, blank=True)
-    
+    designation = models.CharField(
+        'Обозначение', 
+        max_length=20, 
+        blank=True, 
+        null=True,
+        help_text='Необязательное обозначение детали (до 20 символов)'
+    )
     # Замеры детали
     length = models.DecimalField('Длина (мм)', max_digits=8, decimal_places=2, null=True, blank=True)
     width = models.DecimalField('Ширина (мм)', max_digits=8, decimal_places=2, null=True, blank=True)

@@ -92,7 +92,7 @@ class OrderItemForm(forms.ModelForm):
         model = OrderItem
         fields = ['sequence_number', 'part_name', 'material', 'quantity', 
                  'stock_item', 'length', 'width', 'height', 'diameter', 'key_size',
-                 'use_iz_prefix', 'is_special']
+                 'use_iz_prefix', 'is_special', 'designation']
         widgets = {
             'sequence_number': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Например: 01-2'}),
             'part_name': forms.Select(attrs={'class': 'form-select'}),
@@ -106,6 +106,7 @@ class OrderItemForm(forms.ModelForm):
             'key_size': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
             'use_iz_prefix': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'is_special': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'designation': forms.TextInput(attrs={'class': 'form-control', 'maxlength': '20', 'placeholder': 'Обозначение (необязательно)'}),
         }
     
     def __init__(self, *args, **kwargs):

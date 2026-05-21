@@ -181,6 +181,7 @@
                     </tr>
                     <tr>
                         <th>№ п/п</th>
+                        <th>Обозначение</th>
                         <th>Наименование детали</th>
                         <th>Материал</th>
                         <th>Размеры, мм</th>
@@ -191,6 +192,7 @@
                     {% for item in sheet_items %}
                     <tr>
                         <td class="text-center">{{ item.sequence_number }}</td>
+                        <td>{{ item.designation|default:"—" }}</td>
                         <td>{{ item.part_name }}</td>
                         <td>{{ item.material.name }}</td>
                         <td class="text-center">
@@ -222,6 +224,7 @@
                     </tr>
                     <tr>
                         <th>№ п/п</th>
+                        <th>Обозначение</th>
                         <th>Наименование детали</th>
                         <th>Материал</th>
                         <th>Размеры, мм</th>
@@ -232,6 +235,7 @@
                     {% for item in round_items %}
                     <tr>
                         <td class="text-center">{{ item.sequence_number }}</td>
+                        <td>{{ item.designation|default:"—" }}</td>
                         <td>{{ item.part_name }}</td>
                         <td>{{ item.material.name }}</td>
                         <td class="text-center">
