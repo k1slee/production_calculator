@@ -152,9 +152,9 @@
         <div class="print-title">ЗАДАНИЕ НА ЗАГОТОВКУ</div>
         
         {% if order.drawing_number %}
-        <div class="drawing-number">Чертеж №{{ order.drawing_number }}</div>
+        <div class="drawing-number">{{ order.drawing_number }}</div>
         {% else %}
-        <div class="drawing-number">Чертеж №_____________</div>
+        <div class="drawing-number">_____________</div>
         {% endif %}
         
         <div class="order-number">Заказ №{{ order.order_number }}</div>
