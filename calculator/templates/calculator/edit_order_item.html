@@ -675,6 +675,18 @@ key_size: {{ item.key_size }}
             filterStockItems();
         }
         toggleIzPrefixVisibility();
+        // Исправление запятых в числовых полях ввода (берём значение из атрибута)
+        document.querySelectorAll('input[type="number"]').forEach(function(input) {
+            let attrVal = input.getAttribute('value');
+            if (attrVal && attrVal.includes(',')) {
+                input.value = attrVal.replace(',', '.');
+                console.log(`Исправлено ${input.id}: ${attrVal} → ${input.value}`);
+            }
+        });
+        // Поправить скрытое поле final_length (уже объявлено)
+        if (finalLength && finalLength.value && finalLength.value.includes(',')) {
+            finalLength.value = finalLength.value.replace(',', '.');
+        }
     });
 })();
 </script>
