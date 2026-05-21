@@ -109,7 +109,7 @@ class OrderItemForm(forms.ModelForm):
         }
     
     def __init__(self, *args, **kwargs):
-        self.order = kwargs.pop('order', None)  # получаем заказ
+        #self.order = kwargs.pop('order', None)   получаем заказ
         super().__init__(*args, **kwargs)
         self.fields['part_name'].queryset = PartName.objects.all().order_by('name')
         self.fields['material'].queryset = Material.objects.all().order_by('name')
@@ -196,8 +196,8 @@ class OrderItemForm(forms.ModelForm):
             cleaned_data['diameter'] = None
             cleaned_data['key_size'] = None
             cleaned_data['use_iz_prefix'] = False
-        
-        # ========== ПРОВЕРКА УНИКАЛЬНОСТИ НАИМЕНОВАНИЯ ДЕТАЛИ В ЗАКАЗЕ ==========
+"""
+         Если надо добавить уникальность деталей в заказе ========== ПРОВЕРКА УНИКАЛЬНОСТИ НАИМЕНОВАНИЯ ДЕТАЛИ В ЗАКАЗЕ ==========
         if self.order:
             part_name = cleaned_data.get('part_name')
             if part_name:
@@ -205,6 +205,8 @@ class OrderItemForm(forms.ModelForm):
                 if self.instance.pk:  # при редактировании исключаем текущую деталь
                     duplicate = duplicate.exclude(pk=self.instance.pk)
                 if duplicate.exists():
-                    self.add_error('part_name', 'Деталь с таким наименованием уже существует в этом заказе.')
+                    elf.add_error('part_name', 'Деталь с таким наименованием уже существует в этом заказе.')
         
         return cleaned_data
+
+    """
