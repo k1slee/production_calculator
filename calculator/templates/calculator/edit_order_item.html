@@ -45,23 +45,20 @@
                     
                     <!-- Наименование детали -->
                     <div class="mb-3">
-                        <label for="id_part_name" class="form-label fw-bold">
+                        <label for="id_part_name_input" class="form-label fw-bold">
                             Наименование детали <span class="text-danger">*</span>
                         </label>
-                        <select name="part_name" 
-                                class="form-select" 
-                                id="id_part_name"
-                                required>
-                            <option value="">---------</option>
-                            {% for part in form.fields.part_name.queryset %}
-                                <option value="{{ part.id }}" 
-                                    {% if form.part_name.value|stringformat:"s" == part.id|stringformat:"s" %}selected{% endif %}>
-                                    {{ part.name }}
-                                </option>
-                            {% endfor %}
-                        </select>
+                        <input type="text"
+                            id="id_part_name_input"
+                            class="form-control"
+                            placeholder="Начните вводить наименование..."
+                            autocomplete="off"
+                            required>
+                        <input type="hidden" name="part_name" id="id_part_name_hidden" value="{{ form.part_name.value|default:item.part_name.id }}">
+                        <div id="part_name_suggestions" class="list-group position-absolute w-100" style="z-index: 1000; display: none;"></div>
                         <div class="d-flex gap-2 mt-2">
                             <button type="button" class="btn btn-sm btn-outline-secondary" id="editPartBtn" data-bs-toggle="modal" data-bs-target="#editPartModal">Редактировать наименование</button>
+                            <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addPartModal">Добавить новое</button>
                         </div>
                         {% if form.part_name.errors %}
                             <div class="text-danger">{{ form.part_name.errors }}</div>
@@ -321,35 +318,37 @@
 (function() {
     'use strict';
     document.addEventListener('DOMContentLoaded', function() {
+        // ---- Элементы формы ----
         const specialCheckbox = document.getElementById('{{ form.is_special.id_for_label }}');
         const normalFields = document.getElementById('normal-item-fields');
         const materialSelect = document.getElementById('id_material');
         const sectionTypeSelect = document.getElementById('section_type');
         const stockItemSelect = document.getElementById('id_stock_item');
-        const partNameSelect = document.getElementById('id_part_name');
-        const editPartBtn = document.getElementById('editPartBtn');
-        const editPartInput = document.getElementById('edit_part_name');
-        const editPartErrors = document.getElementById('editPartErrors');
         const form = document.getElementById('orderItemForm');
         const finalLength = document.getElementById('final_length');
         const csrfToken = document.querySelector('#orderItemForm input[name=csrfmiddlewaretoken]').value;
         const updatePartUrlTemplate = "{% url 'update_part_name' 0 %}";
-        // --- Элементы для чекбокса "из" ---
+        
+        // ---- Элементы для автокомплита ----
+        const partNameInput = document.getElementById('id_part_name_input');
+        const partNameHidden = document.getElementById('id_part_name_hidden');
+        const suggestionsDiv = document.getElementById('part_name_suggestions');
+        let currentPartId = partNameHidden.value || null;
+        
+        // ---- Чекбокс "из" ----
         const izPrefixBlock = document.getElementById('izPrefixBlock');
         const useIzPrefixCheckbox = document.getElementById('{{ form.use_iz_prefix.id_for_label }}');
+
+        // ========== 1. ОСТАВЛЯЕМ ВСЕ СТАРЫЕ ФУНКЦИИ (фильтрация, переключения) ==========
+        // Они остаются без изменений, кроме удаления переменной partNameSelect и связанных с ней.
         
-        // --- Функция обновления видимости чекбокса "из" ---
         function toggleIzPrefixVisibility() {
             if (!izPrefixBlock) return;
-            
-            // Если особая запись — скрываем и снимаем галочку
             if (specialCheckbox && specialCheckbox.checked) {
                 izPrefixBlock.style.display = 'none';
                 if (useIzPrefixCheckbox) useIzPrefixCheckbox.checked = false;
                 return;
             }
-            
-            // Для обычной записи показываем только если выбран кругляк
             const selectedOption = stockItemSelect.options[stockItemSelect.selectedIndex];
             if (selectedOption && selectedOption.value) {
                 const sectionType = selectedOption.getAttribute('data-section-type');
@@ -368,18 +367,11 @@
             const materialId = materialSelect.value;
             const sectionType = sectionTypeSelect.value;
             const options = stockItemSelect.options;
-            
-            console.log('Фильтр: material=', materialId, 'section=', sectionType); // Для отладки
-            
-            // Показываем все опции
             for (let i = 0; i < options.length; i++) {
                 const option = options[i];
-                if (option.value === '') continue; // Пропускаем первый пустой option
-                
+                if (option.value === '') continue;
                 const optionMaterialId = option.getAttribute('data-material-id');
                 const optionSectionType = option.getAttribute('data-section-type');
-                
-                // Показываем опции, которые соответствуют выбранному материалу и типу
                 if (materialId && sectionType) {
                     if (optionMaterialId === materialId && optionSectionType === sectionType) {
                         option.style.display = '';
@@ -393,8 +385,6 @@
                     option.disabled = false;
                 }
             }
-            
-            // Если текущий выбранный option скрыт, сбрасываем выбор
             if (stockItemSelect.selectedIndex > 0) {
                 const selectedOption = stockItemSelect.options[stockItemSelect.selectedIndex];
                 if (selectedOption.style.display === 'none') {
@@ -408,35 +398,9 @@
         function postJSON(url, data) {
             return fetch(url, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                    'X-CSRFToken': csrfToken
-                },
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-CSRFToken': csrfToken },
                 body: new URLSearchParams(data)
             }).then(r => r.json());
-        }
-
-        function sortSelectOptions(selectEl) {
-            if (!selectEl) return;
-            const selectedValue = selectEl.value;
-            const options = Array.from(selectEl.options);
-            const emptyOptions = options.filter(o => !o.value);
-            const nonEmptyOptions = options.filter(o => o.value);
-            const collator = new Intl.Collator('ru', { sensitivity: 'base', numeric: true });
-            nonEmptyOptions.sort((a, b) => collator.compare(a.textContent.trim(), b.textContent.trim()));
-            while (selectEl.firstChild) selectEl.removeChild(selectEl.firstChild);
-            emptyOptions.forEach(o => selectEl.appendChild(o));
-            nonEmptyOptions.forEach(o => selectEl.appendChild(o));
-            selectEl.value = selectedValue;
-        }
-
-        function getUpdatePartUrl(id) {
-            return updatePartUrlTemplate.replace('/0/', `/${id}/`);
-        }
-
-        function updateEditPartState() {
-            if (!editPartBtn || !partNameSelect) return;
-            editPartBtn.disabled = !partNameSelect.value;
         }
 
         function setNormalFieldsEnabled(enabled) {
@@ -463,164 +427,165 @@
             if (specialCheckbox && specialCheckbox.checked) {
                 normalFields.style.display = 'none';
                 setNormalFieldsEnabled(false);
-                // Скрываем чекбокс "из" для особой записи
                 if (izPrefixBlock) izPrefixBlock.style.display = 'none';
                 if (useIzPrefixCheckbox) useIzPrefixCheckbox.checked = false;
             } else {
                 normalFields.style.display = 'block';
                 setNormalFieldsEnabled(true);
                 toggleMeasurements();
-                // Обновляем видимость чекбокса "из" для обычной записи
                 toggleIzPrefixVisibility();
             }
         }
         
-        // Функция переключения полей в зависимости от выбранного сортамента
         function toggleMeasurements() {
-            const sheetMeasurements = document.getElementById('sheet-measurements');
-            const roundMeasurements = document.getElementById('round-measurements');
-            const hexagonMeasurements = document.getElementById('hexagon-measurements');
-            
-            if (!sheetMeasurements || !roundMeasurements || !hexagonMeasurements) return;
-            
+            const sheet = document.getElementById('sheet-measurements');
+            const round = document.getElementById('round-measurements');
+            const hex = document.getElementById('hexagon-measurements');
+            if (!sheet || !round || !hex) return;
             const selectedOption = stockItemSelect.options[stockItemSelect.selectedIndex];
-            
-            sheetMeasurements.style.display = 'none';
-            roundMeasurements.style.display = 'none';
-            hexagonMeasurements.style.display = 'none';
-            
+            sheet.style.display = 'none';
+            round.style.display = 'none';
+            hex.style.display = 'none';
             if (selectedOption && selectedOption.value) {
-                const sectionType = selectedOption.getAttribute('data-section-type');
-                
-                if (sectionType === 'sheet') {
-                    sheetMeasurements.style.display = 'block';
-                } else if (sectionType === 'round') {
-                    roundMeasurements.style.display = 'block';
-                } else if (sectionType === 'hexagon') {
-                    hexagonMeasurements.style.display = 'block';
-                }
+                const type = selectedOption.getAttribute('data-section-type');
+                if (type === 'sheet') sheet.style.display = 'block';
+                else if (type === 'round') round.style.display = 'block';
+                else if (type === 'hexagon') hex.style.display = 'block';
             }
-             toggleIzPrefixVisibility();
+            toggleIzPrefixVisibility();
         }
         
-        // Функция подготовки данных перед отправкой формы
         function prepareFormData() {
             if (specialCheckbox && specialCheckbox.checked) {
                 finalLength.value = '';
                 return true;
             }
-            
             const selectedOption = stockItemSelect.options[stockItemSelect.selectedIndex];
             if (!selectedOption || !selectedOption.value) {
                 alert('Выберите сортамент со склада');
                 return false;
             }
-            
-            const sectionType = selectedOption.getAttribute('data-section-type');
-            
-            // Сохраняем значения из соответствующих полей
-            if (sectionType === 'sheet') {
-                const sheetLength = document.getElementById('id_sheet_length');
-                const width = document.getElementById('id_width');
-                const height = document.getElementById('id_height');
-                
-                finalLength.value = sheetLength ? sheetLength.value : '';
-                
-                // Убеждаемся, что значения передаются
-                console.log('Sheet values:', {
-                    length: sheetLength.value,
-                    width: width.value,
-                    height: height.value
-                });
-                
-            } else if (sectionType === 'round') {
-                const roundLength = document.getElementById('id_round_length');
-                const diameter = document.getElementById('id_diameter');
-                
-                finalLength.value = roundLength ? roundLength.value : '';
-                
-                console.log('Round values:', {
-                    diameter: diameter.value,
-                    length: roundLength.value
-                });
-                
-            } else if (sectionType === 'hexagon') {
-                const hexLength = document.getElementById('id_hex_length');
-                const keySize = document.getElementById('id_key_size');
-                
-                finalLength.value = hexLength ? hexLength.value : '';
-                
-                console.log('Hexagon values:', {
-                    keySize: keySize.value,
-                    length: hexLength.value
-                });
+            const type = selectedOption.getAttribute('data-section-type');
+            if (type === 'sheet') {
+                const len = document.getElementById('id_sheet_length');
+                finalLength.value = len ? len.value : '';
+            } else if (type === 'round') {
+                const len = document.getElementById('id_round_length');
+                finalLength.value = len ? len.value : '';
+            } else if (type === 'hexagon') {
+                const len = document.getElementById('id_hex_length');
+                finalLength.value = len ? len.value : '';
             }
-            
             return true;
         }
         
-        // Назначаем обработчики
-        if (specialCheckbox) {
-            specialCheckbox.addEventListener('change', toggleNormalFields);
-            toggleNormalFields();
-        }
+        // ========== 2. НОВЫЙ КОД: АВТОКОМПЛИТ ДЛЯ НАИМЕНОВАНИЯ ДЕТАЛИ ==========
         
-        if (materialSelect) {
-            materialSelect.addEventListener('change', function() {
-                filterStockItems();
-                // После смены материала проверяем, нужно ли показать поля замеров
-                if (stockItemSelect.selectedIndex > 0) {
-                    toggleMeasurements();
-                }
-            });
-        }
-        
-        if (sectionTypeSelect) {
-            sectionTypeSelect.addEventListener('change', function() {
-                filterStockItems();
-                // После смены типа сортамента сбрасываем выбор сортамента
-                stockItemSelect.value = '';
-                toggleMeasurements();
-            });
-        }
-        
-        if (stockItemSelect) {
-            stockItemSelect.addEventListener('change', toggleMeasurements);
-        }
-        
-        if (form) {
-            form.addEventListener('submit', function(e) {
-                if (!prepareFormData()) {
-                    e.preventDefault();
-                }
-            });
-        }
-        
-
-        if (partNameSelect) {
-            partNameSelect.addEventListener('change', updateEditPartState);
-        }
-
-        if (editPartBtn) {
-            editPartBtn.addEventListener('click', function(e) {
-                if (!partNameSelect || !partNameSelect.value) {
-                    e.preventDefault();
-                    e.stopPropagation();
+        async function loadPartNames(query) {
+            if (!query.trim()) {
+                suggestionsDiv.style.display = 'none';
+                return;
+            }
+            try {
+                const resp = await fetch(`/api/search-part-names/?q=${encodeURIComponent(query)}`);
+                const data = await resp.json();
+                const results = data.results || [];
+                if (results.length === 0) {
+                    suggestionsDiv.innerHTML = '<div class="list-group-item text-muted">Ничего не найдено</div>';
+                    suggestionsDiv.style.display = 'block';
                     return;
                 }
-                if (editPartErrors) editPartErrors.style.display = 'none';
-                const selectedOption = partNameSelect.options[partNameSelect.selectedIndex];
+                suggestionsDiv.innerHTML = results.map(item => `
+                    <button type="button" class="list-group-item list-group-item-action" data-id="${item.id}" data-name="${escapeHtml(item.text)}">
+                        ${escapeHtml(item.text)}
+                    </button>
+                `).join('');
+                suggestionsDiv.style.display = 'block';
+            } catch (err) {
+                console.error('Ошибка загрузки наименований:', err);
+                suggestionsDiv.style.display = 'none';
+            }
+        }
+        
+        function escapeHtml(str) {
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+        
+        let debounceTimer;
+        partNameInput.addEventListener('input', function() {
+            clearTimeout(debounceTimer);
+            const query = this.value;
+            debounceTimer = setTimeout(() => loadPartNames(query), 300);
+        });
+        
+        suggestionsDiv.addEventListener('click', (e) => {
+            const btn = e.target.closest('.list-group-item-action');
+            if (!btn) return;
+            const id = btn.getAttribute('data-id');
+            const name = btn.getAttribute('data-name');
+            partNameInput.value = name;
+            partNameHidden.value = id;
+            currentPartId = id;
+            suggestionsDiv.style.display = 'none';
+        });
+        
+        partNameInput.addEventListener('blur', () => {
+            setTimeout(() => {
+                suggestionsDiv.style.display = 'none';
+            }, 200);
+        });
+        
+        function initPartNameInput() {
+            const currentId = partNameHidden.value;
+            if (currentId) {
+                fetch(`/api/search-part-names/?q=`)
+                    .then(r => r.json())
+                    .then(data => {
+                        const found = data.results.find(item => item.id == currentId);
+                        if (found) {
+                            partNameInput.value = found.text;
+                            currentPartId = currentId;
+                        } else {
+                            partNameInput.value = '';
+                            partNameHidden.value = '';
+                        }
+                    })
+                    .catch(err => console.error(err));
+            } else {
+                partNameInput.value = '';
+            }
+        }
+        initPartNameInput();
+        
+        // ========== 3. ОБРАБОТКА МОДАЛЬНОГО ОКНА РЕДАКТИРОВАНИЯ ==========
+        const editPartModal = document.getElementById('editPartModal');
+        const editPartInput = document.getElementById('edit_part_name');
+        const editPartErrors = document.getElementById('editPartErrors');
+        
+        if (editPartModal) {
+            editPartModal.addEventListener('show.bs.modal', function(event) {
+                const partId = partNameHidden.value;
+                if (!partId) {
+                    alert('Сначала выберите деталь');
+                    event.preventDefault();
+                    return;
+                }
                 if (editPartInput) {
-                    editPartInput.value = selectedOption ? selectedOption.textContent.trim() : '';
-                    editPartInput.dataset.partId = partNameSelect.value;
-                    editPartInput.focus();
+                    editPartInput.value = partNameInput.value;
+                    editPartInput.dataset.partId = partId;
                 }
             });
         }
-
+        
         const submitEditPart = document.getElementById('submitEditPart');
         if (submitEditPart) {
-            submitEditPart.addEventListener('click', function() {
+            // Заменяем старый обработчик, чтобы не было конфликтов
+            const newSubmitHandler = function() {
                 if (!editPartInput) return;
                 const partId = editPartInput.dataset.partId;
                 const name = editPartInput.value.trim();
@@ -633,13 +598,15 @@
                     }
                     return;
                 }
-                postJSON(getUpdatePartUrl(partId), {name})
+                const url = updatePartUrlTemplate.replace('/0/', `/${partId}/`);
+                postJSON(url, {name})
                     .then(json => {
                         if (json.success) {
-                            const option = partNameSelect.querySelector(`option[value="${json.id}"]`);
-                            if (option) option.textContent = json.name;
-                            sortSelectOptions(partNameSelect);
-                            const modal = bootstrap.Modal.getInstance(document.getElementById('editPartModal'));
+                            // Обновляем поля автокомплита
+                            partNameInput.value = json.name;
+                            partNameHidden.value = json.id;
+                            currentPartId = json.id;
+                            const modal = bootstrap.Modal.getInstance(editPartModal);
                             if (modal) modal.hide();
                         } else {
                             if (editPartErrors) {
@@ -648,32 +615,86 @@
                             }
                         }
                     });
+            };
+            // Удаляем старый обработчик и вешаем новый
+            submitEditPart.replaceWith(submitEditPart.cloneNode(true));
+            const newBtn = document.getElementById('submitEditPart');
+            if (newBtn) newBtn.addEventListener('click', newSubmitHandler);
+        }
+        
+        // ========== 4. ОБРАБОТКА ДОБАВЛЕНИЯ НОВОЙ ДЕТАЛИ ==========
+        const addPartModalForm = document.querySelector('#addPartModal form');
+        if (addPartModalForm) {
+            addPartModalForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const formData = new FormData(this);
+                try {
+                    const resp = await fetch('/api/create-part-name/', {
+                        method: 'POST',
+                        headers: { 'X-CSRFToken': csrfToken },
+                        body: formData
+                    });
+                    const data = await resp.json();
+                    if (data.success) {
+                        partNameHidden.value = data.id;
+                        partNameInput.value = data.name;
+                        currentPartId = data.id;
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('addPartModal'));
+                        if (modal) modal.hide();
+                        alert('Новая деталь добавлена');
+                        this.reset(); // очищаем форму
+                    } else {
+                        alert('Ошибка: ' + JSON.stringify(data.errors));
+                    }
+                } catch (err) {
+                    alert('Ошибка сервера');
+                }
             });
         }
-        // Принудительно показываем все опции при загрузке
-        const options = stockItemSelect.options;
-        for (let i = 0; i < options.length; i++) {
-            options[i].style.display = '';
-            options[i].style.display = '';
-            options[i].disabled = false;
+        
+        // ========== 5. НАСТРОЙКА ОСТАЛЬНЫХ ОБРАБОТЧИКОВ (фильтры, чекбоксы) ==========
+        if (specialCheckbox) {
+            specialCheckbox.addEventListener('change', toggleNormalFields);
+            toggleNormalFields();
+        }
+        if (materialSelect) {
+            materialSelect.addEventListener('change', function() {
+                filterStockItems();
+                if (stockItemSelect.selectedIndex > 0) toggleMeasurements();
+            });
+        }
+        if (sectionTypeSelect) {
+            sectionTypeSelect.addEventListener('change', function() {
+                filterStockItems();
+                stockItemSelect.value = '';
+                toggleMeasurements();
+            });
+        }
+        if (stockItemSelect) {
+            stockItemSelect.addEventListener('change', toggleMeasurements);
+        }
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                if (!prepareFormData()) e.preventDefault();
+            });
         }
         
-        console.log('Скрипт загружен, элементов в списке:', stockItemSelect.options.length); // Для отладки
-        
-        // Если есть выбранный материал и тип, применяем фильтр
-        if (materialSelect.value && sectionTypeSelect.value) {
-            filterStockItems();
+        // Принудительная инициализация фильтрации
+        const stockOptions = stockItemSelect.options;
+        for (let i = 0; i < stockOptions.length; i++) {
+            stockOptions[i].style.display = '';
+            stockOptions[i].disabled = false;
         }
+        if (materialSelect.value && sectionTypeSelect.value) filterStockItems();
         toggleIzPrefixVisibility();
-        // Исправление запятых в числовых полях ввода (берём значение из атрибута)
+        
+        // Исправление запятых в числах
         document.querySelectorAll('input[type="number"]').forEach(function(input) {
             let attrVal = input.getAttribute('value');
             if (attrVal && attrVal.includes(',')) {
                 input.value = attrVal.replace(',', '.');
-                console.log(`Исправлено ${input.id}: ${attrVal} → ${input.value}`);
             }
         });
-        // Поправить скрытое поле final_length (уже объявлено)
         if (finalLength && finalLength.value && finalLength.value.includes(',')) {
             finalLength.value = finalLength.value.replace(',', '.');
         }
