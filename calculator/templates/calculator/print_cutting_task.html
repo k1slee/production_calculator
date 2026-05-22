@@ -242,7 +242,7 @@
                         <td>{{ item.part_name }}</td>
                         <td>{{ item.material.name }}</td>
                         <td class="text-center">
-                           {% if item.use_iz_prefix %}из {% endif %}Ø{{ item.diameter|format_decimal }} x {{ item.length|format_decimal }}
+                            Ø{{ item.diameter|format_decimal }} x {{ item.length|format_decimal }}
                         </td>
                         <td class="text-center">{{ item.quantity }}</td>
                         <td>{%if item.use_iz_prefix %}из {% endif %}Ø item</td>
