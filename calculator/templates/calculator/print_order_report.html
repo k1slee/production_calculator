@@ -110,6 +110,11 @@
             vertical-align: middle;
             word-wrap: break-word;
         }
+
+        .report-table th:nth-child(5),
+        .report-table td:nth-child(5) {
+            white-space: nowrap;
+        }
         
         .text-right {
             text-align: right;
@@ -126,15 +131,16 @@
         
         .footer {
             margin-top: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
             border-top: 1px solid #ccc;
             padding-top: 10px;
+            position: relative;
+            min-height: 22px;
         }
         
         .technologist {
             font-size: 11pt;
+            width: 100%;
+            text-align: center;
         }
         
         .technologist span {
@@ -143,6 +149,9 @@
         
         .date {
             font-size: 11pt;
+            position: absolute;
+            left: 0;
+            top: 10px;
         }
         
         .date span {
@@ -219,9 +228,9 @@
                     {% if item.stock_item.section_type == 'sheet' %}
                         {{ item.height|format_decimal }}x{{ item.width|format_decimal }}x{{ item.length|format_decimal }}
                     {% elif item.stock_item.section_type == 'round' %}
-                        Ø{{ item.diameter|format_decimal }} x {{ item.length|format_decimal }}
+                        Ø{{ item.diameter|format_decimal }}x{{ item.length|format_decimal }}
                     {% elif item.stock_item.section_type == 'hexagon' %}
-                        S{{ item.key_size|format_decimal }} x {{ item.length|format_decimal }}
+                        S{{ item.key_size|format_decimal }}x{{ item.length|format_decimal }}
                     {% endif %}
                 </td>
                 <!-- Сортамент материала с фильтром format_decimal -->

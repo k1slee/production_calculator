@@ -1,5 +1,6 @@
 {% extends 'calculator/base.html' %}
 {% load static %}
+{% load custom_filters %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
@@ -339,11 +340,11 @@
                             {% else %}
                                 <small>
                                     {% if item.stock_item.section_type == 'sheet' %}
-                                        # {{ item.stock_item.width }} мм
+                                        # {{ item.stock_item.width|format_decimal }} мм
                                     {% elif item.stock_item.section_type == 'round' %}
-                                        Ø{{ item.stock_item.diameter }} мм
+                                        Ø{{ item.stock_item.diameter|format_decimal }} мм
                                     {% else %}
-                                        S{{ item.stock_item.key_size }} мм
+                                        S{{ item.stock_item.key_size|format_decimal }} мм
                                     {% endif %}
                                 </small>
                             {% endif %}
@@ -354,11 +355,11 @@
                             {% else %}
                                 <small>
                                     {% if item.stock_item.section_type == 'sheet' %}
-                                        {{ item.height }}x{{ item.width }}x{{ item.length }}
+                                        {{ item.height|format_decimal }}x{{ item.width|format_decimal }}x{{ item.length|format_decimal }}
                                     {% elif item.stock_item.section_type == 'round' %}
-                                        Ø{{ item.diameter }} x {{ item.length }}
+                                        Ø{{ item.diameter|format_decimal }}x{{ item.length|format_decimal }}
                                     {% else %}
-                                        S{{ item.key_size }} x {{ item.length }}
+                                        S{{ item.key_size|format_decimal }}x{{ item.length|format_decimal }}
                                     {% endif %}
                                 </small>
                             {% endif %}

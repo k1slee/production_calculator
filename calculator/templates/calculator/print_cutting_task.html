@@ -97,6 +97,11 @@
             padding: 6px;
             vertical-align: middle;
         }
+
+        .task-table th:nth-child(5),
+        .task-table td:nth-child(5) {
+            white-space: nowrap;
+        }
         
         .text-right {
             text-align: right;
@@ -108,8 +113,7 @@
         
         .footer {
             margin-top: 50px;
-            display: flex;
-            justify-content: flex-end;
+            text-align: center;
         }
         
         .technologist {
@@ -126,6 +130,12 @@
             text-align: center;
             color: #666;
             font-style: italic;
+        }
+
+        .order-name {
+            font-size: 16pt;
+            font-weight: 500;
+            margin-bottom: 8px;
         }
 
         /* Фиксированная ширина колонок */
@@ -152,7 +162,7 @@
         <div class="print-title">ЗАДАНИЕ НА ЗАГОТОВКУ</div>
         
         {% if order.drawing_number %}
-        <div class="drawing-number"><b>{{ order.drawing_number }}</b></div>
+        <div class="drawing-number"><b>{{ order.order_name }}{{ order.drawing_number }}</b></div>
         {% else %}
         <div class="drawing-number">_____________</div>
         {% endif %}
@@ -186,7 +196,7 @@
                         <th>Материал</th>
                         <th>Чистовые размеры, мм</th>
                         <th>Кол-во, шт</th>
-                        <th>Лист</tr>
+                        <th>Лист</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -197,10 +207,10 @@
                         <td>{{ item.part_name }}</td>
                         <td>{{ item.material.name }}</td>
                         <td class="text-center">
-                            {{ item.height|format_decimal }} x {{ item.width|format_decimal }} x {{ item.length|format_decimal }}
+                            {{ item.height|format_decimal }}x{{ item.width|format_decimal }}x{{ item.length|format_decimal }}
                         </td>
                         <td class="text-center">{{ item.quantity }}</td>
-                        <td>{%if item.use_iz_prefix %}из {% endif %}Ø item</td>
+                        <td class="text-center"># {{ item.stock_item.width|format_decimal }} мм</td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -231,7 +241,7 @@
                         <th>Материал</th>
                         <th>Чистовые размеры, мм</th>
                         <th>Кол-во, шт</th>
-                        <th>Круг<th>
+                        <th>Круг</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -242,10 +252,10 @@
                         <td>{{ item.part_name }}</td>
                         <td>{{ item.material.name }}</td>
                         <td class="text-center">
-                            Ø{{ item.diameter|format_decimal }} x {{ item.length|format_decimal }}
+                            Ø{{ item.diameter|format_decimal }}x{{ item.length|format_decimal }}
                         </td>
                         <td class="text-center">{{ item.quantity }}</td>
-                        <td>{%if item.use_iz_prefix %}из {% endif %}Ø item</td>
+                        <td class="text-center">{% if item.use_iz_prefix %}из {% endif %}Ø{{ item.stock_item.diameter|format_decimal }} мм</td>
                     </tr>
                     {% endfor %}
                 </tbody>

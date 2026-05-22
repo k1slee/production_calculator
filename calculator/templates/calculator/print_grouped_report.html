@@ -113,16 +113,17 @@
         /* УМЕНЬШАЕМ ФУТЕР */
         .footer {
             margin-top: 20px; /* Было 50px */
-            display: flex;
-            justify-content: space-between; /* Меняем на space-between для даты слева */
-            align-items: center;
             border-top: 1px solid #ccc;
             padding-top: 10px;
+            position: relative;
+            min-height: 20px;
         }
         
         .technologist {
             font-size: 10pt; /* Было 12pt */
             font-weight: normal;
+            width: 100%;
+            text-align: center;
         }
         
         .technologist span {
@@ -132,6 +133,9 @@
         /* Стили для даты */
         .date {
             font-size: 10pt;
+            position: absolute;
+            left: 0;
+            top: 10px;
         }
         
         .date span {
