@@ -14,8 +14,25 @@
                 margin: 0;
                 padding: 0;
             }
+            /* Блок задания не должен разрываться */
             .section-block {
                 page-break-inside: avoid;
+                break-inside: avoid;
+            }
+            /* Если два блока, между ними можно разрешить разрыв */
+            .section-block:not(:last-child) {
+                page-break-after: avoid;
+                break-after: avoid;
+            }
+            .section-block {
+                page-break-before: always;
+                break-before: page;
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
+            .section-block:first-of-type {
+                page-break-before: avoid;
+                break-before: auto;
             }
         }
         
@@ -35,52 +52,50 @@
             margin-bottom: 20px;
         }
         
-        .print-header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        
-        .print-title {
-            font-size: 20pt;
-            font-weight: bold;
-            text-transform: uppercase;
-            margin-bottom: 15px;
-            letter-spacing: 2px;
-        }
-        
-        .drawing-number {
-            font-size: 16pt;
-            font-weight: 500;
-            margin-bottom: 10px;
-            color: #000;
-        }
-        
-        .order-number {
-            font-size: 14pt;
-            font-weight: normal;
-            margin-bottom: 5px;
-            color: #333;
-        }
-        
         .section-block {
             margin-bottom: 30px;
             border: 1px solid #000;
             border-radius: 5px;
             padding: 15px;
+            background-color: #fff;
+        }
+        
+        /* Шапка внутри блока */
+        .block-header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #000;
+        }
+        
+        .task-title {
+            font-size: 16pt;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+        
+        .order-info {
+            font-size: 12pt;
+            margin-bottom: 5px;
+        }
+        
+        .order-info strong {
+            font-weight: bold;
         }
         
         .section-title {
-            font-size: 16pt;
+            font-size: 14pt;
             font-weight: bold;
-            margin-bottom: 15px;
-            padding-bottom: 5px;
-            border-bottom: 2px solid #000;
+            margin-top: 15px;
+            margin-bottom: 10px;
+            color: #000;
         }
         
         .task-table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 10px;
+            margin-top: 10px;
             font-size: 11pt;
         }
         
@@ -96,11 +111,6 @@
             border: 1px solid #000;
             padding: 6px;
             vertical-align: middle;
-        }
-
-        .task-table th:nth-child(5),
-        .task-table td:nth-child(5) {
-            white-space: nowrap;
         }
         
         .text-right {
@@ -132,22 +142,18 @@
             font-style: italic;
         }
 
-        .order-name {
-            font-size: 16pt;
-            font-weight: 500;
-            margin-bottom: 8px;
-        }
-
-        /* Фиксированная ширина колонок */
+        /* Фиксированная ширина колонок (подберите под свои нужды) */
         .task-table th:nth-child(1) { width: 8%; }
-        .task-table th:nth-child(2) { width: 25%; }
-        .task-table th:nth-child(3) { width: 20%; }
-        .task-table th:nth-child(4) { width: 32%; }
-        .task-table th:nth-child(5) { width: 15%; }
+        .task-table th:nth-child(2) { width: 12%; }
+        .task-table th:nth-child(3) { width: 25%; }
+        .task-table th:nth-child(4) { width: 15%; }
+        .task-table th:nth-child(5) { width: 20%; }
+        .task-table th:nth-child(6) { width: 10%; }
+        .task-table th:nth-child(7) { width: 10%; }
     </style>
 </head>
 <body>
-    <!-- Кнопки управления -->
+    <!-- Кнопки управления (не печатаются) -->
     <div class="no-print" style="margin-bottom: 20px;">
         <button onclick="window.print()" style="padding: 6px 12px; background: #0d6efd; color: white; border: none; border-radius: 4px; cursor: pointer;">
             Печать
@@ -157,38 +163,30 @@
         </a>
     </div>
     {% load custom_filters %}
-    <!-- Шапка документа -->
-    <div class="print-header">
-        <div class="print-title">ЗАДАНИЕ НА ЗАГОТОВКУ</div>
-        
-        {% if order.drawing_number %}
-        <div class="drawing-number"><b>{{ order.order_name }}{{ order.drawing_number }}</b></div>
-        {% else %}
-        <div class="drawing-number">_____________</div>
-        {% endif %}
-        
-        <div class="order-number">Заказ №{{ order.order_number }}</div>
-    </div>
     
-    <!-- Проверяем, есть ли вообще детали -->
+    <!-- Проверяем, есть ли детали -->
     {% if sheet_items or round_items %}
         
-        <!-- Блок: ЛИСТ - показываем только если есть детали -->
+        <!-- Блок: ЛИСТОВОЙ МАТЕРИАЛ -->
         {% if sheet_items %}
         <div class="section-block">
+            <div class="block-header">
+                <div class="task-title">ЗАДАНИЕ НА ЗАГОТОВКУ</div>
+                <div class="order-info">
+                    <strong>Заказ №{{ order.order_number }}</strong>
+                    {% if order.drawing_number %}
+                        | Чертеж: {{ order.drawing_number }}
+                    {% else %}
+                        | Чертеж № _____________
+                    {% endif %}
+                </div>
+                <div class="order-info">
+                    <strong>Наименование заказа:</strong> {{ order.order_name }}
+                </div>
+            </div>
             <div class="section-title">ЛИСТОВОЙ МАТЕРИАЛ</div>
             <table class="task-table">
                 <thead>
-                    <tr>
-                        <th colspan="7">
-                            Заказ №{{ order.order_number }}
-                            {% if order.drawing_number %}
-                                {{ order.drawing_number }}
-                            {% else %}
-                                — Чертеж №_____________
-                            {% endif %}
-                        </th>
-                    </tr>
                     <tr>
                         <th>№ п/п</th>
                         <th>Обозначение</th>
@@ -203,7 +201,7 @@
                     {% for item in sheet_items %}
                     <tr>
                         <td class="text-center">{{ item.sequence_number }}</td>
-                        <td>{{ item.designation|default:"—" }}</td>
+                        <td class="text-center">{{ item.designation|default:"—" }}</td>
                         <td>{{ item.part_name }}</td>
                         <td>{{ item.material.name }}</td>
                         <td class="text-center">
@@ -218,22 +216,26 @@
         </div>
         {% endif %}
         
-        <!-- Блок: КРУГ- показываем только если есть детали -->
+        <!-- Блок: КРУГ (диаметр > 50) -->
         {% if round_items %}
         <div class="section-block">
-            <div class="section-title">КРУГ</div>
+            <div class="block-header">
+                <div class="task-title">ЗАДАНИЕ НА ЗАГОТОВКУ</div>
+                <div class="order-info">
+                    <strong>Заказ №{{ order.order_number }}</strong>
+                    {% if order.drawing_number %}
+                        | Чертеж: {{ order.drawing_number }}
+                    {% else %}
+                        | Чертеж № _____________
+                    {% endif %}
+                </div>
+                <div class="order-info">
+                    <strong>Наименование заказа:</strong> {{ order.order_name }}
+                </div>
+            </div>
+            <div class="section-title">КРУГ (диаметр > 50 мм)</div>
             <table class="task-table">
                 <thead>
-                    <tr>
-                        <th colspan="7">
-                            Заказ №{{ order.order_number }}
-                            {% if order.drawing_number %}
-                                {{ order.drawing_number }}
-                            {% else %}
-                                — Чертеж №_____________
-                            {% endif %}
-                        </th>
-                    </tr>
                     <tr>
                         <th>№ п/п</th>
                         <th>Обозначение</th>
@@ -248,7 +250,7 @@
                     {% for item in round_items %}
                     <tr>
                         <td class="text-center">{{ item.sequence_number }}</td>
-                        <td>{{ item.designation|default:"—" }}</td>
+                        <td class="text-center">{{ item.designation|default:"—" }}</td>
                         <td>{{ item.part_name }}</td>
                         <td>{{ item.material.name }}</td>
                         <td class="text-center">
@@ -264,13 +266,12 @@
         {% endif %}
         
     {% else %}
-        <!-- Если нет ни одной детали -->
         <div class="empty-section">
             В заказе нет деталей для заготовки
         </div>
     {% endif %}
     
-    <!-- Подпись технолога -->
+    <!-- Подпись технолога (одна внизу, не привязана к каждому блоку) -->
     <div class="footer">
         <div class="technologist">
             Инженер-технолог: ________________ <span>{{ user.last_name }} {{ user.first_name|first }}.{{ user.profile.patronymic|first|default:'' }}.</span>
