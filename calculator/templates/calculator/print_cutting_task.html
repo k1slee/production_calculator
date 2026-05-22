@@ -14,21 +14,11 @@
                 margin: 0;
                 padding: 0;
             }
-            /* Блок задания не должен разрываться */
             .section-block {
                 page-break-inside: avoid;
                 break-inside: avoid;
-            }
-            /* Если два блока, между ними можно разрешить разрыв */
-            .section-block:not(:last-child) {
-                page-break-after: avoid;
-                break-after: avoid;
-            }
-            .section-block {
                 page-break-before: always;
                 break-before: page;
-                page-break-inside: avoid;
-                break-inside: avoid;
             }
             .section-block:first-of-type {
                 page-break-before: avoid;
@@ -60,7 +50,6 @@
             background-color: #fff;
         }
         
-        /* Шапка внутри блока */
         .block-header {
             text-align: center;
             margin-bottom: 20px;
@@ -113,17 +102,16 @@
             vertical-align: middle;
         }
         
-        .text-right {
-            text-align: right;
-        }
-        
         .text-center {
             text-align: center;
         }
         
-        .footer {
-            margin-top: 50px;
+        /* Блок подписи внутри раздела */
+        .section-footer {
+            margin-top: 30px;
             text-align: center;
+            border-top: 1px dashed #ccc;
+            padding-top: 15px;
         }
         
         .technologist {
@@ -135,6 +123,12 @@
             font-weight: bold;
         }
         
+        .date-sign {
+            font-size: 10pt;
+            margin-top: 5px;
+            color: #333;
+        }
+        
         .empty-section {
             padding: 20px;
             text-align: center;
@@ -142,7 +136,6 @@
             font-style: italic;
         }
 
-        /* Фиксированная ширина колонок (подберите под свои нужды) */
         .task-table th:nth-child(1) { width: 8%; }
         .task-table th:nth-child(2) { width: 12%; }
         .task-table th:nth-child(3) { width: 25%; }
@@ -164,7 +157,6 @@
     </div>
     {% load custom_filters %}
     
-    <!-- Проверяем, есть ли детали -->
     {% if sheet_items or round_items %}
         
         <!-- Блок: ЛИСТОВОЙ МАТЕРИАЛ -->
@@ -173,7 +165,9 @@
             <div class="block-header">
                 <div class="task-title">ЗАДАНИЕ НА ЗАГОТОВКУ</div>
                 <div class="order-info">
-                    <strong></strong> {{ order.order_name }}<p styly = "font-size:15px"> <b>{{ order.drawing_number }}</b></p> Заказ №{{ order.order_number }}
+                    {{ order.order_name }}<br>
+                    <b>{{ order.drawing_number }}</b><br>
+                    Заказ №{{ order.order_number }}
                 </div>
             </div>
             <div class="section-title">ЛИСТОВОЙ МАТЕРИАЛ</div>
@@ -205,6 +199,16 @@
                     {% endfor %}
                 </tbody>
             </table>
+            
+            <!-- Подпись и дата после блока листов -->
+            <div class="section-footer">
+                <div class="technologist">
+                    Инженер-технолог: ________________ <span>{{ user.last_name }} {{ user.first_name|first }}.{{ user.profile.patronymic|first|default:'' }}.</span>
+                </div>
+                <div class="date-sign">
+                    Дата: {% now "d.m.Y" %}
+                </div>
+            </div>
         </div>
         {% endif %}
         
@@ -214,7 +218,9 @@
             <div class="block-header">
                 <div class="task-title">ЗАДАНИЕ НА ЗАГОТОВКУ</div>
                 <div class="order-info">
-                    <strong></strong> {{ order.order_name }}<p styly = "font-size:15px"> <b>{{ order.drawing_number }}</b></p> Заказ №{{ order.order_number }}
+                    {{ order.order_name }}<br>
+                    <b>{{ order.drawing_number }}</b><br>
+                    Заказ №{{ order.order_number }}
                 </div>
             </div>
             <div class="section-title">КРУГ (диаметр > 50 мм)</div>
@@ -246,6 +252,16 @@
                     {% endfor %}
                 </tbody>
             </table>
+            
+            <!-- Подпись и дата после блока круга -->
+            <div class="section-footer">
+                <div class="technologist">
+                    Инженер-технолог: ________________ <span>{{ user.last_name }} {{ user.first_name|first }}.{{ user.profile.patronymic|first|default:'' }}.</span>
+                </div>
+                <div class="date-sign">
+                    Дата: {% now "d.m.Y" %}
+                </div>
+            </div>
         </div>
         {% endif %}
         
@@ -254,12 +270,5 @@
             В заказе нет деталей для заготовки
         </div>
     {% endif %}
-    
-    <!-- Подпись технолога (одна внизу, не привязана к каждому блоку) -->
-    <div class="footer">
-        <div class="technologist">
-            Инженер-технолог: ________________ <span>{{ user.last_name }} {{ user.first_name|first }}.{{ user.profile.patronymic|first|default:'' }}.</span>
-        </div>
-    </div>
 </body>
 </html>
