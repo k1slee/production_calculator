@@ -194,7 +194,7 @@
                             <b>{{ item.height|format_decimal }}x{{ item.width|format_decimal }}x{{ item.length|format_decimal }}</b>
                         </td>
                         <td class="text-center">{{ item.quantity }}</td>
-                        <td class="text-center">из # {{ item.stock_item.width|format_decimal }}</td>
+                        <td class="text-center">из #{{ item.stock_item.width|format_decimal }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -247,7 +247,7 @@
                             <b>Ø{{ item.diameter|format_decimal }}x{{ item.length|format_decimal }}</b>
                         </td>
                         <td class="text-center">{{ item.quantity }}</td>
-                        <td class="text-center">{% if item.use_iz_prefix %}из {% endif %}Ø{{ item.stock_item.diameter|format_decimal }} мм</td>
+                        <td class="text-center">{% if item.use_iz_prefix %}из {% endif %}Ø{{ item.stock_item.diameter|format_decimal }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
