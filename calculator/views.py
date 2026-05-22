@@ -562,7 +562,7 @@ def edit_order_item(request, order_id, item_id):
     item = get_object_or_404(OrderItem, id=item_id, order=order)
     
     if request.method == 'POST':
-        form = OrderItemForm(request.POST, instance=item, order = order)
+        form = OrderItemForm(request.POST, instance=item)
         if form.is_valid():
             try:
                 form.save()
@@ -575,7 +575,7 @@ def edit_order_item(request, order_id, item_id):
                 for error in errors:
                     messages.error(request, f'{field}: {error}')
     else:
-        form = OrderItemForm(instance=item, order = order)
+        form = OrderItemForm(instance=item)
     
     return render(request, 'calculator/edit_order_item.html', {
         'form': form, 
