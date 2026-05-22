@@ -246,7 +246,7 @@
             Дата: <span>{% now "d.m.Y" %}</span>
         </div>
         <div class="technologist">
-            Инж.Технолог: ________________ <span>{{ user.last_name }} {{ user.first_name|first }}. {% if user.profile.patronymic %}{{ user.profile.patronymic|first }}.{% elif user.patronymic %}{{ user.patronymic|first }}.{% endif %}</span>
+            Инженер-технолог: ________________ <span>{{ user.last_name }} {{ user.first_name|first }}. {% if user.profile.patronymic %}{{ user.profile.patronymic|first }}.{% elif user.patronymic %}{{ user.patronymic|first }}.{% endif %}</span>
         </div>
     </div>
 </body>
