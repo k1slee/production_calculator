@@ -190,10 +190,10 @@
         
         <!-- Номер чертежа по центру -->
         {% if order.drawing_number %}
-        <div class="drawing-number">{{ order.drawing_number }}</div>
+        <div class="drawing-number"><b>{{ order.drawing_number }}</b></div>
         {% endif %}
         
-        <div class="order-number">
+        <div>
             Заказ №{{ order.order_number }}
         </div>
     </div>
@@ -225,9 +225,9 @@
                         {% if group.is_special %}
                             <span class="text-muted"></span>
                             {% if group.special_length %}
-                                <br><small>Длина: {{ group.special_length|format_decimal }}</small>
+                                <br>Длина: {{ group.special_length|format_decimal }}
                             {% else %}
-                                <br><small>Кол-во: {{ group.quantity }} шт.</small>
+                                <br>Кол-во: {{ group.quantity }} шт.
                             {% endif %}
                         {% else %}
                             {% if group.stock_item and group.stock_item.section_type == 'sheet' %}
