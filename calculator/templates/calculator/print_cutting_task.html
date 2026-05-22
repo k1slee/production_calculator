@@ -173,15 +173,7 @@
             <div class="block-header">
                 <div class="task-title">ЗАДАНИЕ НА ЗАГОТОВКУ</div>
                 <div class="order-info">
-                    <strong>Заказ №{{ order.order_number }}</strong>
-                    {% if order.drawing_number %}
-                        | Чертеж: {{ order.drawing_number }}
-                    {% else %}
-                        | Чертеж № _____________
-                    {% endif %}
-                </div>
-                <div class="order-info">
-                    <strong>Наименование заказа:</strong> {{ order.order_name }}
+                    <strong></strong> {{ order.order_name }}<p styly = "font-size:15px"> <b>{{ order.drawing_number }}</b></p> Заказ №{{ order.order_number }}
                 </div>
             </div>
             <div class="section-title">ЛИСТОВОЙ МАТЕРИАЛ</div>
@@ -205,10 +197,10 @@
                         <td>{{ item.part_name }}</td>
                         <td>{{ item.material.name }}</td>
                         <td class="text-center">
-                            {{ item.height|format_decimal }}x{{ item.width|format_decimal }}x{{ item.length|format_decimal }}
+                            <b>{{ item.height|format_decimal }}x{{ item.width|format_decimal }}x{{ item.length|format_decimal }}</b>
                         </td>
                         <td class="text-center">{{ item.quantity }}</td>
-                        <td class="text-center">Из# {{ item.stock_item.width|format_decimal }} мм</td>
+                        <td class="text-center">из # {{ item.stock_item.width|format_decimal }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -222,15 +214,7 @@
             <div class="block-header">
                 <div class="task-title">ЗАДАНИЕ НА ЗАГОТОВКУ</div>
                 <div class="order-info">
-                    <strong>Заказ №{{ order.order_number }}</strong>
-                    {% if order.drawing_number %}
-                        | Чертеж: {{ order.drawing_number }}
-                    {% else %}
-                        | Чертеж № _____________
-                    {% endif %}
-                </div>
-                <div class="order-info">
-                    <strong>Наименование заказа:</strong> {{ order.order_name }}
+                    {{ order.order_name }} <b>{{ order.drawing_number }}</b> Заказ №{{ order.order_number }}
                 </div>
             </div>
             <div class="section-title">КРУГ (диаметр > 50 мм)</div>
@@ -254,7 +238,7 @@
                         <td>{{ item.part_name }}</td>
                         <td>{{ item.material.name }}</td>
                         <td class="text-center">
-                            Ø{{ item.diameter|format_decimal }}x{{ item.length|format_decimal }}
+                            <b>Ø{{ item.diameter|format_decimal }}x{{ item.length|format_decimal }}</b>
                         </td>
                         <td class="text-center">{{ item.quantity }}</td>
                         <td class="text-center">{% if item.use_iz_prefix %}из {% endif %}Ø{{ item.stock_item.diameter|format_decimal }} мм</td>
