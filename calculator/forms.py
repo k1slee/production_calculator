@@ -46,7 +46,7 @@ class StockItemForm(forms.ModelForm):
             cleaned_data['key_size'] = None
         elif section_type == 'round':
             if not cleaned_data.get('diameter'):
-                self.add_error('diameter', 'Обязательное поле для кругляка')
+                self.add_error('diameter', 'Обязательное поле для кругf')
             cleaned_data['width'] = None
             cleaned_data['key_size'] = None
         elif section_type == 'hexagon':
@@ -169,9 +169,9 @@ class OrderItemForm(forms.ModelForm):
                     
                 elif section_type == 'round':
                     if not cleaned_data.get('diameter'):
-                        self.add_error('diameter', 'Обязательное поле для кругляка')
+                        self.add_error('diameter', 'Обязательное поле для круга')
                     if not cleaned_data.get('length'):
-                        self.add_error('length', 'Обязательное поле для кругляка')
+                        self.add_error('length', 'Обязательное поле для круга')
                     # Очищаем ненужные поля
                     cleaned_data['width'] = None
                     cleaned_data['height'] = None

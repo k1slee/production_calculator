@@ -55,7 +55,7 @@ class StockItem(models.Model):
         if self.section_type == 'sheet':
             return f"{self.material} - Лист {self.width} мм"
         elif self.section_type == 'round':
-            return f"{self.material} - Кругляк Ø{self.diameter} мм"
+            return f"{self.material} - Круг Ø{self.diameter} мм"
         else:  # hexagon
             return f"{self.material} - Шестигранник S{self.key_size} мм"
 

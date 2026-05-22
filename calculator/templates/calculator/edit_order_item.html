@@ -274,7 +274,7 @@
                         <label class="form-check-label" for="{{ form.use_iz_prefix.id_for_label }}">
                             <strong>{{ form.use_iz_prefix.label }}</strong>
                         </label>
-                        <div class="form-text">Актуально только для круга</div>
+                        <div class="form-text">Актуально только для круга > 50 мм</div>
                     </div>
                     <!-- Скрытое поле для передачи правильного значения length -->
                     <input type="hidden" name="length" id="final_length" value="{{ form.length.value|default:item.length }}">

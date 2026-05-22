@@ -118,6 +118,7 @@
                                 {% endfor %}
                             </select>
                             <button type="button" class="btn btn-sm btn-outline-primary mt-2" data-bs-toggle="modal" data-bs-target="#addMaterialModal">Добавить материал</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" id="editPartBtn" data-bs-toggle="modal" data-bs-target="#editPartModal">Редактировать</button>
                             {% if form.material.errors %}
                                 <div class="text-danger">{{ form.material.errors }}</div>
                             {% endif %}
