@@ -960,6 +960,28 @@ def create_material(request):
     return JsonResponse({'success': False, 'errors': form.errors}, status=400)
 
 @login_required
+def get_material(request, pk):
+    if request.method != 'GET':
+        return JsonResponse({'success': False, 'error': 'Invalid method'}, status=405)
+    m = get_object_or_404(Material, pk=pk)
+    return JsonResponse({'success': True, 'id': m.id, 'name': m.name, 'density': str(m.density)})
+
+@login_required
+@transaction.atomic
+def update_material(request, pk):
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Invalid method'}, status=405)
+    m = get_object_or_404(Material, pk=pk)
+    form = MaterialForm(request.POST, instance=m)
+    if form.is_valid():
+        try:
+            m = form.save()
+        except IntegrityError:
+            return JsonResponse({'success': False, 'errors': {'name': ['Такой материал уже существует']}}, status=400)
+        return JsonResponse({'success': True, 'id': m.id, 'name': m.name, 'density': str(m.density)})
+    return JsonResponse({'success': False, 'errors': form.errors}, status=400)
+
+@login_required
 @transaction.atomic
 def create_stock_item(request):
     if request.method != 'POST':

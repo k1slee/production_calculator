@@ -104,6 +104,10 @@
                                     </option>
                                 {% endfor %}
                             </select>
+                            <div class="d-flex gap-2 mt-2">
+                                <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addMaterialModal">Добавить материал</button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#editMaterialModal">Редактировать материал</button>
+                            </div>
                             {% if form.material.errors %}
                                 <div class="text-danger">{{ form.material.errors }}</div>
                             {% endif %}
@@ -315,6 +319,58 @@
   </div>
 </div>
 
+<div class="modal fade" id="addMaterialModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Добавить материал</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label">Название</label>
+          <input type="text" class="form-control" id="new_material_name">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Плотность (г/см³)</label>
+          <input type="number" step="0.01" class="form-control" id="new_material_density">
+        </div>
+        <div class="text-danger" id="addMaterialErrors" style="display:none"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+        <button type="button" class="btn btn-primary" id="submitAddMaterial">Сохранить</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="editMaterialModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Редактировать материал</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label">Название</label>
+          <input type="text" class="form-control" id="edit_material_name">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Плотность (г/см³)</label>
+          <input type="number" step="0.01" class="form-control" id="edit_material_density">
+        </div>
+        <div class="text-danger" id="editMaterialErrors" style="display:none"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+        <button type="button" class="btn btn-primary" id="submitEditMaterial">Сохранить</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
 (function() {
     'use strict';
@@ -329,6 +385,7 @@
         const finalLength = document.getElementById('final_length');
         const csrfToken = document.querySelector('#orderItemForm input[name=csrfmiddlewaretoken]').value;
         const updatePartUrlTemplate = "{% url 'update_part_name' 0 %}";
+        const updateMaterialUrlTemplate = "{% url 'update_material' 0 %}";
         
         // ---- Элементы для автокомплита ----
         const partNameInput = document.getElementById('id_part_name_input');
@@ -402,6 +459,16 @@
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-CSRFToken': csrfToken },
                 body: new URLSearchParams(data)
             }).then(r => r.json());
+        }
+
+        function normalizeNumberStr(value) {
+            return String(value ?? '').trim().replace(',', '.');
+        }
+
+        function showErrors(el, errors) {
+            if (!el) return;
+            el.textContent = typeof errors === 'string' ? errors : JSON.stringify(errors);
+            el.style.display = 'block';
         }
 
         function setNormalFieldsEnabled(enabled) {
@@ -641,6 +708,88 @@
                 } catch (err) {
                     alert('Ошибка сервера');
                 }
+            });
+        }
+
+        const addMaterialErrorsDiv = document.getElementById('addMaterialErrors');
+        const submitAddMaterialBtn = document.getElementById('submitAddMaterial');
+        if (submitAddMaterialBtn) {
+            submitAddMaterialBtn.addEventListener('click', function() {
+                const name = document.getElementById('new_material_name')?.value?.trim() || '';
+                const density = normalizeNumberStr(document.getElementById('new_material_density')?.value);
+                if (addMaterialErrorsDiv) addMaterialErrorsDiv.style.display = 'none';
+                postJSON("{% url 'create_material' %}", {name, density})
+                    .then(json => {
+                        if (json.success) {
+                            const opt = document.createElement('option');
+                            opt.value = json.id;
+                            opt.textContent = `${json.name} (${json.density} г/см³)`;
+                            materialSelect.appendChild(opt);
+                            materialSelect.value = String(json.id);
+                            const modal = bootstrap.Modal.getInstance(document.getElementById('addMaterialModal'));
+                            if (modal) modal.hide();
+                            const nm = document.getElementById('new_material_name');
+                            const nd = document.getElementById('new_material_density');
+                            if (nm) nm.value = '';
+                            if (nd) nd.value = '';
+                        } else {
+                            showErrors(addMaterialErrorsDiv, json.errors || 'Ошибка сохранения');
+                        }
+                    });
+            });
+        }
+
+        const editMaterialModal = document.getElementById('editMaterialModal');
+        const editMaterialNameInput = document.getElementById('edit_material_name');
+        const editMaterialDensityInput = document.getElementById('edit_material_density');
+        const editMaterialErrorsDiv = document.getElementById('editMaterialErrors');
+
+        if (editMaterialModal) {
+            editMaterialModal.addEventListener('show.bs.modal', async function(event) {
+                const materialId = materialSelect.value;
+                if (!materialId) {
+                    event.preventDefault();
+                    return;
+                }
+                if (editMaterialErrorsDiv) editMaterialErrorsDiv.style.display = 'none';
+                try {
+                    const resp = await fetch(`{% url 'get_material' 0 %}`.replace('/0/', `/${materialId}/`));
+                    const data = await resp.json();
+                    if (!data.success) {
+                        showErrors(editMaterialErrorsDiv, data.errors || data.error || 'Ошибка загрузки материала');
+                        return;
+                    }
+                    if (editMaterialNameInput) editMaterialNameInput.value = data.name || '';
+                    if (editMaterialDensityInput) editMaterialDensityInput.value = normalizeNumberStr(data.density);
+                    editMaterialModal.dataset.materialId = String(materialId);
+                } catch (e) {
+                    showErrors(editMaterialErrorsDiv, 'Ошибка загрузки материала');
+                }
+            });
+        }
+
+        const submitEditMaterialBtn = document.getElementById('submitEditMaterial');
+        if (submitEditMaterialBtn) {
+            submitEditMaterialBtn.addEventListener('click', function() {
+                const materialId = editMaterialModal?.dataset?.materialId || materialSelect.value;
+                if (!materialId) return;
+                const name = editMaterialNameInput?.value?.trim() || '';
+                const density = normalizeNumberStr(editMaterialDensityInput?.value);
+                if (editMaterialErrorsDiv) editMaterialErrorsDiv.style.display = 'none';
+                const url = updateMaterialUrlTemplate.replace('/0/', `/${materialId}/`);
+                postJSON(url, {name, density})
+                    .then(json => {
+                        if (json.success) {
+                            const opt = materialSelect.querySelector(`option[value="${json.id}"]`);
+                            if (opt) opt.textContent = `${json.name} (${json.density} г/см³)`;
+                            materialSelect.value = String(json.id);
+                            filterStockItems();
+                            const modal = bootstrap.Modal.getInstance(editMaterialModal);
+                            if (modal) modal.hide();
+                        } else {
+                            showErrors(editMaterialErrorsDiv, json.errors || 'Ошибка сохранения');
+                        }
+                    });
             });
         }
         
