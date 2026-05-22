@@ -423,6 +423,7 @@ def print_grouped_report(request, order_id):
                 'items': [],
                 'is_special': item.is_special,
                 'part_name': item.part_name if item.is_special else None,
+                'special_length': item.length if item.is_special else None,
                 'use_iz_prefix': False
             }
         if not item.is_special and item.use_iz_prefix:

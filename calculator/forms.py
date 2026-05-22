@@ -88,6 +88,7 @@ class OrderCoefficientForm(forms.ModelForm):
         }
 
 class OrderItemForm(forms.ModelForm):
+    special_length_enabled = forms.BooleanField(required=False, label='Длина')
     class Meta:
         model = OrderItem
         fields = ['sequence_number', 'part_name', 'material', 'quantity', 
@@ -139,10 +140,13 @@ class OrderItemForm(forms.ModelForm):
         self.fields['sequence_number'].required = True
         self.fields['part_name'].required = True
         self.fields['quantity'].required = True
+        if self.instance and self.instance.pk and self.instance.is_special and self.instance.length is not None:
+            self.fields['special_length_enabled'].initial = True
     
     def clean(self):
         cleaned_data = super().clean()
         is_special = cleaned_data.get('is_special')
+        special_length_enabled = cleaned_data.get('special_length_enabled')
         
         if not is_special:
             # Для обычной записи проверяем обязательные поля
@@ -191,23 +195,16 @@ class OrderItemForm(forms.ModelForm):
             # Для особой записи очищаем ненужные поля
             cleaned_data['material'] = None
             cleaned_data['stock_item'] = None
-            cleaned_data['length'] = None
             cleaned_data['width'] = None
             cleaned_data['height'] = None
             cleaned_data['diameter'] = None
             cleaned_data['key_size'] = None
             cleaned_data['use_iz_prefix'] = False
-"""
-         Если надо добавить уникальность деталей в заказе ========== ПРОВЕРКА УНИКАЛЬНОСТИ НАИМЕНОВАНИЯ ДЕТАЛИ В ЗАКАЗЕ ==========
-        if self.order:
-            part_name = cleaned_data.get('part_name')
-            if part_name:
-                duplicate = OrderItem.objects.filter(order=self.order, part_name=part_name)
-                if self.instance.pk:  # при редактировании исключаем текущую деталь
-                    duplicate = duplicate.exclude(pk=self.instance.pk)
-                if duplicate.exists():
-                    elf.add_error('part_name', 'Деталь с таким наименованием уже существует в этом заказе.')
+            cleaned_data['designation'] = cleaned_data.get('designation')
+            if special_length_enabled:
+                if not cleaned_data.get('length'):
+                    self.add_error('length', 'Укажите длину')
+            else:
+                cleaned_data['length'] = None
         
         return cleaned_data
-
-    """
