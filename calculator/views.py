@@ -10,6 +10,7 @@ from .models import Material, PartName, StockItem, Order, OrderItem
 from .forms import (LoginForm, MaterialForm, PartNameForm, StockItemForm, 
                    OrderForm, OrderItemForm, OrderCoefficientForm)
 from django.db import models
+from django.db.models.functions import Lower
 
 def login_view(request):
     if request.method == 'POST':
@@ -612,10 +613,12 @@ def get_stock_items_by_material_and_type(request):
 
 @login_required
 def search_part_names(request):
-    """API для поиска наименований деталей"""
-    query = request.GET.get('q', '')
+    query = request.GET.get('q', '').strip()
     if query:
-        parts = PartName.objects.filter(name__icontains=query).order_by('name')[:10]
+        # Получаем все записи (если их немного, до 1000) или делаем выборку
+        parts = PartName.objects.all().order_by('name')
+        # Фильтруем в Python
+        parts = [p for p in parts if query.lower() in p.name.lower()][:10]
     else:
         parts = PartName.objects.all().order_by('name')[:10]
     
