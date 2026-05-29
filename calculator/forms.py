@@ -66,7 +66,7 @@ class OrderForm(forms.ModelForm):
             'order_name': forms.TextInput(attrs={'class': 'form-control'}),
             'drawing_number': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Например: ДМ-123-2024'}),
             'coefficient': forms.Select(attrs={'class': 'form-select'}, 
-                                       choices=[(x/10, x/10) for x in range(10, 21)]),
+                                       choices=[(x/100, f'{x/100:.2f}') for x in range(100, 201, 5)]),
         }
 
 class OrderCoefficientForm(forms.ModelForm):
