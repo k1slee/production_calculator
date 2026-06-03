@@ -58,7 +58,7 @@
 <div class="row">
     {% for order in orders %}
     <div class="col-md-6 mb-4">
-        <div class="card h-100">
+        <div class="card h-100 order-card" data-href="{% url 'order_detail' order.id %}" role="button" tabindex="0" style="cursor: pointer;">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h5 class="card-title mb-0">
                     <a href="{% url 'order_detail' order.id %}" class="text-decoration-none">
@@ -70,7 +70,9 @@
                 </div>
                 <div>
                     {% if order.drawing_number %}
-                    <span ><b>{{ order.drawing_number }}</b></span>
+                    <a href="{% url 'order_detail' order.id %}" class="text-decoration-none fw-bold">
+                        {{ order.drawing_number }}
+                    </a>
                     {% endif %}
                 </div>
             </div>
@@ -229,4 +231,28 @@
     </div>
     {% endfor %}
 </div>
+
+<script>
+(function() {
+    'use strict';
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.order-card[data-href]').forEach(function(card) {
+            function go() {
+                const href = card.getAttribute('data-href');
+                if (href) window.location.href = href;
+            }
+            card.addEventListener('click', function(e) {
+                if (e.target.closest('a, button, input, select, textarea, .dropdown-menu')) return;
+                go();
+            });
+            card.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    go();
+                }
+            });
+        });
+    });
+})();
+</script>
 {% endblock %}
