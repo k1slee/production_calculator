@@ -155,10 +155,10 @@ class OrderItem(models.Model):
     stock_item = models.ForeignKey(StockItem, on_delete=models.PROTECT, verbose_name='Сортамент со склада', null=True, blank=True)
     designation = models.CharField(
         'Обозначение', 
-        max_length=20, 
+        max_length=40, 
         blank=True, 
         null=True,
-        help_text='Необязательное обозначение детали (до 20 символов)'
+        help_text='Необязательное обозначение детали (до 40 символов)'
     )
     # Замеры детали
     length = models.DecimalField('Длина (мм)', max_digits=8, decimal_places=2, null=True, blank=True)
