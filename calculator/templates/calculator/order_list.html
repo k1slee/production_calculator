@@ -65,9 +65,12 @@
                         Заказ №{{ order.order_number }}
                     </a>
                 </h5>
+                <div class="col-7">
+                        <p class="mb-1">{{ order.order_name|truncatechars:50 }}</p>
+                </div>
                 <div>
                     {% if order.drawing_number %}
-                    <span class="badge bg-secondary">Чертеж: {{ order.drawing_number }}</span>
+                    <span ><b>{{ order.drawing_number }}</b></span>
                     {% endif %}
                 </div>
             </div>
