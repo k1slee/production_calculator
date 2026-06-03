@@ -96,6 +96,24 @@
                             <div class="text-danger">{{ form.quantity.errors }}</div>
                         {% endif %}
                     </div>
+
+                    <!-- Обозначение -->
+                    <div class="mb-3">
+                        <label for="{{ form.designation.id_for_label }}" class="form-label">
+                            Обозначение (макс. 40 символов)
+                        </label>
+                        <input type="text"
+                               name="designation"
+                               value="{{ form.designation.value|default:item.designation|default:'' }}"
+                               class="form-control"
+                               id="{{ form.designation.id_for_label }}"
+                               maxlength="40"
+                               placeholder="Обозначение (необязательно)">
+                        {% if form.designation.errors %}
+                            <div class="text-danger">{{ form.designation.errors }}</div>
+                        {% endif %}
+                        <div class="form-text">Необязательное поле</div>
+                    </div>
                     
                     <!-- Блок для обычной записи -->
                     <div id="normal-item-fields">
