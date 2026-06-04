@@ -187,9 +187,10 @@ class OrderItem(models.Model):
         section_type = self.stock_item.section_type
         
         if section_type == 'sheet':
-            return float(self.length or 0) * float(self.width or 0) * float(self.height or 0)
+            thickness = float(self.stock_item.width or 0)
+            return float(self.length or 0) * float(self.width or 0) * thickness
         elif section_type == 'round':
-            d = float(self.diameter or 0)
+            d = float(self.stock_item.diameter or 0)
             return 3.14159 * (d/2)**2 * float(self.length or 0)
         else:  # hexagon
             a = float(self.key_size or 0)
