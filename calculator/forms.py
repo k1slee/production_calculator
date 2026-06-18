@@ -60,19 +60,21 @@ class StockItemForm(forms.ModelForm):
 class OrderForm(forms.ModelForm):
     class Meta:
         model = Order
-        fields = ['order_number', 'order_name', 'drawing_number', 'coefficient']
+        fields = ['order_number', 'order_name', 'drawing_number', 'coefficient', 'order_quantity']
         widgets = {
             'order_number': forms.TextInput(attrs={'class': 'form-control'}),
             'order_name': forms.TextInput(attrs={'class': 'form-control'}),
             'drawing_number': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Например: ДМ-123-2024'}),
             'coefficient': forms.Select(attrs={'class': 'form-select'}, 
                                        choices=[(x/100, f'{x/100:.2f}') for x in range(100, 201, 5)]),
+            'order_quantity': forms.Select(attrs={'class': 'form-select'},
+                                           choices=[(x, str(x)) for x in range(1, 11)]),
         }
 
 class OrderCoefficientForm(forms.ModelForm):
     class Meta:
         model = Order
-        fields = ['coefficient']
+        fields = ['coefficient', 'order_quantity']
         widgets = {
             'coefficient': forms.Select(
                 attrs={'class': 'form-select'},
@@ -84,6 +86,10 @@ class OrderCoefficientForm(forms.ModelForm):
                     (1.80, '1.80'), (1.85, '1.85'), (1.90, '1.90'), (1.95, '1.95'),
                     (2.00, '2.00'),
 ]
+            ),
+            'order_quantity': forms.Select(
+                attrs={'class': 'form-select'},
+                choices=[(x, str(x)) for x in range(1, 11)]
             ),
         }
 

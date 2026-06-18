@@ -173,7 +173,8 @@
                 <div class="order-info">
                     {{ order.order_name }}<br>
                     <b>{{ order.drawing_number }}</b><br>
-                    Заказ №{{ order.order_number }}
+                    Заказ №{{ order.order_number }}<br>
+                    <b>Заказ количество: {{ order.order_quantity }} шт.</b>
                 </div>
             </div>
             <div class="section-title">ЛИСТОВОЙ МАТЕРИАЛ</div>
@@ -199,8 +200,8 @@
                         <td class="text-center">
                             <b>{{ item.height|format_decimal }}x{{ item.width|format_decimal }}x{{ item.length|format_decimal }}</b>
                         </td>
-                        <td class="text-center">{{ item.quantity }}</td>
-                        <td class="text-center">из #{{ item.stock_item.width|format_decimal }}</td>
+                        <td class="text-center">{{ item.quantity|multiply:order.order_quantity }}</td>
+                        <td class="text-center">#{{ item.stock_item.width|format_decimal }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -226,7 +227,8 @@
                 <div class="order-info">
                     {{ order.order_name }}<br>
                     <b>{{ order.drawing_number }}</b><br>
-                    Заказ №{{ order.order_number }}
+                    Заказ №{{ order.order_number }}<br>
+                    <b>Заказ количество: {{ order.order_quantity }} шт.</b>
                 </div>
             </div>
             <div class="section-title">КРУГ (диаметр > 50 мм)</div>
@@ -252,7 +254,7 @@
                         <td class="text-center">
                             <b>Ø{{ item.diameter|format_decimal }}x{{ item.length|format_decimal }}</b>
                         </td>
-                        <td class="text-center">{{ item.quantity }}</td>
+                        <td class="text-center">{{ item.quantity|multiply:order.order_quantity }}</td>
                         <td class="text-center">{% if item.use_iz_prefix %}из {% endif %}Ø{{ item.stock_item.diameter|format_decimal }}</td>
                     </tr>
                     {% endfor %}

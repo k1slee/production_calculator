@@ -16,3 +16,11 @@ def format_decimal(value):
         return str(int(value))
     else:
         return f"{value:.2f}".replace('.', ',')
+
+@register.filter
+def multiply(value, arg):
+    """Умножает значение на аргумент"""
+    try:
+        return value * arg
+    except (TypeError, ValueError):
+        return value

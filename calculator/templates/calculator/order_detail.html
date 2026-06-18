@@ -68,6 +68,10 @@
                         <div class="d-flex align-items-center">
                             <strong class="me-2">Коэффициент массы:</strong>
                             <span id="current-coefficient" class="badge bg-primary fs-6 me-2">{{ order.coefficient }}</span>
+                        </div>
+                        <div class="d-flex align-items-center mt-2">
+                            <strong class="me-2">Заказ количество:</strong>
+                            <span id="current-order-quantity" class="badge bg-info fs-6 me-2">{{ order.order_quantity }}</span>
                             <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#coefficientModal">
                                 <i class="fas fa-edit"></i> Изменить
                             </button>
@@ -84,8 +88,8 @@
             <div class="card-body">
                 <h5 class="card-title">Быстрая информация</h5>
                 <p class="mb-1"><strong>Всего позиций:</strong> {{ items|length }}</p>
-                <p class="mb-1"><strong>Общее количество деталей:</strong> {{ order.total_items_count }} шт.</p>
-                <p class="mb-0"><strong>Общий вес:</strong> {{ order.total_weight|floatformat:3 }} кг</p>
+                <p class="mb-1"><strong>Общее количество деталей:</strong> <span id="total-items-count">{{ order.total_items_count }}</span> шт.</p>
+                <p class="mb-0"><strong>Общий вес:</strong> <span id="total-weight">{{ order.total_weight|floatformat:3 }}</span> кг</p>
             </div>
         </div>
     </div>
@@ -115,20 +119,21 @@
     </div>
 </div>
 
-<!-- Модальное окно для изменения коэффициента -->
+<!-- Модальное окно для изменения коэффициента массы и количества заказов -->
 <div class="modal fade" id="coefficientModal" tabindex="-1" aria-labelledby="coefficientModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="coefficientModalLabel">Изменение коэффициента массы</h5>
+                <h5 class="modal-title" id="coefficientModalLabel">Изменение параметров заказа</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form method="post" action="{% url 'update_order_coefficient' order.id %}">
                 {% csrf_token %}
                 <div class="modal-body">
-                    <p>Текущий коэффициент: <strong>{{ order.coefficient|floatformat:2 }}</strong></p>
+                    <p>Текущий коэффициент массы: <strong>{{ order.coefficient|floatformat:2 }}</strong></p>
+                    <p>Текущее заказ количество: <strong>{{ order.order_quantity }}</strong></p>
                     <div class="mb-3">
-                        <label for="id_coefficient" class="form-label">Новый коэффициент (от 1.00 до 2.00, шаг 0.05):</label>
+                        <label for="id_coefficient" class="form-label">Новый коэффициент массы (от 1.00 до 2.00, шаг 0.05):</label>
                         <select name="coefficient" id="id_coefficient" class="form-select">
                             <option value="1.00" {% if order.coefficient|floatformat:2 == "1.00" %}selected{% endif %}>1.00</option>
                             <option value="1.05" {% if order.coefficient|floatformat:2 == "1.05" %}selected{% endif %}>1.05</option>
@@ -151,6 +156,21 @@
                             <option value="1.90" {% if order.coefficient|floatformat:2 == "1.90" %}selected{% endif %}>1.90</option>
                             <option value="1.95" {% if order.coefficient|floatformat:2 == "1.95" %}selected{% endif %}>1.95</option>
                             <option value="2.00" {% if order.coefficient|floatformat:2 == "2.00" %}selected{% endif %}>2.00</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="id_order_quantity" class="form-label">Заказ количество (от 1 до 10):</label>
+                        <select name="order_quantity" id="id_order_quantity" class="form-select">
+                            <option value="1" {% if order.order_quantity == 1 %}selected{% endif %}>1</option>
+                            <option value="2" {% if order.order_quantity == 2 %}selected{% endif %}>2</option>
+                            <option value="3" {% if order.order_quantity == 3 %}selected{% endif %}>3</option>
+                            <option value="4" {% if order.order_quantity == 4 %}selected{% endif %}>4</option>
+                            <option value="5" {% if order.order_quantity == 5 %}selected{% endif %}>5</option>
+                            <option value="6" {% if order.order_quantity == 6 %}selected{% endif %}>6</option>
+                            <option value="7" {% if order.order_quantity == 7 %}selected{% endif %}>7</option>
+                            <option value="8" {% if order.order_quantity == 8 %}selected{% endif %}>8</option>
+                            <option value="9" {% if order.order_quantity == 9 %}selected{% endif %}>9</option>
+                            <option value="10" {% if order.order_quantity == 10 %}selected{% endif %}>10</option>
                         </select>
                     </div>
                 </div>
@@ -333,7 +353,7 @@
                                 {{ item.material.name|default:"—" }}
                             {% endif %}
                         </td>
-                        <td class="text-center">{{ item.quantity }}</td>
+                        <td class="text-center">{{ item.quantity|multiply:order.order_quantity }}</td>
                         <td>
                             {% if item.is_special %}
                                 <span class="text-muted">—</span>
@@ -375,7 +395,7 @@
                             {% if item.is_special %}
                                 <span class="text-muted">—</span>
                             {% else %}
-                                <strong>{{ item.total_weight|floatformat:3 }}</strong>
+                                <strong>{{ item.total_weight|multiply:order.order_quantity|floatformat:3 }}</strong>
                             {% endif %}
                         </td>
                         <td>
@@ -422,10 +442,53 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const coefficientSelect = document.getElementById('id_coefficient');
+    const orderQuantitySelect = document.getElementById('id_order_quantity');
+    const modalForm = document.querySelector('#coefficientModal form');
+
     if (coefficientSelect) {
         coefficientSelect.addEventListener('change', function() {
-            const newCoefficient = this.value;
-            document.getElementById('current-coefficient').textContent = newCoefficient;
+            document.getElementById('current-coefficient').textContent = this.value;
+        });
+    }
+
+    if (orderQuantitySelect) {
+        orderQuantitySelect.addEventListener('change', function() {
+            document.getElementById('current-order-quantity').textContent = this.value;
+        });
+    }
+
+    if (modalForm) {
+        modalForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            fetch(this.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('current-coefficient').textContent = data.coefficient;
+                    document.getElementById('current-order-quantity').textContent = data.order_quantity;
+                    document.getElementById('total-weight').textContent = data.total_weight;
+                    document.getElementById('total-items-count').textContent = data.total_items_count;
+                    const modalElement = document.getElementById('coefficientModal');
+                    const modal = bootstrap.Modal.getInstance(modalElement);
+                    if (modal) {
+                        modal.hide();
+                    }
+                } else {
+                    alert('Ошибка при сохранении параметров');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Ошибка при сохранении параметров');
+            });
         });
     }
 });

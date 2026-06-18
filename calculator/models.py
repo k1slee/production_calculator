@@ -72,6 +72,12 @@ class Order(models.Model):
         default=1.0,
         validators=[MinValueValidator(1.00), MaxValueValidator(2.00)]
     )
+    order_quantity = models.IntegerField(
+        'Заказ количество',
+        default=1,
+        validators=[MinValueValidator(1), MaxValueValidator(10)],
+        help_text='Количество таких заказов'
+    )
     created_at = models.DateTimeField('Дата создания', auto_now_add=True)
     
     class Meta:
@@ -83,27 +89,22 @@ class Order(models.Model):
     
     @property
     def total_weight_g(self):
-        """Общий вес заказа в граммах"""
-        return sum(item.total_weight_g for item in self.items.all())
+        """Общий вес заказа в граммах с учетом количества заказов"""
+        return sum(item.total_weight_g for item in self.items.all()) * self.order_quantity
     
     @property
     def total_weight(self):
-        """Общий вес заказа в килограммах"""
+        """Общий вес заказа в килограммах с учетом количества заказов"""
         return self.total_weight_g / 1000
     
     @property
     def total_items_count(self):
-        """Общее количество деталей в заказе"""
-        return sum(item.quantity for item in self.items.all())
+        """Общее количество деталей в заказе с учетом количества заказов"""
+        return sum(item.quantity for item in self.items.all()) * self.order_quantity
     @property
     def materials_count(self):
         """Количество уникальных материалов в заказе"""
         return self.items.values('material').distinct().count()
-    
-    @property
-    def total_items_count(self):
-        """Общее количество деталей в заказе"""
-        return sum(item.quantity for item in self.items.all())
 class Profile(models.Model):
     """Профиль пользователя с отчеством"""
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile', verbose_name='Пользователь')

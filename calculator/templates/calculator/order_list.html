@@ -95,17 +95,21 @@
                 </div>
                 
                 <div class="row mb-3">
-                    <div class="col-4">
+                    <div class="col-3">
                         <p class="mb-1"><strong>Деталей:</strong></p>
                         <p class="mb-1">{{ order.items.count }} шт.</p>
                     </div>
-                    <div class="col-4">
+                    <div class="col-3">
                         <p class="mb-1"><strong>Коэф.:</strong></p>
                         <p class="mb-1">{{ order.coefficient }}</p>
                     </div>
-                    <div class="col-4">
+                    <div class="col-3">
                         <p class="mb-1"><strong>Материалов:</strong></p>
                         <p class="mb-1">{{ order.materials_count }} шт.</p>
+                    </div>
+                    <div class="col-3">
+                        <p class="mb-1"><strong>Заказ количество:</strong></p>
+                        <p class="mb-1">{{ order.order_quantity }} шт.</p>
                     </div>
                 </div>
                 

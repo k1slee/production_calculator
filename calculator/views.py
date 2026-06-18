@@ -363,24 +363,26 @@ def print_order_report(request, order_id):
 @login_required
 @transaction.atomic
 def update_order_coefficient(request, order_id):
-    """Обновление коэффициента массы в заказе (любой пользователь может менять)"""
-    # Убираем фильтр по user, любой может менять коэффициент
+    """Обновление коэффициента массы и количества заказов (любой пользователь может менять)"""
+    # Убираем фильтр по user, любой может менять параметры
     order = get_object_or_404(Order, id=order_id)
     
     if request.method == 'POST':
         form = OrderCoefficientForm(request.POST, instance=order)
         if form.is_valid():
             form.save()
-            messages.success(request, f'✅ Коэффициент массы успешно изменен на {order.coefficient}')
+            messages.success(request, f'✅ Параметры успешно изменены: коэффициент массы {order.coefficient}, заказ количество {order.order_quantity}')
             
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                 return JsonResponse({
                     'success': True,
                     'coefficient': str(order.coefficient),
-                    'total_weight': f'{order.total_weight:.3f}'
+                    'order_quantity': str(order.order_quantity),
+                    'total_weight': f'{order.total_weight:.3f}',
+                    'total_items_count': str(order.total_items_count)
                 })
         else:
-            messages.error(request, '❌ Ошибка при изменении коэффициента')
+            messages.error(request, '❌ Ошибка при изменении параметров')
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                 return JsonResponse({'success': False, 'errors': form.errors})
     
@@ -428,8 +430,8 @@ def print_grouped_report(request, order_id):
             }
         if not item.is_special and item.use_iz_prefix:
             grouped_data[key]['use_iz_prefix'] = True
-        grouped_data[key]['total_weight'] += item.total_weight
-        grouped_data[key]['quantity'] += item.quantity
+        grouped_data[key]['total_weight'] += item.total_weight * order.order_quantity
+        grouped_data[key]['quantity'] += item.quantity * order.order_quantity
         grouped_data[key]['items'].append(item)
     
     # Сортируем группы
@@ -530,7 +532,8 @@ def copy_order(request, order_id):
             order_name=new_order_name or original_order.order_name,
             drawing_number=original_order.drawing_number,
             user=request.user,  # Новый заказ создается от имени текущего пользователя
-            coefficient=original_order.coefficient
+            coefficient=original_order.coefficient,
+            order_quantity=original_order.order_quantity
         )
         
         # Копируем все детали

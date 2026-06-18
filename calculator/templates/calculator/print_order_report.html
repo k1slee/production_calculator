@@ -191,6 +191,11 @@
         <div class="print-title">РАСХОД МАТЕРИАЛА НА ИЗГОТОВЛЕНИЕ:</div>
         <div class="print-subtitle">{{ order.order_name }}</div>
         
+        <!-- Заказ количество -->
+        <div style="margin-top: 10px; font-size: 11pt; font-weight: bold;">
+            Заказ количество: {{ order.order_quantity }} шт.
+        </div>
+        
         <!-- Номер чертежа по центру -->
         {% if order.drawing_number %}
         <div class="drawing-number">{{ order.drawing_number }}</div>
@@ -222,7 +227,7 @@
                         {{ item.material.name }}
                     {% endif %}
                 </td>
-                <td class="text-center">{{ item.quantity }}</td>
+                <td class="text-center">{{ item.quantity|multiply:order.order_quantity }}</td>
                 <!-- Чистовые размеры с фильтром format_decimal -->
                 <td class="text-center">
                     {% if item.stock_item.section_type == 'sheet' %}
@@ -243,10 +248,16 @@
                         S{{ item.stock_item.key_size|format_decimal }} мм
                     {% endif %}
                 </td>
-                <td class="text-right">{{ item.total_weight|floatformat:3 }}</td>
+                <td class="text-right">{{ item.total_weight|multiply:order.order_quantity|floatformat:3 }}</td>
             </tr>
             {% endfor %}
         </tbody>
+        <tfoot>
+            <tr class="total-row">
+                <td colspan="6" class="text-right">Итого:</td>
+                <td class="text-right">{{ order.total_weight|floatformat:3 }}</td>
+            </tr>
+        </tfoot>
     </table>
     
     <!-- Подпись технолога и дата -->

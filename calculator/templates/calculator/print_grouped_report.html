@@ -188,6 +188,11 @@
         <div class="print-title">РАСХОД МАТЕРИАЛА НА ИЗГОТОВЛЕНИЕ:</div>
         <div class="print-subtitle">{{ order.order_name }}</div>
         
+        <!-- Заказ количество -->
+        <div style="margin: 5px 0;">
+            <b>Заказ количество:</b> {{ order.order_quantity }} шт.
+        </div>
+        
         <!-- Номер чертежа по центру -->
         {% if order.drawing_number %}
         <div class="drawing-number"><b>{{ order.drawing_number }}</b></div>
