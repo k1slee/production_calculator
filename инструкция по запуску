@@ -1,6 +1,16 @@
+Остановка контейнера
+docker stop production-calculator-app
+
+Удаление контейнера
+docker rm production-calculator-app
+
 сборка образа
 docker build -t production-calculator .
+
 запуск на порту 8001
-docker run -d -p 8001:8001 -v D:/docker-data/rashod/data:/data --name production-calculator-app production-calculator        
+docker run -d -p 8001:8001 -v D:/docker-data/rashod/data:/data --name production-calculator-app production-calculator    
+
 база данных храниться D:\docker-data\rashod\data 
-docker start production-calculator-app
+
+Команда для запуска остановленного контейнера
+docker start production-calculator-a
