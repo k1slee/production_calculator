@@ -100,7 +100,7 @@
                     <!-- Обозначение -->
                     <div class="mb-3">
                         <label for="{{ form.designation.id_for_label }}" class="form-label">
-                            Обозначение (макс. <span id="designation-max-len">40</span> символов)
+                            Обозначение (макс. <span id="designation-max-len">100</span> символов)
                         </label>
                         {{ form.designation }}
                         {% if form.designation.errors %}
@@ -604,7 +604,7 @@
 
         function toggleDesignationLimit() {
             if (!designationInput) return;
-            const maxLen = 40;
+            const maxLen = 100;
             designationInput.maxLength = maxLen;
             designationInput.setAttribute('maxlength', String(maxLen));
             if (designationMaxLenSpan) designationMaxLenSpan.textContent = String(maxLen);

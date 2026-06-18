@@ -370,7 +370,6 @@ def update_order_coefficient(request, order_id):
         form = OrderCoefficientForm(request.POST, instance=order)
         if form.is_valid():
             form.save()
-            messages.success(request, f'✅ Коэффициент массы успешно изменен: {order.coefficient}')
             
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                 return JsonResponse({
@@ -381,7 +380,6 @@ def update_order_coefficient(request, order_id):
                     'total_items_count': str(order.total_items_count)
                 })
         else:
-            messages.error(request, '❌ Ошибка при изменении коэффициента')
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                 return JsonResponse({'success': False, 'errors': form.errors})
     

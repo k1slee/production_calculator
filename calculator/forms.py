@@ -121,7 +121,7 @@ class OrderItemForm(forms.ModelForm):
             'key_size': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
             'use_iz_prefix': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'is_special': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
-            'designation': forms.TextInput(attrs={'class': 'form-control', 'maxlength': '40', 'placeholder': 'Обозначение (необязательно)'}),
+            'designation': forms.TextInput(attrs={'class': 'form-control', 'maxlength': '100', 'placeholder': 'Обозначение (необязательно)'}),
         }
     
     def __init__(self, *args, **kwargs):
