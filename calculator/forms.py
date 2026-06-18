@@ -26,13 +26,15 @@ class PartNameForm(forms.ModelForm):
 class StockItemForm(forms.ModelForm):
     class Meta:
         model = StockItem
-        fields = ['material', 'section_type', 'width', 'diameter', 'key_size']
+        fields = ['material', 'section_type', 'width', 'diameter', 'key_size', 'outer_diameter', 'wall_thickness']
         widgets = {
             'material': forms.Select(attrs={'class': 'form-select'}),
             'section_type': forms.Select(attrs={'class': 'form-select', 'id': 'id_section_type'}),
             'width': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'placeholder': 'Ширина листа'}),
             'diameter': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'placeholder': 'Диаметр круга'}),
             'key_size': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'placeholder': 'Размер под ключ'}),
+            'outer_diameter': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'placeholder': 'Внешний диаметр трубы'}),
+            'wall_thickness': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'placeholder': 'Толщина стенки трубы'}),
         }
     
     def clean(self):
@@ -44,16 +46,30 @@ class StockItemForm(forms.ModelForm):
                 self.add_error('width', 'Обязательное поле для листа')
             cleaned_data['diameter'] = None
             cleaned_data['key_size'] = None
+            cleaned_data['outer_diameter'] = None
+            cleaned_data['wall_thickness'] = None
         elif section_type == 'round':
             if not cleaned_data.get('diameter'):
-                self.add_error('diameter', 'Обязательное поле для кругf')
+                self.add_error('diameter', 'Обязательное поле для круга')
             cleaned_data['width'] = None
             cleaned_data['key_size'] = None
+            cleaned_data['outer_diameter'] = None
+            cleaned_data['wall_thickness'] = None
         elif section_type == 'hexagon':
             if not cleaned_data.get('key_size'):
                 self.add_error('key_size', 'Обязательное поле для шестигранника')
             cleaned_data['width'] = None
             cleaned_data['diameter'] = None
+            cleaned_data['outer_diameter'] = None
+            cleaned_data['wall_thickness'] = None
+        elif section_type == 'tube':
+            if not cleaned_data.get('outer_diameter'):
+                self.add_error('outer_diameter', 'Обязательное поле для трубы')
+            if not cleaned_data.get('wall_thickness'):
+                self.add_error('wall_thickness', 'Обязательное поле для трубы')
+            cleaned_data['width'] = None
+            cleaned_data['diameter'] = None
+            cleaned_data['key_size'] = None
         
         return cleaned_data
 
@@ -204,6 +220,16 @@ class OrderItemForm(forms.ModelForm):
                     cleaned_data['width'] = None
                     cleaned_data['height'] = None
                     cleaned_data['diameter'] = None
+                    cleaned_data['use_iz_prefix'] = False
+                    
+                elif section_type == 'tube':
+                    if not cleaned_data.get('length'):
+                        self.add_error('length', 'Обязательное поле для трубы')
+                    # Очищаем ненужные поля
+                    cleaned_data['width'] = None
+                    cleaned_data['height'] = None
+                    cleaned_data['diameter'] = None
+                    cleaned_data['key_size'] = None
                     cleaned_data['use_iz_prefix'] = False
         else:
             # Для особой записи очищаем ненужные поля

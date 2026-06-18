@@ -492,6 +492,7 @@ def print_cutting_task(request, order_id):
     grouped_by_section = {
         'sheet': [],  # Лист
         'round': [],  # Кругляк (только диаметр > 50)
+        'tube': [],   # Труба
     }
     
     for item in items_list:
@@ -507,6 +508,9 @@ def print_cutting_task(request, order_id):
             # Фильтр: только кругляк с диаметром > 50
             if item.diameter and float(item.diameter) > 50:
                 grouped_by_section['round'].append(item)
+                
+        elif section_type == 'tube':
+            grouped_by_section['tube'].append(item)
     
     # Внутри каждой группы сортируем по номеру
     for section_type in grouped_by_section:
@@ -527,6 +531,7 @@ def print_cutting_task(request, order_id):
         'order': order,
         'sheet_items': grouped_by_section['sheet'],
         'round_items': grouped_by_section['round'],
+        'tube_items': grouped_by_section['tube'],
         'date': timezone.now().strftime('%d.%m.%Y'),
         'user': request.user
     }
@@ -1025,5 +1030,7 @@ def create_stock_item(request):
             'width': str(si.width) if si.width else None,
             'diameter': str(si.diameter) if si.diameter else None,
             'key_size': str(si.key_size) if si.key_size else None,
+            'outer_diameter': str(si.outer_diameter) if si.outer_diameter else None,
+            'wall_thickness': str(si.wall_thickness) if si.wall_thickness else None,
         })
     return JsonResponse({'success': False, 'errors': form.errors}, status=400)

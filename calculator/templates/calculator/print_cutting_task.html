@@ -163,7 +163,7 @@
     </div>
     {% load custom_filters %}
     
-    {% if sheet_items or round_items %}
+    {% if sheet_items or round_items or tube_items %}
         
         <!-- Блок: ЛИСТОВОЙ МАТЕРИАЛ -->
         {% if sheet_items %}
@@ -262,6 +262,60 @@
             </table>
             
             <!-- Подпись и дата после блока круга -->
+            <div class="section-footer">
+                <div class="technologist">
+                    Инженер-технолог: ________________ <span>{{ user.last_name }} {{ user.first_name|first }}.{{ user.profile.patronymic|first|default:'' }}.</span>
+                </div>
+                <div class="date-sign">
+                    Дата: {% now "d.m.Y" %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Блок: ТРУБА -->
+        {% if tube_items %}
+        <div class="section-block">
+            <div class="block-header">
+                <div class="task-title">ЗАДАНИЕ НА ЗАГОТОВКУ</div>
+                <div class="order-info">
+                    {{ order.order_name }}<br>
+                    <b>{{ order.drawing_number }}</b><br>
+                    Заказ №{{ order.order_number }}<br>
+                    <b>Заказ количество: {{ order.order_quantity }} шт.</b>
+                </div>
+            </div>
+            <div class="section-title">ТРУБА</div>
+            <table class="task-table">
+                <thead>
+                    <tr>
+                        <th>№ п/п</th>
+                        <th>Обозначение</th>
+                        <th>Наименование детали</th>
+                        <th>Материал</th>
+                        <th>Чистовые размеры, мм</th>
+                        <th>Кол-во, шт</th>
+                        <th>Труба</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in tube_items %}
+                    <tr>
+                        <td class="text-center">{{ item.sequence_number }}</td>
+                        <td class="text-center">{{ item.designation|default:"—" }}</td>
+                        <td>{{ item.part_name }}</td>
+                        <td>{{ item.material.name }}</td>
+                        <td class="text-center">
+                            <b>Ø{{ item.stock_item.outer_diameter|format_decimal }}x{{ item.stock_item.wall_thickness|format_decimal }}x{{ item.length|format_decimal }}</b>
+                        </td>
+                        <td class="text-center">{{ item.quantity|multiply:order.order_quantity }}</td>
+                        <td class="text-center">Ø{{ item.stock_item.outer_diameter|format_decimal }}x{{ item.stock_item.wall_thickness|format_decimal }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            
+            <!-- Подпись и дата после блока трубы -->
             <div class="section-footer">
                 <div class="technologist">
                     Инженер-технолог: ________________ <span>{{ user.last_name }} {{ user.first_name|first }}.{{ user.profile.patronymic|first|default:'' }}.</span>

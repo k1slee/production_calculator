@@ -33,6 +33,7 @@ class StockItem(models.Model):
         ('sheet', 'Лист'),
         ('round', 'Кругляк'),
         ('hexagon', 'Шестигранник'),
+        ('tube', 'Труба'),
     ]
     
     material = models.ForeignKey(Material, on_delete=models.CASCADE, verbose_name='Материал')
@@ -47,6 +48,10 @@ class StockItem(models.Model):
     # Параметры для шестигранника - только размер под ключ
     key_size = models.DecimalField('Размер под ключ (мм)', max_digits=8, decimal_places=2, null=True, blank=True)
     
+    # Параметры для трубы - внешний диаметр и толщина стенки
+    outer_diameter = models.DecimalField('Внешний диаметр (мм)', max_digits=8, decimal_places=2, null=True, blank=True)
+    wall_thickness = models.DecimalField('Толщина стенки (мм)', max_digits=8, decimal_places=2, null=True, blank=True)
+    
     class Meta:
         verbose_name = 'Сортамент на складе'
         verbose_name_plural = 'Сортамент на складе'
@@ -56,8 +61,10 @@ class StockItem(models.Model):
             return f"{self.material} - Лист {self.width} мм"
         elif self.section_type == 'round':
             return f"{self.material} - Круг Ø{self.diameter} мм"
-        else:  # hexagon
+        elif self.section_type == 'hexagon':
             return f"{self.material} - Шестигранник S{self.key_size} мм"
+        else:  # tube
+            return f"{self.material} - Труба Ø{self.outer_diameter}x{self.wall_thickness} мм"
 
 class Order(models.Model):
     """Модель заказа"""
@@ -193,9 +200,14 @@ class OrderItem(models.Model):
         elif section_type == 'round':
             d = float(self.stock_item.diameter or 0)
             return 3.14159 * (d/2)**2 * float(self.length or 0)
-        else:  # hexagon
+        elif section_type == 'hexagon':
             a = float(self.key_size or 0)
             return (3 * 1.73205 / 2) * a**2 * float(self.length or 0)
+        elif section_type == 'tube':
+            D = float(self.stock_item.outer_diameter or 0)
+            s = float(self.stock_item.wall_thickness or 0)
+            l = float(self.length or 0)
+            return 3.14159 * s * (D - s) * l
     
     @property
     def volume_cm3(self):

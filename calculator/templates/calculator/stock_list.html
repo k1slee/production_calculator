@@ -30,8 +30,10 @@
                                 {{ item.width }} мм
                             {% elif item.section_type == 'round' %}
                                 Ø{{ item.diameter }} мм
-                            {% else %}
+                            {% elif item.section_type == 'hexagon' %}
                                 S{{ item.key_size }} мм
+                            {% elif item.section_type == 'tube' %}
+                                Ø{{ item.outer_diameter }}x{{ item.wall_thickness }} мм
                             {% endif %}
                         </td>
                         <td>

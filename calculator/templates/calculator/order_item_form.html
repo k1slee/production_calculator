@@ -148,6 +148,7 @@
                                 <option value="sheet" {% if last_section_type == 'sheet' %}selected{% endif %}>Лист</option>
                                 <option value="round" {% if last_section_type == 'round' %}selected{% endif %}>Круг</option>
                                 <option value="hexagon" {% if last_section_type == 'hexagon' %}selected{% endif %}>Шестигранник</option>
+                                <option value="tube" {% if last_section_type == 'tube' %}selected{% endif %}>Труба</option>
                             </select>
                         </div>
                         
@@ -171,8 +172,10 @@
                                             # {{ stock.width }} мм
                                         {% elif stock.section_type == 'round' %}
                                             Ø{{ stock.diameter }} мм
-                                        {% else %}
+                                        {% elif stock.section_type == 'hexagon' %}
                                             S{{ stock.key_size }} мм
+                                        {% elif stock.section_type == 'tube' %}
+                                            Ø{{ stock.outer_diameter }}x{{ stock.wall_thickness }} мм
                                         {% endif %}
                                     </option>
                                 {% endfor %}
@@ -298,6 +301,26 @@
                                                    class="form-control length-field" 
                                                    id="id_hex_length"
                                                    data-type="hexagon"
+                                                   value="{{ form.length.value|default:'' }}">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Поля для трубы -->
+                            <div id="tube-measurements" style="display: none;">
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="mb-3">
+                                            <label for="id_tube_length" class="form-label fw-bold">
+                                                Длина (мм) <span class="text-danger">*</span>
+                                            </label>
+                                            <input type="number" 
+                                                   name="tube_length" 
+                                                   step="0.01" 
+                                                   class="form-control length-field" 
+                                                   id="id_tube_length"
+                                                   data-type="tube"
                                                    value="{{ form.length.value|default:'' }}">
                                         </div>
                                     </div>
@@ -447,6 +470,7 @@
             <option value="sheet">Лист</option>
             <option value="round">Круг</option>
             <option value="hexagon">Шестигранник</option>
+            <option value="tube">Труба</option>
           </select>
         </div>
         <div class="mb-3" id="new_stock_width_wrapper" style="display:none">
@@ -460,6 +484,14 @@
         <div class="mb-3" id="new_stock_keysize_wrapper" style="display:none">
           <label class="form-label">Размер под ключ (мм)</label>
           <input type="number" step="0.01" class="form-control" id="new_stock_keysize">
+        </div>
+        <div class="mb-3" id="new_stock_outer_diameter_wrapper" style="display:none">
+          <label class="form-label">Внешний диаметр (мм)</label>
+          <input type="number" step="0.01" class="form-control" id="new_stock_outer_diameter">
+        </div>
+        <div class="mb-3" id="new_stock_wall_thickness_wrapper" style="display:none">
+          <label class="form-label">Толщина стенки (мм)</label>
+          <input type="number" step="0.01" class="form-control" id="new_stock_wall_thickness">
         </div>
         <div class="text-danger" id="addStockErrors" style="display:none"></div>
       </div>
@@ -639,16 +671,19 @@
             const sheet = document.getElementById('sheet-measurements');
             const round = document.getElementById('round-measurements');
             const hex = document.getElementById('hexagon-measurements');
-            if (!sheet || !round || !hex) return;
+            const tube = document.getElementById('tube-measurements');
+            if (!sheet || !round || !hex || !tube) return;
             const selectedOption = stockItemSelect.options[stockItemSelect.selectedIndex];
             sheet.style.display = 'none';
             round.style.display = 'none';
             hex.style.display = 'none';
+            tube.style.display = 'none';
             if (selectedOption && selectedOption.value) {
                 const type = selectedOption.getAttribute('data-section-type');
                 if (type === 'sheet') sheet.style.display = 'block';
                 else if (type === 'round') round.style.display = 'block';
                 else if (type === 'hexagon') hex.style.display = 'block';
+                else if (type === 'tube') tube.style.display = 'block';
             }
             toggleIzPrefixVisibility();
         }
@@ -674,6 +709,9 @@
                 const ks = document.getElementById('id_key_size');
                 if (len && lastMeasurements.length) len.value = lastMeasurements.length;
                 if (ks && lastMeasurements.key_size) ks.value = lastMeasurements.key_size;
+            } else if (sectionType === 'tube') {
+                const len = document.getElementById('id_tube_length');
+                if (len && lastMeasurements.length) len.value = lastMeasurements.length;
             }
         }
         
@@ -705,6 +743,9 @@
                 finalLength.value = len ? len.value : '';
             } else if (type === 'hexagon') {
                 const len = document.getElementById('id_hex_length');
+                finalLength.value = len ? len.value : '';
+            } else if (type === 'tube') {
+                const len = document.getElementById('id_tube_length');
                 finalLength.value = len ? len.value : '';
             }
             return true;
@@ -918,6 +959,8 @@
             document.getElementById('new_stock_width_wrapper').style.display = v === 'sheet' ? 'block' : 'none';
             document.getElementById('new_stock_diameter_wrapper').style.display = v === 'round' ? 'block' : 'none';
             document.getElementById('new_stock_keysize_wrapper').style.display = v === 'hexagon' ? 'block' : 'none';
+            document.getElementById('new_stock_outer_diameter_wrapper').style.display = v === 'tube' ? 'block' : 'none';
+            document.getElementById('new_stock_wall_thickness_wrapper').style.display = v === 'tube' ? 'block' : 'none';
         });
         
         document.getElementById('submitAddMaterial').addEventListener('click', function() {
@@ -1007,8 +1050,18 @@
             const width = document.getElementById('new_stock_width').value;
             const diameter = document.getElementById('new_stock_diameter').value;
             const key_size = document.getElementById('new_stock_keysize').value;
+            const outer_diameter = document.getElementById('new_stock_outer_diameter').value;
+            const wall_thickness = document.getElementById('new_stock_wall_thickness').value;
             document.getElementById('addStockErrors').style.display = 'none';
-            postJSON("{% url 'create_stock_item' %}", {material: material_id, section_type, width, diameter, key_size})
+            postJSON("{% url 'create_stock_item' %}", {
+                material: material_id, 
+                section_type, 
+                width, 
+                diameter, 
+                key_size,
+                outer_diameter,
+                wall_thickness
+            })
                 .then(json => {
                     if (json.success) {
                         const opt = document.createElement('option');
@@ -1028,9 +1081,13 @@
                         document.getElementById('new_stock_width').value = '';
                         document.getElementById('new_stock_diameter').value = '';
                         document.getElementById('new_stock_keysize').value = '';
+                        document.getElementById('new_stock_outer_diameter').value = '';
+                        document.getElementById('new_stock_wall_thickness').value = '';
                         document.getElementById('new_stock_width_wrapper').style.display = 'none';
                         document.getElementById('new_stock_diameter_wrapper').style.display = 'none';
                         document.getElementById('new_stock_keysize_wrapper').style.display = 'none';
+                        document.getElementById('new_stock_outer_diameter_wrapper').style.display = 'none';
+                        document.getElementById('new_stock_wall_thickness_wrapper').style.display = 'none';
                     } else {
                         document.getElementById('addStockErrors').textContent = JSON.stringify(json.errors);
                         document.getElementById('addStockErrors').style.display = 'block';

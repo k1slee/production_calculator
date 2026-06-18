@@ -155,6 +155,7 @@
                                 <option value="sheet" {% if item.stock_item and item.stock_item.section_type == 'sheet' %}selected{% endif %}>Лист</option>
                                 <option value="round" {% if item.stock_item and item.stock_item.section_type == 'round' %}selected{% endif %}>Круг</option>
                                 <option value="hexagon" {% if item.stock_item and item.stock_item.section_type == 'hexagon' %}selected{% endif %}>Шестигранник</option>
+                                <option value="tube" {% if item.stock_item and item.stock_item.section_type == 'tube' %}selected{% endif %}>Труба</option>
                             </select>
                         </div>
                         
@@ -177,8 +178,10 @@
                                             # {{ stock.width }} мм
                                         {% elif stock.section_type == 'round' %}
                                             Ø{{ stock.diameter }} мм
-                                        {% else %}
+                                        {% elif stock.section_type == 'hexagon' %}
                                             S{{ stock.key_size }} мм
+                                        {% elif stock.section_type == 'tube' %}
+                                            Ø{{ stock.outer_diameter }}x{{ stock.wall_thickness }} мм
                                         {% endif %}
                                     </option>
                                 {% endfor %}
@@ -297,6 +300,26 @@
                                                    class="form-control length-field" 
                                                    id="id_hex_length"
                                                    data-type="hexagon"
+                                                   value="{{ form.length.value|default:item.length }}">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Поля для трубы -->
+                            <div id="tube-measurements" style="display: {% if item.stock_item and item.stock_item.section_type == 'tube' %}block{% else %}none{% endif %};">
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="mb-3">
+                                            <label for="id_tube_length" class="form-label fw-bold">
+                                                Длина (мм)
+                                            </label>
+                                            <input type="number" 
+                                                   name="tube_length" 
+                                                   step="0.01" 
+                                                   class="form-control length-field" 
+                                                   id="id_tube_length"
+                                                   data-type="tube"
                                                    value="{{ form.length.value|default:item.length }}">
                                         </div>
                                     </div>
@@ -572,16 +595,19 @@
             const sheet = document.getElementById('sheet-measurements');
             const round = document.getElementById('round-measurements');
             const hex = document.getElementById('hexagon-measurements');
-            if (!sheet || !round || !hex) return;
+            const tube = document.getElementById('tube-measurements');
+            if (!sheet || !round || !hex || !tube) return;
             const selectedOption = stockItemSelect.options[stockItemSelect.selectedIndex];
             sheet.style.display = 'none';
             round.style.display = 'none';
             hex.style.display = 'none';
+            tube.style.display = 'none';
             if (selectedOption && selectedOption.value) {
                 const type = selectedOption.getAttribute('data-section-type');
                 if (type === 'sheet') sheet.style.display = 'block';
                 else if (type === 'round') round.style.display = 'block';
                 else if (type === 'hexagon') hex.style.display = 'block';
+                else if (type === 'tube') tube.style.display = 'block';
             }
             toggleIzPrefixVisibility();
         }
@@ -614,6 +640,9 @@
                 finalLength.value = len ? len.value : '';
             } else if (type === 'hexagon') {
                 const len = document.getElementById('id_hex_length');
+                finalLength.value = len ? len.value : '';
+            } else if (type === 'tube') {
+                const len = document.getElementById('id_tube_length');
                 finalLength.value = len ? len.value : '';
             }
             return true;
