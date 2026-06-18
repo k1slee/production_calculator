@@ -74,7 +74,7 @@ class OrderForm(forms.ModelForm):
 class OrderCoefficientForm(forms.ModelForm):
     class Meta:
         model = Order
-        fields = ['coefficient', 'order_quantity']
+        fields = ['coefficient']
         widgets = {
             'coefficient': forms.Select(
                 attrs={'class': 'form-select'},
@@ -85,8 +85,16 @@ class OrderCoefficientForm(forms.ModelForm):
                     (1.60, '1.60'), (1.65, '1.65'), (1.70, '1.70'), (1.75, '1.75'),
                     (1.80, '1.80'), (1.85, '1.85'), (1.90, '1.90'), (1.95, '1.95'),
                     (2.00, '2.00'),
-]
+                ]
             ),
+        }
+
+
+class OrderQuantityForm(forms.ModelForm):
+    class Meta:
+        model = Order
+        fields = ['order_quantity']
+        widgets = {
             'order_quantity': forms.Select(
                 attrs={'class': 'form-select'},
                 choices=[(x, str(x)) for x in range(1, 11)]

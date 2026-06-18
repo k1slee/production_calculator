@@ -59,23 +59,24 @@
                         <div class="d-flex align-items-center">
                             <strong class="me-2">Номер чертежа:</strong>
                             <span class="me-2">{{ order.drawing_number|default:"—" }}</span>
-                            {% if user.is_staff or user.is_superuser %}
                             <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#drawingNumberModal">
                                 <i class="fas fa-edit"></i> Изменить
                             </button>
-                            {% endif %}
                         </div>
                         <div class="d-flex align-items-center">
-                            <strong class="me-2">Коэффициент массы:</strong>
-                            <span id="current-coefficient" class="badge bg-primary fs-6 me-2">{{ order.coefficient }}</span>
-                        </div>
-                        <div class="d-flex align-items-center mt-2">
-                            <strong class="me-2">Заказ количество:</strong>
-                            <span id="current-order-quantity" class="badge bg-info fs-6 me-2">{{ order.order_quantity }}</span>
-                            <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#coefficientModal">
-                                <i class="fas fa-edit"></i> Изменить
-                            </button>
-                        </div>
+            <strong class="me-2">Коэффициент массы:</strong>
+            <span id="current-coefficient" class="badge bg-primary fs-6 me-2">{{ order.coefficient }}</span>
+            <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#coefficientModal">
+                <i class="fas fa-edit"></i> Изменить
+            </button>
+        </div>
+        <div class="d-flex align-items-center mt-2">
+            <strong class="me-2">Заказ количество:</strong>
+            <span id="current-order-quantity" class="badge bg-info fs-6 me-2">{{ order.order_quantity }}</span>
+            <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#orderQuantityModal">
+                <i class="fas fa-edit"></i> Изменить
+            </button>
+        </div>
                         <p class="mt-2"><strong>Общий вес:</strong> <span id="total-weight">{{ order.total_weight|floatformat:3 }}</span> кг</p>
                     </div>
                 </div>
@@ -119,19 +120,18 @@
     </div>
 </div>
 
-<!-- Модальное окно для изменения коэффициента массы и количества заказов -->
+<!-- Модальное окно для изменения коэффициента массы -->
 <div class="modal fade" id="coefficientModal" tabindex="-1" aria-labelledby="coefficientModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="coefficientModalLabel">Изменение параметров заказа</h5>
+                <h5 class="modal-title" id="coefficientModalLabel">Изменение коэффициента массы</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form method="post" action="{% url 'update_order_coefficient' order.id %}">
+            <form method="post" action="{% url 'update_order_coefficient' order.id %}" id="coefficientForm">
                 {% csrf_token %}
                 <div class="modal-body">
                     <p>Текущий коэффициент массы: <strong>{{ order.coefficient|floatformat:2 }}</strong></p>
-                    <p>Текущее заказ количество: <strong>{{ order.order_quantity }}</strong></p>
                     <div class="mb-3">
                         <label for="id_coefficient" class="form-label">Новый коэффициент массы (от 1.00 до 2.00, шаг 0.05):</label>
                         <select name="coefficient" id="id_coefficient" class="form-select">
@@ -158,6 +158,28 @@
                             <option value="2.00" {% if order.coefficient|floatformat:2 == "2.00" %}selected{% endif %}>2.00</option>
                         </select>
                     </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="submit" class="btn btn-primary">Сохранить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно для изменения заказа количества -->
+<div class="modal fade" id="orderQuantityModal" tabindex="-1" aria-labelledby="orderQuantityModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="orderQuantityModalLabel">Изменение заказа количества</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" action="{% url 'update_order_quantity' order.id %}" id="orderQuantityForm">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <p>Текущее заказ количество: <strong>{{ order.order_quantity }}</strong></p>
                     <div class="mb-3">
                         <label for="id_order_quantity" class="form-label">Заказ количество (от 1 до 10):</label>
                         <select name="order_quantity" id="id_order_quantity" class="form-select">
@@ -353,7 +375,7 @@
                                 {{ item.material.name|default:"—" }}
                             {% endif %}
                         </td>
-                        <td class="text-center">{{ item.quantity|multiply:order.order_quantity }}</td>
+                        <td class="text-center">{{ item.quantity }}</td>
                         <td>
                             {% if item.is_special %}
                                 <span class="text-muted">—</span>
@@ -395,7 +417,7 @@
                             {% if item.is_special %}
                                 <span class="text-muted">—</span>
                             {% else %}
-                                <strong>{{ item.total_weight|multiply:order.order_quantity|floatformat:3 }}</strong>
+                                <strong>{{ item.total_weight|floatformat:3 }}</strong>
                             {% endif %}
                         </td>
                         <td>
@@ -441,24 +463,17 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const coefficientSelect = document.getElementById('id_coefficient');
-    const orderQuantitySelect = document.getElementById('id_order_quantity');
-    const modalForm = document.querySelector('#coefficientModal form');
+    // Обработчик для формы коэффициента
+    const coefficientForm = document.getElementById('coefficientForm');
+    if (coefficientForm) {
+        const coefficientSelect = coefficientForm.querySelector('#id_coefficient');
+        if (coefficientSelect) {
+            coefficientSelect.addEventListener('change', function() {
+                document.getElementById('current-coefficient').textContent = this.value;
+            });
+        }
 
-    if (coefficientSelect) {
-        coefficientSelect.addEventListener('change', function() {
-            document.getElementById('current-coefficient').textContent = this.value;
-        });
-    }
-
-    if (orderQuantitySelect) {
-        orderQuantitySelect.addEventListener('change', function() {
-            document.getElementById('current-order-quantity').textContent = this.value;
-        });
-    }
-
-    if (modalForm) {
-        modalForm.addEventListener('submit', function(e) {
+        coefficientForm.addEventListener('submit', function(e) {
             e.preventDefault();
             
             const formData = new FormData(this);
@@ -473,7 +488,6 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(data => {
                 if (data.success) {
                     document.getElementById('current-coefficient').textContent = data.coefficient;
-                    document.getElementById('current-order-quantity').textContent = data.order_quantity;
                     document.getElementById('total-weight').textContent = data.total_weight;
                     document.getElementById('total-items-count').textContent = data.total_items_count;
                     const modalElement = document.getElementById('coefficientModal');
@@ -482,12 +496,55 @@ document.addEventListener('DOMContentLoaded', function() {
                         modal.hide();
                     }
                 } else {
-                    alert('Ошибка при сохранении параметров');
+                    alert('Ошибка при сохранении коэффициента');
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('Ошибка при сохранении параметров');
+                alert('Ошибка при сохранении коэффициента');
+            });
+        });
+    }
+
+    // Обработчик для формы заказа количества
+    const orderQuantityForm = document.getElementById('orderQuantityForm');
+    if (orderQuantityForm) {
+        const orderQuantitySelect = orderQuantityForm.querySelector('#id_order_quantity');
+        if (orderQuantitySelect) {
+            orderQuantitySelect.addEventListener('change', function() {
+                document.getElementById('current-order-quantity').textContent = this.value;
+            });
+        }
+
+        orderQuantityForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            fetch(this.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('current-order-quantity').textContent = data.order_quantity;
+                    document.getElementById('total-weight').textContent = data.total_weight;
+                    document.getElementById('total-items-count').textContent = data.total_items_count;
+                    const modalElement = document.getElementById('orderQuantityModal');
+                    const modal = bootstrap.Modal.getInstance(modalElement);
+                    if (modal) {
+                        modal.hide();
+                    }
+                } else {
+                    alert('Ошибка при сохранении заказа количества');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Ошибка при сохранении заказа количества');
             });
         });
     }

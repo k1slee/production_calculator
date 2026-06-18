@@ -8,7 +8,7 @@ from django.db.models import Count, Sum
 from django.http import JsonResponse, HttpResponseForbidden
 from .models import Material, PartName, StockItem, Order, OrderItem
 from .forms import (LoginForm, MaterialForm, PartNameForm, StockItemForm, 
-                   OrderForm, OrderItemForm, OrderCoefficientForm)
+                   OrderForm, OrderItemForm, OrderCoefficientForm, OrderQuantityForm)
 from django.db import models
 from django.db.models.functions import Lower
 
@@ -363,15 +363,14 @@ def print_order_report(request, order_id):
 @login_required
 @transaction.atomic
 def update_order_coefficient(request, order_id):
-    """Обновление коэффициента массы и количества заказов (любой пользователь может менять)"""
-    # Убираем фильтр по user, любой может менять параметры
+    """Обновление коэффициента массы (любой пользователь может менять)"""
     order = get_object_or_404(Order, id=order_id)
     
     if request.method == 'POST':
         form = OrderCoefficientForm(request.POST, instance=order)
         if form.is_valid():
             form.save()
-            messages.success(request, f'✅ Параметры успешно изменены: коэффициент массы {order.coefficient}, заказ количество {order.order_quantity}')
+            messages.success(request, f'✅ Коэффициент массы успешно изменен: {order.coefficient}')
             
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                 return JsonResponse({
@@ -382,7 +381,35 @@ def update_order_coefficient(request, order_id):
                     'total_items_count': str(order.total_items_count)
                 })
         else:
-            messages.error(request, '❌ Ошибка при изменении параметров')
+            messages.error(request, '❌ Ошибка при изменении коэффициента')
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({'success': False, 'errors': form.errors})
+    
+    return redirect('order_detail', order_id=order.id)
+
+
+@login_required
+@transaction.atomic
+def update_order_quantity(request, order_id):
+    """Обновление количества заказов (любой пользователь может менять)"""
+    order = get_object_or_404(Order, id=order_id)
+    
+    if request.method == 'POST':
+        form = OrderQuantityForm(request.POST, instance=order)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f'✅ Заказ количество успешно изменено: {order.order_quantity}')
+            
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': True,
+                    'coefficient': str(order.coefficient),
+                    'order_quantity': str(order.order_quantity),
+                    'total_weight': f'{order.total_weight:.3f}',
+                    'total_items_count': str(order.total_items_count)
+                })
+        else:
+            messages.error(request, '❌ Ошибка при изменении количества заказов')
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                 return JsonResponse({'success': False, 'errors': form.errors})
     
@@ -392,8 +419,6 @@ def update_order_coefficient(request, order_id):
 @transaction.atomic
 def update_order_drawing_number(request, order_id):
     order = get_object_or_404(Order, id=order_id)
-    if not (request.user.is_staff or request.user.is_superuser):
-        return HttpResponseForbidden()
 
     if request.method == 'POST':
         drawing_number = (request.POST.get('drawing_number') or '').strip()
