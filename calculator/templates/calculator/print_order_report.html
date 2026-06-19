@@ -237,7 +237,7 @@
                     {% elif item.stock_item.section_type == 'hexagon' %}
                         S{{ item.key_size|format_decimal }}x{{ item.length|format_decimal }}
                     {% elif item.stock_item.section_type == 'tube' %}
-                        Ø{{ item.stock_item.outer_diameter|format_decimal }}x{{ item.stock_item.wall_thickness|format_decimal }}x{{ item.length|format_decimal }}
+                        Труба Ø{{ item.stock_item.outer_diameter|format_decimal }}x{{ item.stock_item.wall_thickness|format_decimal }}x{{ item.length|format_decimal }}
                     {% endif %}
                 </td>
                 <!-- Сортамент материала с фильтром format_decimal -->

@@ -306,7 +306,7 @@
                         <td>{{ item.part_name }}</td>
                         <td>{{ item.material.name }}</td>
                         <td class="text-center">
-                            <b>Ø{{ item.stock_item.outer_diameter|format_decimal }}x{{ item.stock_item.wall_thickness|format_decimal }}x{{ item.length|format_decimal }}</b>
+                            <b>Труба Ø{{ item.stock_item.outer_diameter|format_decimal }}x{{ item.stock_item.wall_thickness|format_decimal }}x{{ item.length|format_decimal }}</b>
                         </td>
                         <td class="text-center">{{ item.quantity|multiply:order.order_quantity }}</td>
                         <td class="text-center">Ø{{ item.stock_item.outer_diameter|format_decimal }}x{{ item.stock_item.wall_thickness|format_decimal }}</td>
