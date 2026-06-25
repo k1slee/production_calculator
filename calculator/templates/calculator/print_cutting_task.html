@@ -231,7 +231,7 @@
                     <b>Заказ количество: {{ order.order_quantity }} шт.</b>
                 </div>
             </div>
-            <div class="section-title">КРУГ (диаметр > 50 мм)</div>
+            <div class="section-title">КРУГ / ЛИСТ (специальные материалы)</div>
             <table class="task-table">
                 <thead>
                     <tr>
@@ -252,10 +252,20 @@
                         <td>{{ item.part_name }}</td>
                         <td>{{ item.material.name }}</td>
                         <td class="text-center">
-                            <b>Ø{{ item.diameter|format_decimal }}x{{ item.length|format_decimal }}</b>
+                            {% if item.stock_item.section_type == 'sheet' %}
+                                <b>{{ item.height|format_decimal }}x{{ item.width|format_decimal }}x{{ item.length|format_decimal }}</b>
+                            {% else %}
+                                <b>Ø{{ item.diameter|format_decimal }}x{{ item.length|format_decimal }}</b>
+                            {% endif %}
                         </td>
                         <td class="text-center">{{ item.quantity|multiply:order.order_quantity }}</td>
-                        <td class="text-center">{% if item.use_iz_prefix %}из {% endif %}Ø{{ item.stock_item.diameter|format_decimal }}</td>
+                        <td class="text-center">
+                            {% if item.stock_item.section_type == 'sheet' %}
+                                #{{ item.stock_item.width|format_decimal }}
+                            {% else %}
+                                {% if item.use_iz_prefix %}из {% endif %}Ø{{ item.stock_item.diameter|format_decimal }}
+                            {% endif %}
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>

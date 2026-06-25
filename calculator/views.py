@@ -488,10 +488,13 @@ def print_cutting_task(request, order_id):
     items_list = list(items)
     items_list.sort(key=lambda x: (x.sort_key, x.part_name.name))
     
+    # Создаем множество материалов, которые должны попасть в кругляк
+    special_materials = {'1.2343', '4Х5МФС'}
+    
     # Группируем по типу сортамента с фильтрацией
     grouped_by_section = {
         'sheet': [],  # Лист
-        'round': [],  # Кругляк (только диаметр > 50)
+        'round': [],  # Кругляк (только диаметр > 50, или специальные материалы)
         'tube': [],   # Труба
     }
     
@@ -500,8 +503,14 @@ def print_cutting_task(request, order_id):
             continue
             
         section_type = item.stock_item.section_type
+        material_name = item.material.name if item.material else ''
         
-        if section_type == 'sheet':
+        # Проверяем, нужно ли этот лист отправить в кругляк
+        if section_type == 'sheet' and material_name in special_materials:
+            # Добавляем в кругляк без проверки диаметра >50
+            grouped_by_section['round'].append(item)
+            
+        elif section_type == 'sheet':
             grouped_by_section['sheet'].append(item)
             
         elif section_type == 'round':
