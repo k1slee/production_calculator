@@ -1,0 +1,541 @@
+=== Список всех материалов в базе данных ===
+  ID: 3, name: 'Проволока', name.upper(): 'ПРОВОЛОКА'
+  ID: 4, name: 'Бронза', name.upper(): 'БРОНЗА'
+  ID: 5, name: 'Графит', name.upper(): 'ГРАФИТ'
+  ID: 6, name: 'Дуралюминий', name.upper(): 'ДУРАЛЮМИНИЙ'
+  ID: 7, name: 'Капролон', name.upper(): 'КАПРОЛОН'
+  ID: 8, name: 'Латунь', name.upper(): 'ЛАТУНЬ'
+  ID: 9, name: 'Медь', name.upper(): 'МЕДЬ'
+  ID: 10, name: 'Оргстекло', name.upper(): 'ОРГСТЕКЛО'
+  ID: 11, name: 'Паронит', name.upper(): 'ПАРОНИТ'
+  ID: 12, name: 'Полиуретан', name.upper(): 'ПОЛИУРЕТАН'
+  ID: 13, name: 'Проволока Ст65Г', name.upper(): 'ПРОВОЛОКА СТ65Г'
+  ID: 14, name: 'Резина', name.upper(): 'РЕЗИНА'
+  ID: 15, name: 'Сталь 12Х18Н10Е', name.upper(): 'СТАЛЬ 12Х18Н10Е'
+  ID: 16, name: 'Сталь 12Х18Н9', name.upper(): 'СТАЛЬ 12Х18Н9'
+  ID: 17, name: 'Сталь 12ХН3А', name.upper(): 'СТАЛЬ 12ХН3А'
+  ID: 18, name: 'Сталь 15Х25Т', name.upper(): 'СТАЛЬ 15Х25Т'
+  ID: 19, name: 'Сталь 18ХГТ', name.upper(): 'СТАЛЬ 18ХГТ'
+  ID: 20, name: 'Сталь 20', name.upper(): 'СТАЛЬ 20'
+  ID: 21, name: 'Сталь 3', name.upper(): 'СТАЛЬ 3'
+  ID: 22, name: 'Сталь 35', name.upper(): 'СТАЛЬ 35'
+  ID: 23, name: 'Сталь 40Х (40ХН)', name.upper(): 'СТАЛЬ 40Х (40ХН)'
+  ID: 24, name: 'Сталь 40Х13', name.upper(): 'СТАЛЬ 40Х13'
+  ID: 25, name: 'Сталь 45', name.upper(): 'СТАЛЬ 45'
+  ID: 26, name: 'Сталь 4Х5МФС', name.upper(): 'СТАЛЬ 4Х5МФС'
+  ID: 27, name: 'Сталь 65Г', name.upper(): 'СТАЛЬ 65Г'
+  ID: 28, name: 'Сталь 6ХВ2С', name.upper(): 'СТАЛЬ 6ХВ2С'
+  ID: 29, name: 'Сталь 95Х18', name.upper(): 'СТАЛЬ 95Х18'
+  ID: 30, name: 'Сталь 9ХС', name.upper(): 'СТАЛЬ 9ХС'
+  ID: 31, name: 'Сталь Р6М5', name.upper(): 'СТАЛЬ Р6М5'
+  ID: 32, name: 'Сталь У8 (У8А)', name.upper(): 'СТАЛЬ У8 (У8А)'
+  ID: 33, name: 'Сталь Х12М', name.upper(): 'СТАЛЬ Х12М'
+  ID: 34, name: 'Сталь ХВГ', name.upper(): 'СТАЛЬ ХВГ'
+  ID: 35, name: 'Сталь ШХ15', name.upper(): 'СТАЛЬ ШХ15'
+  ID: 36, name: 'Текстолит', name.upper(): 'ТЕКСТОЛИТ'
+  ID: 37, name: 'Труба 40х40х3', name.upper(): 'ТРУБА 40Х40Х3'
+  ID: 38, name: 'Уголок 40х40х5', name.upper(): 'УГОЛОК 40Х40Х5'
+  ID: 39, name: 'Фторопласт', name.upper(): 'ФТОРОПЛАСТ'
+  ID: 40, name: 'Чугун', name.upper(): 'ЧУГУН'
+
+=== Проверка существующих заказов ===
+
+Заказ №3862, ID: 11:
+  - Деталь №1:
+    Материал: 'Сталь 45', (name.upper(): 'СТАЛЬ 45')
+    Сортамент тип: sheet
+    is_special: False
+  - Деталь №11:
+    Материал: 'Сталь 4Х5МФС', (name.upper(): 'СТАЛЬ 4Х5МФС')
+    Сортамент тип: round
+    is_special: False
+  - Деталь №12:
+    Материал: 'Сталь 45', (name.upper(): 'СТАЛЬ 45')
+    Сортамент тип: sheet
+    is_special: False
+  - Деталь №13:
+    Материал: 'Сталь 45', (name.upper(): 'СТАЛЬ 45')
+    Сортамент тип: sheet
+    is_special: False
+  - Деталь №14:
+    Материал: 'Сталь 4Х5МФС', (name.upper(): 'СТАЛЬ 4Х5МФС')
+    Сортамент тип: round
+    is_special: False
+  - Деталь №15-02:
+    Материал: 'Сталь 4Х5МФС', (name.upper(): 'СТАЛЬ 4Х5МФС')
+    Сортамент тип: round
+    is_special: False
+  - Деталь №16:
+    Материал: 'Сталь 4Х5МФС', (name.upper(): 'СТАЛЬ 4Х5МФС')
+    Сортамент тип: round
+    is_special: False
+  - Деталь №17:
+    Материал: 'Сталь У8 (У8А)', (name.upper(): 'СТАЛЬ У8 (У8А)')
+    Сортамент тип: round
+    is_special: False
+  - Деталь №18:
+    Материал: 'Бронза', (name.upper(): 'БРОНЗА')
+    Сортамент тип: round
+    is_special: False
+  - Деталь №19:
+    Материал: 'Бронза', (name.upper(): 'БРОНЗА')
+    Сортамент тип: round
+    is_special: False
+  - Деталь №2:
+    Материал: 'Сталь 45', (name.upper(): 'СТАЛЬ 45')
+    Сортамент тип: round
+    is_special: False
+  - Деталь №21:
+    Материал: 'Бронза', (name.upper(): 'БРОНЗА')
+    Сортамент тип: round
+    is_special: False
+  - Деталь №21:
+    Материал: 'Бронза', (name.upper(): 'БРОНЗА')
+    Сортамент тип: round
+    is_special: False
+  - Деталь №22:
+    Материал: 'Бронза', (name.upper(): 'БРОНЗА')
+    Сортамент тип: round
+    is_special: False
+  - Деталь №23:
+    Материал: 'Бронза', (name.upper(): 'БРОНЗА')
+    Сортамент тип: round
+    is_special: False
+  - Деталь №25:
+    Материал: 'Бронза', (name.upper(): 'БРОНЗА')
+    Сортамент тип: round
+    is_special: False
+  - Деталь №26:
+    Материал: 'Сталь 45', (name.upper(): 'СТАЛЬ 45')
+    Сортамент тип: round
+    is_special: False
+  - Деталь №26:
+    Материал: 'Бронза', (name.upper(): 'БРОНЗА')
+    Сортамент тип: round
+    is_special: False
+  - Деталь №27:
+    Материал: 'Бронза', (name.upper(): 'БРОНЗА')
+    Сортамент тип: round
+    is_special: False
+  - Деталь №28:
+    Материал: 'Бронза', (name.upper(): 'БРОНЗА')
+    Сортамент тип: sheet
+    is_special: False
+  - Деталь №29:
+    Материал: 'Бронза', (name.upper(): 'БРОНЗА')
+    Сортамент тип: sheet
+    is_special: False
+  - Деталь №3:
+    Материал: 'Сталь 45', (name.upper(): 'СТАЛЬ 45')
+    Сортамент тип: round
+    is_special: False
+  - Деталь №30:
+    Материал: 'Бронза', (name.upper(): 'БРОНЗА')
+    Сортамент тип: sheet
+    is_special: False
+  - Деталь №30:
+    Материал: 'Бронза', (name.upper(): 'БРОНЗА')
+    Сортамент тип: sheet
+    is_special: False
+  - Деталь №31:
+    Материал: 'Бронза', (name.upper(): 'БРОНЗА')
+    Сортамент тип: sheet
+    is_special: False
+  - Деталь №32:
+    Материал: 'Бронза', (name.upper(): 'БРОНЗА')
+    Сортамент тип: sheet
+    is_special: False
+  - Деталь №33:
+    Материал: 'Бронза', (name.upper(): 'БРОНЗА')
+    Сортамент тип: sheet
+    is_special: False
+  - Деталь №34:
+    Материал: 'Бронза', (name.upper(): 'БРОНЗА')
+    Сортамент тип: sheet
+    is_special: False
+  - Деталь №35:
+    Материал: 'Бронза', (name.upper(): 'БРОНЗА')
+    Сортамент тип: sheet
+    is_special: False
+  - Деталь №35:
+    Материал: None, (name.upper(): )
+    Сортамент тип: —
+    is_special: True
+  - Деталь №36:
+    Материал: 'Бронза', (name.upper(): 'БРОНЗА')
+    Сортамент тип: round
+    is_special: False
+  - Деталь №37:
+    Материал: None, (name.upper(): )
+    Сортамент тип: —
+    is_special: True
+  - Деталь №38:
+    Материал: 'Сталь 45', (name.upper(): 'СТАЛЬ 45')
+    Сортамент тип: sheet
+    is_special: False
+  - Деталь №39:
+    Материал: 'Сталь 45', (name.upper(): 'СТАЛЬ 45')
+    Сортамент тип: round
+    is_special: False
+  - Деталь №4:
+    Материал: 'Сталь У8 (У8А)', (name.upper(): 'СТАЛЬ У8 (У8А)')
+    Сортамент тип: round
+    is_special: False
+  - Деталь №40:
+    Материал: 'Сталь 45', (name.upper(): 'СТАЛЬ 45')
+    Сортамент тип: sheet
+    is_special: False
+  - Деталь №41:
+    Материал: 'Бронза', (name.upper(): 'БРОНЗА')
+    Сортамент тип: round
+    is_special: False
+  - Деталь №42:
+    Материал: 'Сталь 45', (name.upper(): 'СТАЛЬ 45')
+    Сортамент тип: sheet
+    is_special: False
+  - Деталь №43:
+    Материал: 'Сталь 45', (name.upper(): 'СТАЛЬ 45')
+    Сортамент тип: sheet
+    is_special: False
+  - Деталь №44:
+    Материал: 'Сталь 45', (name.upper(): 'СТАЛЬ 45')
+    Сортамент тип: sheet
+    is_special: False
+  - Деталь №45:
+    Материал: 'Сталь 45', (name.upper(): 'СТАЛЬ 45')
+    Сортамент тип: sheet
+    is_special: False
+  - Деталь №46-1:
+    Материал: 'Сталь 45', (name.upper(): 'СТАЛЬ 45')
+    Сортамент тип: sheet
+    is_special: False
+  - Деталь №46-12:
+    Материал: 'Сталь 45', (name.upper(): 'СТАЛЬ 45')
+    Сортамент тип: sheet
+    is_special: False
+  - Деталь №48:
+    Материал: 'Сталь 40Х (40ХН)', (name.upper(): 'СТАЛЬ 40Х (40ХН)')
+    Сортамент тип: sheet
+    is_special: False
+  - Деталь №49:
+    Материал: None, (name.upper(): )
+    Сортамент тип: —
+    is_special: True
+  - Деталь №5:
+    Материал: 'Сталь 45', (name.upper(): 'СТАЛЬ 45')
+    Сортамент тип: round
+    is_special: False
+  - Деталь №50:
+    Материал: None, (name.upper(): )
+    Сортамент тип: —
+    is_special: True
+  - Деталь №6:
+    Материал: 'Сталь 45', (name.upper(): 'СТАЛЬ 45')
+    Сортамент тип: sheet
+    is_special: False
+  - Деталь №7:
+    Материал: 'Сталь 4Х5МФС', (name.upper(): 'СТАЛЬ 4Х5МФС')
+    Сортамент тип: round
+    is_special: False
+  - Деталь №8:
+    Материал: 'Сталь 45', (name.upper(): 'СТАЛЬ 45')
+    Сортамент тип: sheet
+    is_special: False
+
+Заказ №4536546756876798879098-0909-90-, ID: 13:
+  - Деталь №1:
+    Материал: 'Сталь 45', (name.upper(): 'СТАЛЬ 45')
+    Сортамент тип: round
+    is_special: False
+  - Деталь №2:
+    Материал: 'Сталь 45', (name.upper(): 'СТАЛЬ 45')
+    Сортамент тип: sheet
+    is_special: False
+  - Деталь №3:
+    Материал: 'Сталь 45', (name.upper(): 'СТАЛЬ 45')
+    Сортамент тип: sheet
+    is_special: False
+
+Заказ №ntcn, ID: 14:
+
+Заказ №8678678, ID: 15:
+  - Деталь №1:
+    Материал: 'Сталь 45', (name.upper(): 'СТАЛЬ 45')
+    Сортамент тип: round
+    is_special: False
+  - Деталь №2:
+    Материал: 'Сталь 45', (name.upper(): 'СТАЛЬ 45')
+    Сортамент тип: sheet
+    is_special: False
+  - Деталь №3:
+    Материал: 'Сталь 45', (name.upper(): 'СТАЛЬ 45')
+    Сортамент тип: sheet
+    is_special: False
+  - Деталь №4:
+    Материал: None, (name.upper(): )
+    Сортамент тип: —
+    is_special: True
+
+Заказ №9999, ID: 16:
+  - Деталь №1:
+    Материал: 'Сталь 20', (name.upper(): 'СТАЛЬ 20')
+    Сортамент тип: tube
+    is_special: False
+  - Деталь №2:
+    Материал: 'Сталь 45', (name.upper(): 'СТАЛЬ 45')
+    Сортамент тип: sheet
+    is_special: False
+
+
+=== Тестирование логики группировки ===
+Тестируем заказ: Заказ №3862 - Прессформа для литья гайки УП-15
+
+Особые материалы (list): ["'1.2343'", "'4Х5МФС'"]
+Особые материалы (upper list): ["'1.2343'", "'4Х5МФС'"]
+
+Обрабатываем деталь №1
+  section_type: 'sheet'
+  material_name (stripped upper): 'СТАЛЬ 45'
+  → добавляем в 'sheet'
+
+Обрабатываем деталь №11
+  section_type: 'round'
+  material_name (stripped upper): 'СТАЛЬ 4Х5МФС'
+  → добавляем в 'round' (diameter >50)
+
+Обрабатываем деталь №12
+  section_type: 'sheet'
+  material_name (stripped upper): 'СТАЛЬ 45'
+  → добавляем в 'sheet'
+
+Обрабатываем деталь №13
+  section_type: 'sheet'
+  material_name (stripped upper): 'СТАЛЬ 45'
+  → добавляем в 'sheet'
+
+Обрабатываем деталь №14
+  section_type: 'round'
+  material_name (stripped upper): 'СТАЛЬ 4Х5МФС'
+  → не добавляем (diameter ≤50)
+
+Обрабатываем деталь №15-02
+  section_type: 'round'
+  material_name (stripped upper): 'СТАЛЬ 4Х5МФС'
+  → добавляем в 'round' (diameter >50)
+
+Обрабатываем деталь №16
+  section_type: 'round'
+  material_name (stripped upper): 'СТАЛЬ 4Х5МФС'
+  → добавляем в 'round' (diameter >50)
+
+Обрабатываем деталь №17
+  section_type: 'round'
+  material_name (stripped upper): 'СТАЛЬ У8 (У8А)'
+  → не добавляем (diameter ≤50)
+
+Обрабатываем деталь №18
+  section_type: 'round'
+  material_name (stripped upper): 'БРОНЗА'
+  → не добавляем (diameter ≤50)
+
+Обрабатываем деталь №19
+  section_type: 'round'
+  material_name (stripped upper): 'БРОНЗА'
+  → не добавляем (diameter ≤50)
+
+Обрабатываем деталь №2
+  section_type: 'round'
+  material_name (stripped upper): 'СТАЛЬ 45'
+  → не добавляем (diameter ≤50)
+
+Обрабатываем деталь №21
+  section_type: 'round'
+  material_name (stripped upper): 'БРОНЗА'
+  → не добавляем (diameter ≤50)
+
+Обрабатываем деталь №21
+  section_type: 'round'
+  material_name (stripped upper): 'БРОНЗА'
+  → не добавляем (diameter ≤50)
+
+Обрабатываем деталь №22
+  section_type: 'round'
+  material_name (stripped upper): 'БРОНЗА'
+  → не добавляем (diameter ≤50)
+
+Обрабатываем деталь №23
+  section_type: 'round'
+  material_name (stripped upper): 'БРОНЗА'
+  → не добавляем (diameter ≤50)
+
+Обрабатываем деталь №25
+  section_type: 'round'
+  material_name (stripped upper): 'БРОНЗА'
+  → не добавляем (diameter ≤50)
+
+Обрабатываем деталь №26
+  section_type: 'round'
+  material_name (stripped upper): 'СТАЛЬ 45'
+  → добавляем в 'round' (diameter >50)
+
+Обрабатываем деталь №26
+  section_type: 'round'
+  material_name (stripped upper): 'БРОНЗА'
+  → не добавляем (diameter ≤50)
+
+Обрабатываем деталь №27
+  section_type: 'round'
+  material_name (stripped upper): 'БРОНЗА'
+  → не добавляем (diameter ≤50)
+
+Обрабатываем деталь №28
+  section_type: 'sheet'
+  material_name (stripped upper): 'БРОНЗА'
+  → добавляем в 'sheet'
+
+Обрабатываем деталь №29
+  section_type: 'sheet'
+  material_name (stripped upper): 'БРОНЗА'
+  → добавляем в 'sheet'
+
+Обрабатываем деталь №3
+  section_type: 'round'
+  material_name (stripped upper): 'СТАЛЬ 45'
+  → добавляем в 'round' (diameter >50)
+
+Обрабатываем деталь №30
+  section_type: 'sheet'
+  material_name (stripped upper): 'БРОНЗА'
+  → добавляем в 'sheet'
+
+Обрабатываем деталь №30
+  section_type: 'sheet'
+  material_name (stripped upper): 'БРОНЗА'
+  → добавляем в 'sheet'
+
+Обрабатываем деталь №31
+  section_type: 'sheet'
+  material_name (stripped upper): 'БРОНЗА'
+  → добавляем в 'sheet'
+
+Обрабатываем деталь №32
+  section_type: 'sheet'
+  material_name (stripped upper): 'БРОНЗА'
+  → добавляем в 'sheet'
+
+Обрабатываем деталь №33
+  section_type: 'sheet'
+  material_name (stripped upper): 'БРОНЗА'
+  → добавляем в 'sheet'
+
+Обрабатываем деталь №34
+  section_type: 'sheet'
+  material_name (stripped upper): 'БРОНЗА'
+  → добавляем в 'sheet'
+
+Обрабатываем деталь №35
+  section_type: 'sheet'
+  material_name (stripped upper): 'БРОНЗА'
+  → добавляем в 'sheet'
+
+Обрабатываем деталь №35
+  is_special = True → пропускаем
+
+Обрабатываем деталь №36
+  section_type: 'round'
+  material_name (stripped upper): 'БРОНЗА'
+  → не добавляем (diameter ≤50)
+
+Обрабатываем деталь №37
+  is_special = True → пропускаем
+
+Обрабатываем деталь №38
+  section_type: 'sheet'
+  material_name (stripped upper): 'СТАЛЬ 45'
+  → добавляем в 'sheet'
+
+Обрабатываем деталь №39
+  section_type: 'round'
+  material_name (stripped upper): 'СТАЛЬ 45'
+  → добавляем в 'round' (diameter >50)
+
+Обрабатываем деталь №4
+  section_type: 'round'
+  material_name (stripped upper): 'СТАЛЬ У8 (У8А)'
+  → не добавляем (diameter ≤50)
+
+Обрабатываем деталь №40
+  section_type: 'sheet'
+  material_name (stripped upper): 'СТАЛЬ 45'
+  → добавляем в 'sheet'
+
+Обрабатываем деталь №41
+  section_type: 'round'
+  material_name (stripped upper): 'БРОНЗА'
+  → не добавляем (diameter ≤50)
+
+Обрабатываем деталь №42
+  section_type: 'sheet'
+  material_name (stripped upper): 'СТАЛЬ 45'
+  → добавляем в 'sheet'
+
+Обрабатываем деталь №43
+  section_type: 'sheet'
+  material_name (stripped upper): 'СТАЛЬ 45'
+  → добавляем в 'sheet'
+
+Обрабатываем деталь №44
+  section_type: 'sheet'
+  material_name (stripped upper): 'СТАЛЬ 45'
+  → добавляем в 'sheet'
+
+Обрабатываем деталь №45
+  section_type: 'sheet'
+  material_name (stripped upper): 'СТАЛЬ 45'
+  → добавляем в 'sheet'
+
+Обрабатываем деталь №46-1
+  section_type: 'sheet'
+  material_name (stripped upper): 'СТАЛЬ 45'
+  → добавляем в 'sheet'
+
+Обрабатываем деталь №46-12
+  section_type: 'sheet'
+  material_name (stripped upper): 'СТАЛЬ 45'
+  → добавляем в 'sheet'
+
+Обрабатываем деталь №48
+  section_type: 'sheet'
+  material_name (stripped upper): 'СТАЛЬ 40Х (40ХН)'
+  → добавляем в 'sheet'
+
+Обрабатываем деталь №49
+  is_special = True → пропускаем
+
+Обрабатываем деталь №5
+  section_type: 'round'
+  material_name (stripped upper): 'СТАЛЬ 45'
+  → добавляем в 'round' (diameter >50)
+
+Обрабатываем деталь №50
+  is_special = True → пропускаем
+
+Обрабатываем деталь №6
+  section_type: 'sheet'
+  material_name (stripped upper): 'СТАЛЬ 45'
+  → добавляем в 'sheet'
+
+Обрабатываем деталь №7
+  section_type: 'round'
+  material_name (stripped upper): 'СТАЛЬ 4Х5МФС'
+  → не добавляем (diameter ≤50)
+
+Обрабатываем деталь №8
+  section_type: 'sheet'
+  material_name (stripped upper): 'СТАЛЬ 45'
+  → добавляем в 'sheet'
+
+Итог:
+  sheet items: ['1', '12', '13', '28', '29', '30', '30', '31', '32', '33', '34', '35', '38', '40', '42', '43', '44', '45', '46-1', '46-12', '48', '6', '8']
+  round items: ['11', '15-02', '16', '26', '3', '39', '5']
+  tube items: []

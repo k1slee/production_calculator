@@ -505,8 +505,16 @@ def print_cutting_task(request, order_id):
         section_type = item.stock_item.section_type
         material_name = item.material.name.strip().upper() if item.material else ''
         
+        # Проверяем, содержит ли материал любой из специальных вариантов
+        is_special_material = False
+        special_materials_upper = {m.upper() for m in special_materials}
+        for sm in special_materials_upper:
+            if sm in material_name:
+                is_special_material = True
+                break
+        
         # Проверяем, нужно ли этот лист отправить в кругляк
-        if section_type == 'sheet' and material_name in {m.upper() for m in special_materials}:
+        if section_type == 'sheet' and is_special_material:
             # Добавляем в кругляк без проверки диаметра >50
             grouped_by_section['round'].append(item)
             
@@ -514,8 +522,8 @@ def print_cutting_task(request, order_id):
             grouped_by_section['sheet'].append(item)
             
         elif section_type == 'round':
-            # Фильтр: только кругляк с диаметром > 50
-            if item.diameter and float(item.diameter) > 50:
+            # Для специальных материалов всегда добавляем, для остальных только диаметр >50
+            if is_special_material or (item.diameter and float(item.diameter) > 50):
                 grouped_by_section['round'].append(item)
                 
         elif section_type == 'tube':
