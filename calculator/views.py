@@ -522,8 +522,8 @@ def print_cutting_task(request, order_id):
             grouped_by_section['sheet'].append(item)
             
         elif section_type == 'round':
-            # Для специальных материалов всегда добавляем, для остальных только диаметр >50
-            if is_special_material or (item.diameter and float(item.diameter) > 50):
+            # Только диаметр >50, независимо от материала
+            if item.diameter and float(item.diameter) > 50:
                 grouped_by_section['round'].append(item)
                 
         elif section_type == 'tube':
