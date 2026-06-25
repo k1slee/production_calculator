@@ -503,10 +503,10 @@ def print_cutting_task(request, order_id):
             continue
             
         section_type = item.stock_item.section_type
-        material_name = item.material.name if item.material else ''
+        material_name = item.material.name.strip().upper() if item.material else ''
         
         # Проверяем, нужно ли этот лист отправить в кругляк
-        if section_type == 'sheet' and material_name in special_materials:
+        if section_type == 'sheet' and material_name in {m.upper() for m in special_materials}:
             # Добавляем в кругляк без проверки диаметра >50
             grouped_by_section['round'].append(item)
             
