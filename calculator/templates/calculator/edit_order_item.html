@@ -186,6 +186,7 @@
                                     </option>
                                 {% endfor %}
                             </select>
+                            <button type="button" class="btn btn-sm btn-outline-primary mt-2" data-bs-toggle="modal" data-bs-target="#addStockItemModal">Добавить сортамент</button>
                             {% if form.stock_item.errors %}
                                 <div class="text-danger">{{ form.stock_item.errors }}</div>
                             {% endif %}
@@ -426,6 +427,64 @@
   </div>
 </div>
 
+<!-- Modal: Add StockItem -->
+<div class="modal fade" id="addStockItemModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Добавить сортамент</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label">Материал</label>
+          <select class="form-select" id="new_stock_material">
+            <option value="">---------</option>
+            {% for material in form.fields.material.queryset %}
+              <option value="{{ material.id }}">{{ material.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Тип сортамента</label>
+          <select class="form-select" id="new_stock_section">
+            <option value="">---------</option>
+            <option value="sheet">Лист</option>
+            <option value="round">Круг</option>
+            <option value="hexagon">Шестигранник</option>
+            <option value="tube">Труба</option>
+          </select>
+        </div>
+        <div class="mb-3" id="new_stock_width_wrapper" style="display:none">
+          <label class="form-label">Толщина (мм)</label>
+          <input type="number" step="0.01" class="form-control" id="new_stock_width">
+        </div>
+        <div class="mb-3" id="new_stock_diameter_wrapper" style="display:none">
+          <label class="form-label">Диаметр (мм)</label>
+          <input type="number" step="0.01" class="form-control" id="new_stock_diameter">
+        </div>
+        <div class="mb-3" id="new_stock_keysize_wrapper" style="display:none">
+          <label class="form-label">Размер под ключ (мм)</label>
+          <input type="number" step="0.01" class="form-control" id="new_stock_keysize">
+        </div>
+        <div class="mb-3" id="new_stock_outer_diameter_wrapper" style="display:none">
+          <label class="form-label">Наружный диаметр (мм)</label>
+          <input type="number" step="0.01" class="form-control" id="new_stock_outer_diameter">
+        </div>
+        <div class="mb-3" id="new_stock_wall_thickness_wrapper" style="display:none">
+          <label class="form-label">Толщина стенки (мм)</label>
+          <input type="number" step="0.01" class="form-control" id="new_stock_wall_thickness">
+        </div>
+        <div class="text-danger" id="addStockErrors" style="display:none"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+        <button type="button" class="btn btn-primary" id="submitAddStock">Сохранить</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
 (function() {
     'use strict';
@@ -529,6 +588,20 @@
             if (!el) return;
             el.textContent = typeof errors === 'string' ? errors : JSON.stringify(errors);
             el.style.display = 'block';
+        }
+
+        function sortSelectOptions(selectEl) {
+            if (!selectEl) return;
+            const selectedValue = selectEl.value;
+            const options = Array.from(selectEl.options);
+            const emptyOptions = options.filter(o => !o.value);
+            const nonEmptyOptions = options.filter(o => o.value);
+            const collator = new Intl.Collator('ru', { sensitivity: 'base', numeric: true });
+            nonEmptyOptions.sort((a, b) => collator.compare(a.textContent.trim(), b.textContent.trim()));
+            while (selectEl.firstChild) selectEl.removeChild(selectEl.firstChild);
+            emptyOptions.forEach(o => selectEl.appendChild(o));
+            nonEmptyOptions.forEach(o => selectEl.appendChild(o));
+            selectEl.value = selectedValue;
         }
 
         function setNormalFieldsEnabled(enabled) {
@@ -883,6 +956,9 @@
                         if (json.success) {
                             const opt = materialSelect.querySelector(`option[value="${json.id}"]`);
                             if (opt) opt.textContent = `${json.name} (${json.density} г/см³)`;
+                            const stockMatOpt = document.getElementById('new_stock_material')?.querySelector(`option[value="${json.id}"]`);
+                            if (stockMatOpt) stockMatOpt.textContent = json.name;
+                            sortSelectOptions(materialSelect);
                             materialSelect.value = String(json.id);
                             filterStockItems();
                             const modal = bootstrap.Modal.getInstance(editMaterialModal);
@@ -893,8 +969,68 @@
                     });
             });
         }
-        
-        // ========== 5. НАСТРОЙКА ОСТАЛЬНЫХ ОБРАБОТЧИКОВ (фильтры, чекбоксы) ==========
+
+        // Обработчики для добавления сортамента
+        document.getElementById('new_stock_section').addEventListener('change', function() {
+            const v = this.value;
+            document.getElementById('new_stock_width_wrapper').style.display = v === 'sheet' ? 'block' : 'none';
+            document.getElementById('new_stock_diameter_wrapper').style.display = v === 'round' ? 'block' : 'none';
+            document.getElementById('new_stock_keysize_wrapper').style.display = v === 'hexagon' ? 'block' : 'none';
+            document.getElementById('new_stock_outer_diameter_wrapper').style.display = v === 'tube' ? 'block' : 'none';
+            document.getElementById('new_stock_wall_thickness_wrapper').style.display = v === 'tube' ? 'block' : 'none';
+        });
+
+        document.getElementById('submitAddStock').addEventListener('click', function() {
+            const material_id = document.getElementById('new_stock_material').value;
+            const section_type = document.getElementById('new_stock_section').value;
+            const width = document.getElementById('new_stock_width').value;
+            const diameter = document.getElementById('new_stock_diameter').value;
+            const key_size = document.getElementById('new_stock_keysize').value;
+            const outer_diameter = document.getElementById('new_stock_outer_diameter').value;
+            const wall_thickness = document.getElementById('new_stock_wall_thickness').value;
+            document.getElementById('addStockErrors').style.display = 'none';
+            postJSON("{% url 'create_stock_item' %}", {
+                material: material_id, 
+                section_type, 
+                width, 
+                diameter, 
+                key_size,
+                outer_diameter,
+                wall_thickness
+            })
+                .then(json => {
+                    if (json.success) {
+                        const opt = document.createElement('option');
+                        opt.value = json.id;
+                        opt.textContent = json.text;
+                        opt.setAttribute('data-section-type', json.section_type);
+                        opt.setAttribute('data-material-id', String(json.material_id));
+                        stockItemSelect.appendChild(opt);
+                        stockItemSelect.value = String(json.id);
+                        sortSelectOptions(stockItemSelect);
+                        toggleMeasurements();
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('addStockItemModal'));
+                        modal.hide();
+                        document.getElementById('new_stock_material').value = '';
+                        document.getElementById('new_stock_section').value = '';
+                        document.getElementById('new_stock_width').value = '';
+                        document.getElementById('new_stock_diameter').value = '';
+                        document.getElementById('new_stock_keysize').value = '';
+                        document.getElementById('new_stock_outer_diameter').value = '';
+                        document.getElementById('new_stock_wall_thickness').value = '';
+                        document.getElementById('new_stock_width_wrapper').style.display = 'none';
+                        document.getElementById('new_stock_diameter_wrapper').style.display = 'none';
+                        document.getElementById('new_stock_keysize_wrapper').style.display = 'none';
+                        document.getElementById('new_stock_outer_diameter_wrapper').style.display = 'none';
+                        document.getElementById('new_stock_wall_thickness_wrapper').style.display = 'none';
+                    } else {
+                        document.getElementById('addStockErrors').textContent = JSON.stringify(json.errors);
+                        document.getElementById('addStockErrors').style.display = 'block';
+                    }
+                });
+        });
+
+        // ========== 5. НАСТРОЙКА ОСТАЛЬНЫХ ОБРАБОТЧИКОВ (фильтрация, чекбоксы) ==========
         if (specialCheckbox) {
             specialCheckbox.addEventListener('change', toggleNormalFields);
             toggleNormalFields();
