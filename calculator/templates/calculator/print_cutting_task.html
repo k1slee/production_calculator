@@ -30,13 +30,16 @@
                 page-break-inside: avoid;
                 break-inside: avoid;
             }
+            .task-table td{
+                font-size: 14pt;
+                padding: 8px;
+            }
         }
         
         @page {
-            size: A4 portrait;
+            size: A4 landscape;
             margin: 1.5cm;
         }
-        
         body {
             font-family: Arial, sans-serif;
             background-color: white;
@@ -210,7 +213,7 @@
             <!-- Подпись и дата после блока листов -->
             <div class="section-footer">
                 <div class="technologist">
-                    Инженер-технолог: ________________ <span>{{ user.last_name }} {{ user.first_name|first }}.{{ user.profile.patronymic|first|default:'' }}.</span>
+                    Инженер-технолог: ________________ <span>{{ order.user.last_name }} {{ order.user.first_name|first }}.{{ order.user.profile.patronymic|first|default:'' }}.</span>
                 </div>
                 <div class="date-sign">
                     Дата: {% now "d.m.Y" %}
@@ -274,7 +277,7 @@
             <!-- Подпись и дата после блока круга -->
             <div class="section-footer">
                 <div class="technologist">
-                    Инженер-технолог: ________________ <span>{{ user.last_name }} {{ user.first_name|first }}.{{ user.profile.patronymic|first|default:'' }}.</span>
+                    Инженер-технолог: ________________ <span>{{ order.user.last_name }} {{ order.user.first_name|first }}.{{ order.user.profile.patronymic|first|default:'' }}.</span>
                 </div>
                 <div class="date-sign">
                     Дата: {% now "d.m.Y" %}
@@ -328,7 +331,7 @@
             <!-- Подпись и дата после блока трубы -->
             <div class="section-footer">
                 <div class="technologist">
-                    Инженер-технолог: ________________ <span>{{ user.last_name }} {{ user.first_name|first }}.{{ user.profile.patronymic|first|default:'' }}.</span>
+                    Инженер-технолог: ________________ <span>{{ order.user.last_name }} {{ order.user.first_name|first }}.{{ order.user.profile.patronymic|first|default:'' }}.</span>
                 </div>
                 <div class="date-sign">
                     Дата: {% now "d.m.Y" %}
