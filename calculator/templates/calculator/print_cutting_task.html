@@ -40,6 +40,12 @@
             size: A4 landscape;
             margin: 1.5cm;
         }
+        .col-designation{
+            font-size: 8pt;
+        }
+        .col-partname{
+            font-size: 8pt;
+        }
         body {
             font-family: Arial, sans-serif;
             background-color: white;
@@ -185,8 +191,8 @@
                 <thead>
                     <tr>
                         <th>№ п/п</th>
-                        <th>______Обозначение_____</th>
-                        <th>Наименование детали</th>
+                        <th class="col-designation">______Обозначение_____</th>
+                        <th class="col-partname">Наименование детали</th>
                         <th>Материал</th>
                         <th>Чистовые размеры, мм</th>
                         <th>Кол-во, шт</th>
@@ -197,8 +203,8 @@
                     {% for item in sheet_items %}
                     <tr>
                         <td class="text-center">{{ item.sequence_number }}</td>
-                        <td class="text-center">{{ item.designation|default:"—" }}</td>
-                        <td>{{ item.part_name }}</td>
+                        <td class="text-center col-designation">{{ item.designation|default:"—" }}</td>
+                        <td class="text-center col-partname">{{ item.part_name }}</td>
                         <td>{{ item.material.name }}</td>
                         <td class="text-center">
                             <b>{{ item.height|format_decimal }}x{{ item.width|format_decimal }}x{{ item.length|format_decimal }}</b>
@@ -239,8 +245,8 @@
                 <thead>
                     <tr>
                         <th>№ п/п</th>
-                        <th>Обозначение</th>
-                        <th>Наименование детали</th>
+                        <th class="col-designation">______Обозначение_____</th>
+                        <th class="col-partname">Наименование детали</th>
                         <th>Материал</th>
                         <th>Чистовые размеры, мм</th>
                         <th>Кол-во, шт</th>
@@ -251,9 +257,9 @@
                     {% for item in round_items %}
                     <tr>
                         <td class="text-center">{{ item.sequence_number }}</td>
-                        <td class="text-center">{{ item.designation|default:"—" }}</td>
-                        <td>{{ item.part_name }}</td>
-                        <td>{{ item.material.name }}</td>
+                        <td class="text-center col-designation">{{ item.designation|default:"—" }}</td>
+                        <td class="text-center col-partname">{{ item.part_name }}</td>
+                        <td class="text-center">{{ item.material.name }}</td>
                         <td class="text-center">
                             {% if item.stock_item.section_type == 'sheet' %}
                                 <b>{{ item.height|format_decimal }}x{{ item.width|format_decimal }}x{{ item.length|format_decimal }}</b>
@@ -303,8 +309,8 @@
                 <thead>
                     <tr>
                         <th>№ п/п</th>
-                        <th>Обозначение</th>
-                        <th>Наименование детали</th>
+                        <th class="col-designation">______Обозначение_____</th>
+                        <th class="col-partname">Наименование детали</th>
                         <th>Материал</th>
                         <th>Чистовые размеры, мм</th>
                         <th>Кол-во, шт</th>
@@ -315,8 +321,8 @@
                     {% for item in tube_items %}
                     <tr>
                         <td class="text-center">{{ item.sequence_number }}</td>
-                        <td class="text-center">{{ item.designation|default:"—" }}</td>
-                        <td>{{ item.part_name }}</td>
+                        <td class="text-center col-designation">{{ item.designation|default:"—" }}</td>
+                        <td class ="text-center col-partname">{{ item.part_name }}</td>
                         <td>{{ item.material.name }}</td>
                         <td class="text-center">
                             <b>Труба Ø{{ item.stock_item.outer_diameter|format_decimal }}x{{ item.stock_item.wall_thickness|format_decimal }}x{{ item.length|format_decimal }}</b>
