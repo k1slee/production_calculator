@@ -267,7 +267,7 @@ def order_detail(request, order_id):
 
 @login_required
 def delete_order_item(request, order_id, item_id):
-    order = get_object_or_404(Order, id=order_id, user=request.user)
+    order = get_object_or_404(Order, id=order_id)
     item = get_object_or_404(OrderItem, id=item_id, order=order)
     
     if request.method == 'POST':
@@ -308,7 +308,7 @@ def copy_order_item(request, order_id, item_id):
     return redirect('order_detail', order_id=order.id)
 @login_required
 def delete_order(request, order_id):
-    order = get_object_or_404(Order, id=order_id, user=request.user)
+    order = get_object_or_404(Order, id=order_id)
     
     if request.method == 'POST':
         order.delete()
@@ -354,7 +354,7 @@ def print_order_report(request, order_id):
         'items': items_list,
         'total_weight_kg': total_weight_kg,
         'date': timezone.now().strftime('%d.%m.%Y'),
-        'user': request.user
+        'user': order.user
     }
     
     return render(request, 'calculator/print_order_report.html', context)
@@ -473,7 +473,7 @@ def print_grouped_report(request, order_id):
         'grouped_items': grouped_list,
         'total_weight_kg': total_weight_kg,
         'date': timezone.now().strftime('%d.%m.%Y'),
-        'user': request.user
+        'user': order.user
     }
     
     return render(request, 'calculator/print_grouped_report.html', context)
@@ -550,7 +550,7 @@ def print_cutting_task(request, order_id):
         'round_items': grouped_by_section['round'],
         'tube_items': grouped_by_section['tube'],
         'date': timezone.now().strftime('%d.%m.%Y'),
-        'user': request.user
+        'user': order.user
     }
     
     return render(request, 'calculator/print_cutting_task.html', context)
