@@ -228,7 +228,6 @@
                     </td>
                     <td>
                         {% if group.is_special %}
-                            <b>Заказ количество: {{ group.quantity }} шт.</b>
                             {% if group.special_length %}
                                 <br><b>Длина: {{ group.special_length|format_decimal }} мм</b>
                             {% else %}
