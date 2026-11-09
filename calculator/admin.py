@@ -43,7 +43,6 @@ class ProfileAdmin(admin.ModelAdmin):
     def get_queryset(self, request):
         return super().get_queryset(request).select_related('user')
 
-# Остальные админ-классы без изменений...
 @admin.register(Material)
 class MaterialAdmin(admin.ModelAdmin):
     list_display = ['id', 'name', 'density']
@@ -54,7 +53,6 @@ class MaterialAdmin(admin.ModelAdmin):
 class PartNameAdmin(admin.ModelAdmin):
     list_display = ['id', 'name']
     search_fields = ['name']
-
 @admin.register(StockItem)
 class StockItemAdmin(admin.ModelAdmin):
     list_display = ['id', 'material', 'section_type', 'get_size']
